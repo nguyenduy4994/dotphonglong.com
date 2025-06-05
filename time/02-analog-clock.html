@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đồng Hồ Analog Mini</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            justify-content: center; /* Căn giữa toàn bộ nội dung theo chiều dọc */
+            align-items: center; /* Căn giữa toàn bộ nội dung theo chiều ngang */
+            padding: 20px; /* Thêm padding để tránh nội dung sát viền trên mobile */
+        }
+
+        .main-container {
+            flex-grow: 1; /* Cho phép container chính chiếm không gian còn lại */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 600px; /* Giới hạn chiều rộng tối đa */
+        }
+
+        .app-title {
+            font-size: clamp(2rem, 5vw, 3.5rem); /* Responsive font size */
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .clock-container {
+            width: 300px; /* Kích thước đồng hồ */
+            height: 300px;
+            background: linear-gradient(145deg, #e6e6e6, #ffffff);
+            border-radius: 50%; /* Làm cho khung tròn */
+            position: relative;
+            box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.2), -8px -8px 15px rgba(255, 255, 255, 0.8), inset 2px 2px 5px rgba(0, 0, 0, 0.1), inset -2px -2px 5px rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        /* Vạch chia giờ */
+        .clock-container::before {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #555;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        /* Kim đồng hồ */
+        .hand {
+            background-color: #333;
+            position: absolute;
+            transform-origin: bottom center; /* Quay quanh tâm đáy */
+            border-radius: 5px; /* Bo tròn các cạnh của kim */
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .hour-hand {
+            width: 6px;
+            height: 80px;
+            background-color: #212529; /* Màu kim giờ đậm hơn */
+            top: calc(50% - 80px); /* Đặt vị trí kim giờ */
+            left: calc(50% - 3px);
+            transition: transform 0.3s cubic-bezier(0.4, 2.3, 0.6, 1); /* Hiệu ứng mượt mà */
+        }
+
+        .minute-hand {
+            width: 4px;
+            height: 100px;
+            background-color: #495057; /* Màu kim phút */
+            top: calc(50% - 100px); /* Đặt vị trí kim phút */
+            left: calc(50% - 2px);
+            transition: transform 0.3s cubic-bezier(0.4, 2.3, 0.6, 1); /* Hiệu ứng mượt mà */
+        }
+
+        .second-hand {
+            width: 2px;
+            height: 120px;
+            background-color: #dc3545; /* Màu kim giây nổi bật (đỏ) */
+            top: calc(50% - 120px); /* Đặt vị trí kim giây */
+            left: calc(50% - 1px);
+            transition: transform 0.1s linear; /* Hiệu ứng mượt mà hơn cho kim giây */
+        }
+
+        /* Vạch chia giờ và phút */
+        .mark {
+            position: absolute;
+            background-color: #6c757d;
+            height: 10px;
+            width: 2px;
+            transform-origin: 50% 150px; /* Quay quanh tâm đồng hồ */
+        }
+        .mark.hour-mark {
+            height: 15px;
+            width: 3px;
+            background-color: #444;
+        }
+
+        .date-display {
+            font-size: 1.2rem;
+            color: #555;
+            margin-top: 20px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+            padding-top: 20px;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Tạo vạch chia giờ và phút bằng CSS */
+        /* Minute marks */
+        .clock-container > div:nth-child(even):not(.hand) { /* Vạch phút */
+            position: absolute;
+            height: 5px;
+            width: 1px;
+            background-color: #a0a0a0;
+            transform-origin: 50% 150px; /* Tâm quay */
+        }
+
+        /* Hour marks */
+        .clock-container > div:nth-child(5n):not(.hand) { /* Vạch giờ */
+            height: 10px;
+            width: 2px;
+            background-color: #606060;
+            z-index: 1; /* Đảm bảo vạch nằm trên các vạch phút */
+        }
+
+        /* Tạo 60 vạch phút */
+        .clock-container > div:not(.hand) {
+            position: absolute;
+            height: 5px;
+            width: 1px;
+            background-color: #a0a0a0;
+            transform-origin: 50% 150px;
+            top: 0;
+            left: 50%;
+            margin-left: -0.5px; /* Căn giữa vạch */
+        }
+        /* Dùng loop trong JS để tạo vạch nếu muốn linh hoạt hơn, nhưng CSS đơn giản hơn cho ví dụ này */
+        /* For this example, we'll create the marks programmatically in JS for precision */
+
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1 class="app-title">Đồng Hồ Analog Mini</h1>
+
+        <div class="clock-container">
+            <!-- Vạch chia giờ và phút sẽ được tạo bằng JavaScript -->
+            <!-- Kim giờ -->
+            <div class="hand hour-hand" id="hourHand"></div>
+            <!-- Kim phút -->
+            <div class="hand minute-hand" id="minuteHand"></div>
+            <!-- Kim giây -->
+            <div class="hand second-hand" id="secondHand"></div>
+        </div>
+
+        <div class="date-display" id="dateDisplay"></div>
+    </div>
+
+    <div class="footer-text">
+        DOTPHONGLONG Mini App
+    </div>
+
+    <!-- Bootstrap JS (bundle includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eB4QsPQQlYdHv3msn/21V1dG" crossorigin="anonymous"></script>
+
+    <script>
+        // Lấy các element của kim đồng hồ
+        const hourHand = document.getElementById('hourHand');
+        const minuteHand = document.getElementById('minuteHand');
+        const secondHand = document.getElementById('secondHand');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const clockContainer = document.querySelector('.clock-container');
+
+        // Hàm tạo vạch chia giờ và phút
+        function createClockMarks() {
+            // Xóa các vạch cũ nếu có
+            const existingMarks = clockContainer.querySelectorAll('.mark');
+            existingMarks.forEach(mark => mark.remove());
+
+            for (let i = 0; i < 60; i++) {
+                const mark = document.createElement('div');
+                mark.classList.add('mark');
+                // Vạch giờ lớn hơn
+                if (i % 5 === 0) {
+                    mark.classList.add('hour-mark');
+                }
+                const rotation = i * 6; // 360 độ / 60 vạch = 6 độ/vạch
+                mark.style.transform = `rotate(${rotation}deg)`;
+                clockContainer.appendChild(mark);
+            }
+        }
+
+        // Hàm cập nhật thời gian cho đồng hồ
+        function updateClock() {
+            const now = new Date(); // Lấy thời gian hiện tại
+            const seconds = now.getSeconds();
+            const minutes = now.getMinutes();
+            const hours = now.getHours();
+
+            // Tính toán độ quay cho từng kim
+            // Kim giây: 6 độ/giây (360 độ / 60 giây)
+            // Để kim giây chuyển động mượt mà hơn, có thể dùng:
+            // const secondDegrees = (seconds * 6) + (now.getMilliseconds() * 0.006);
+            const secondDegrees = seconds * 6; // Chuyển động từng nhịp mỗi giây
+
+            // Kim phút: 6 độ/phút (360 độ / 60 phút) + 0.1 độ/giây (để kim phút di chuyển liên tục theo kim giây)
+            const minuteDegrees = (minutes * 6) + (seconds * 0.1);
+
+            // Kim giờ: 30 độ/giờ (360 độ / 12 giờ) + 0.5 độ/phút (để kim giờ di chuyển liên tục theo kim phút)
+            const hourDegrees = (hours % 12 * 30) + (minutes * 0.5);
+
+            // Áp dụng độ quay vào style của các kim
+            secondHand.style.transform = `translate(-50%, -100%) rotate(${secondDegrees}deg)`;
+            minuteHand.style.transform = `translate(-50%, -100%) rotate(${minuteDegrees}deg)`;
+            hourHand.style.transform = `translate(-50%, -100%) rotate(${hourDegrees}deg)`;
+
+            // Cập nhật hiển thị ngày tháng
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateDisplay.textContent = now.toLocaleDateString('vi-VN', options);
+        }
+
+        // Đảm bảo kim đồng hồ được đặt đúng vị trí ban đầu
+        hourHand.style.left = '50%';
+        hourHand.style.top = '50%';
+        minuteHand.style.left = '50%';
+        minuteHand.style.top = '50%';
+        secondHand.style.left = '50%';
+        secondHand.style.top = '50%';
+
+
+        // Gọi hàm tạo vạch khi tải trang
+        createClockMarks();
+
+        // Cập nhật đồng hồ lần đầu ngay khi tải trang
+        updateClock();
+
+        // Cập nhật đồng hồ mỗi giây
+        setInterval(updateClock, 1000); // Cập nhật mỗi 1000 mili giây (1 giây)
+    </script>
+</body>
+</html>
