@@ -1,72 +1,192 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-bs-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Đốt Phong Long Online</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      background-color: #111;
-      color: #fff;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đốt Phong Long Online - Xua tan xui xẻo</title>
+    <!-- Tải Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Tải Font Inter từ Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Màu nền tối hơn cho body */
+        }
+        .custom-container {
+            max-width: 90%;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #2d3748; /* Màu nền tối nhẹ hơn cho container */
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Bóng đổ mạnh hơn */
+            text-align: center;
+        }
+        .fire-container {
+            position: relative;
+            width: 180px; /* Kích thước lớn hơn cho vùng lửa */
+            height: 240px;
+            margin: 2rem auto;
+            display: none; /* Mặc định ẩn */
+            overflow: hidden;
+            animation: burnEffect 2s forwards ease-out; /* Hiệu ứng cháy */
+            border-radius: 1rem; /* Bo tròn góc vùng lửa */
+            background-color: rgba(0, 0, 0, 0.3); /* Nền tối cho vùng lửa */
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.5); /* Hiệu ứng tỏa sáng ban đầu */
+        }
+        .flame {
+            position: absolute;
+            bottom: 0;
+            background: linear-gradient(to top, #ff7e5f, #feb47b, #ffda2f); /* Màu gradient của lửa */
+            border-radius: 50% 50% 0 0;
+            opacity: 0.8;
+            filter: blur(2px); /* Làm mờ cạnh lửa */
+            animation: flameUp 1s infinite alternate, flameFlicker 0.2s infinite; /* Hiệu ứng lửa bay lên và nhấp nháy */
+        }
+        .flame.flame1 { width: 60px; height: 100px; left: 60px; animation-delay: 0s; }
+        .flame.flame2 { width: 50px; height: 90px; left: 40px; animation-delay: 0.2s; }
+        .flame.flame3 { width: 70px; height: 110px; left: 80px; animation-delay: 0.1s; }
+        .flame.flame4 { width: 45px; height: 85px; left: 20px; animation-delay: 0.3s; } /* Thêm ngọn lửa thứ tư */
 
-    h1 {
-      margin-top: 60px;
-      font-size: 2.5em;
-      color: #facc15;
-    }
+        @keyframes flameUp {
+            0% { transform: translateY(0) scaleX(1); opacity: 0.8; }
+            50% { transform: translateY(-15px) scaleX(1.05); opacity: 0.9; } /* Lửa chuyển động mạnh hơn */
+            100% { transform: translateY(0) scaleX(1); opacity: 0.8; }
+        }
+        @keyframes flameFlicker { /* Hiệu ứng nhấp nháy mới */
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 0.9; }
+        }
+        @keyframes burnEffect {
+            0% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 165, 0, 0.5); }
+            50% { transform: scale(1.03); box-shadow: 0 0 20px rgba(255, 165, 0, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 165, 0, 0.5); }
+        }
 
-    .button {
-      background-color: #dc2626;
-      color: white;
-      padding: 20px 40px;
-      font-size: 1.5em;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      margin-top: 40px;
-      transition: background-color 0.3s ease;
-    }
+        .burning-text {
+            color: #ffcc00; /* Màu vàng cam cho chữ "Đang Đốt..." */
+            text-shadow: 0 0 8px rgba(255, 204, 0, 0.7);
+            animation: textGlow 1.5s infinite alternate; /* Hiệu ứng chữ phát sáng */
+        }
 
-    .button:hover {
-      background-color: #b91c1c;
-    }
+        @keyframes textGlow {
+            0%, 100% { text-shadow: 0 0 8px rgba(255, 204, 0, 0.7), 0 0 15px rgba(255, 204, 0, 0.3); }
+            50% { text-shadow: 0 0 15px rgba(255, 204, 0, 1), 0 0 25px rgba(255, 204, 0, 0.5); }
+        }
 
-    .fire {
-      margin-top: 50px;
-      display: none;
-    }
+        .success-message {
+            display: none; /* Mặc định ẩn */
+            margin-top: 2rem;
+            color: #e0f2f7; /* Màu xanh nhạt cho thông báo thành công */
+        }
+        .fire-spark { /* Hiệu ứng tia lửa */
+            position: absolute;
+            background-color: #ffcc00;
+            border-radius: 50%;
+            opacity: 0;
+            animation: sparkle 1s ease-out forwards;
+            pointer-events: none; /* Không can thiệp vào các sự kiện click */
+        }
 
-    .message {
-      font-size: 1.2em;
-      margin-top: 30px;
-      display: none;
-    }
-  </style>
+        @keyframes sparkle {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+        }
+    </style>
 </head>
-<body>
+<body class="bg-dark text-light d-flex align-items-center justify-content-center min-vh-100 p-3">
+    <div class="custom-container">
+        <h1 class="display-4 fw-bold text-warning mb-3">Đốt Phong Long Online 🕯️</h1>
+        <p class="lead text-light mb-5">Bạn đang cảm thấy xui xẻo, gặp chuyện không may? Hãy đốt phong long online để xua tan mọi vận đen và cầu mong bình an, may mắn đến với mình!</p>
 
-  <h1>🔥 Đốt Phong Long Online 🔥</h1>
-  <button class="button" onclick="dotPhongLong()">Đốt Ngay!</button>
+        <!-- Nút Đốt Online -->
+        <button id="burnButton" class="btn btn-danger btn-lg rounded-pill shadow-lg d-inline-flex align-items-center">
+            ĐỐT ONLINE <span class="ms-2">🔥</span>
+        </button>
 
-  <div class="fire">
-    <img src="https://media.giphy.com/media/3oEjHCWdU7F4B1IYBa/giphy.gif" alt="Lửa cháy" width="200" />
-  </div>
+        <!-- Hiệu ứng đốt -->
+        <div id="fireEffect" class="fire-container">
+            <div class="flame flame1"></div>
+            <div class="flame flame2"></div>
+            <div class="flame flame3"></div>
+            <div class="flame flame4"></div> <!-- Thêm ngọn lửa thứ 4 -->
+            <p class="position-absolute top-50 start-50 translate-middle text-center fs-3 fw-bold burning-text">Đang Đốt...</p>
+        </div>
 
-  <div class="message" id="message">
-    🔥 Bạn đã đốt phong long thành công! Mọi điều xui xẻo sẽ được hóa giải! 🔥
-  </div>
+        <!-- Thông báo chúc mừng và phản hồi -->
+        <div id="successSection" class="success-message">
+            <h2 class="display-5 fw-bold text-success mb-3">Chúc Mừng! ✨</h2>
+            <p class="fs-5 mb-4">Phong long đã được đốt xong. Cầu mong mọi điều tốt lành, may mắn và bình an sẽ đến với bạn!</p>
 
-  <script>
-    function dotPhongLong() {
-      document.querySelector('.fire').style.display = 'block';
-      document.getElementById('message').style.display = 'block';
-    }
-  </script>
+            <p class="fs-5 mb-3">Bạn cảm thấy thế nào? Hiệu quả chứ?</p>
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+                <button class="btn btn-outline-light btn-lg rounded-pill">Có, tôi thấy tốt hơn!</button>
+                <button class="btn btn-outline-secondary btn-lg rounded-pill">Chưa cảm nhận được...</button>
+            </div>
+            <button id="burnAgainButton" class="btn btn-warning btn-lg rounded-pill shadow-lg mt-4 d-inline-flex align-items-center">
+                ĐỐT LẠI <span class="ms-2">🔁</span>
+            </button>
+        </div>
+    </div>
 
+    <!-- Tải Bootstrap 5 JS Bundle (bao gồm Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eJq0U1D+kQweT" crossorigin="anonymous"></script>
+    <script>
+        // Lấy các phần tử từ DOM
+        const burnButton = document.getElementById('burnButton');
+        const fireEffect = document.getElementById('fireEffect');
+        const successSection = document.getElementById('successSection');
+        const burnAgainButton = document.getElementById('burnAgainButton');
+
+        // Hàm tạo hiệu ứng tia lửa ngẫu nhiên
+        function createSpark() {
+            const spark = document.createElement('div');
+            spark.classList.add('fire-spark');
+            const size = Math.random() * 5 + 3; // Kích thước tia lửa ngẫu nhiên từ 3px đến 8px
+            spark.style.width = `${size}px`;
+            spark.style.height = `${size}px`;
+
+            const startX = Math.random() * fireEffect.offsetWidth;
+            const startY = fireEffect.offsetHeight; // Bắt đầu từ đáy vùng lửa
+            spark.style.left = `${startX}px`;
+            spark.style.bottom = `0px`; // Vị trí ban đầu ở đáy
+
+            // Vị trí kết thúc ngẫu nhiên cho tia lửa (bay lên và tản ra)
+            const endX = (Math.random() - 0.5) * 100; // Từ -50px đến 50px
+            const endY = -(Math.random() * 150 + 50); // Từ -50px đến -200px (bay lên)
+            spark.style.setProperty('--x', `${endX}px`);
+            spark.style.setProperty('--y', `${endY}px`);
+
+            fireEffect.appendChild(spark);
+
+            // Xóa tia lửa sau khi hoạt ảnh kết thúc
+            spark.addEventListener('animationend', () => {
+                spark.remove();
+            });
+        }
+
+        // Hàm xử lý khi nhấn nút ĐỐT ONLINE
+        burnButton.addEventListener('click', () => {
+            burnButton.style.display = 'none';
+            successSection.style.display = 'none';
+            fireEffect.style.display = 'block';
+
+            // Tạo tia lửa liên tục trong quá trình đốt
+            let sparkInterval = setInterval(createSpark, 100); // Tạo một tia lửa mỗi 100ms
+
+            // Giả lập thời gian đốt (ví dụ: 3 giây)
+            setTimeout(() => {
+                clearInterval(sparkInterval); // Dừng tạo tia lửa
+                fireEffect.style.display = 'none';
+                successSection.style.display = 'block';
+            }, 3000); // 3000 milliseconds = 3 giây
+        });
+
+        // Hàm xử lý khi nhấn nút ĐỐT LẠI
+        burnAgainButton.addEventListener('click', () => {
+            successSection.style.display = 'none';
+            burnButton.style.display = 'block';
+        });
+    </script>
 </body>
 </html>
