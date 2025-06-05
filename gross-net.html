@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính lương Gross sang Net</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Màu nền xám nhạt */
+        }
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 12px; /* Bo góc lớn hơn */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Đổ bóng mềm mại hơn */
+        }
+        .input-group {
+            margin-bottom: 1.5rem; /* Tăng khoảng cách giữa các nhóm input */
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600; /* Chữ đậm hơn cho label */
+            color: #374151; /* Màu chữ xám đậm */
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 0.75rem 1rem; /* Tăng padding cho input */
+            border: 1px solid #d1d5db; /* Màu viền xám nhạt */
+            border-radius: 8px; /* Bo góc lớn hơn cho input */
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="number"]:focus, input[type="text"]:focus {
+            border-color: #3b82f6; /* Màu viền xanh khi focus */
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Hiệu ứng bóng mờ khi focus */
+        }
+        /* Updated button styles */
+        button {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            background-image: linear-gradient(to right, #4f46e5, #7c3aed); /* Gradient background */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700; /* Bolder font */
+            font-size: 1.1rem; /* Slightly larger font */
+            cursor: pointer;
+            transition: all 0.3s ease; /* Smooth transition for all properties */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* More prominent shadow */
+            letter-spacing: 0.5px; /* Added letter spacing for clarity */
+        }
+        button:hover {
+            background-image: linear-gradient(to right, #5e55ea, #8a4fff); /* Lighter gradient on hover */
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); /* Larger shadow on hover */
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+        button:active {
+            transform: translateY(0px); /* Button press effect */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb; /* Đường kẻ phân cách */
+        }
+        .result-item {
+            background-color: #f9fafb; /* Màu nền xám rất nhạt cho kết quả */
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .result-item p {
+            margin: 0.25rem 0;
+            color: #4b5563; /* Màu chữ xám trung bình */
+        }
+        .result-item p strong {
+            color: #1f2937; /* Màu chữ xám đậm cho giá trị */
+        }
+        .result-item .net-salary {
+            font-size: 1.25rem; /* Cỡ chữ lớn hơn cho lương net */
+            font-weight: 700;
+            color: #16a34a; /* Màu xanh lá cây cho lương net */
+        }
+        .currency::after {
+            content: " VNĐ";
+        }
+        /* Custom modal for alerts */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            max-width: 400px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #333;
+        }
+        .modal-body {
+            padding: 10px 0;
+            color: #555;
+        }
+        .modal-footer button {
+            background-color: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: auto; /* Override full width for modal button */
+            margin-top: 10px;
+        }
+        .modal-footer button:hover {
+            background-color: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Công cụ tính lương Gross sang Net</h1>
+
+        <div class="input-group">
+            <label for="grossSalary">Tổng lương (Gross):</label>
+            <input type="number" id="grossSalary" placeholder="Nhập lương gross" class="text-right">
+        </div>
+
+        <div class="input-group">
+            <label for="dependents">Số người phụ thuộc:</label>
+            <input type="number" id="dependents" value="0" min="0" class="text-right">
+        </div>
+        
+        <div class="input-group">
+            <label for="insuranceSalary">Lương đóng bảo hiểm (Nếu khác lương Gross, nếu không nhập sẽ lấy theo lương Gross):</label>
+            <input type="number" id="insuranceSalary" placeholder="Nhập lương đóng bảo hiểm" class="text-right">
+        </div>
+
+        <button onclick="calculateNetSalary()">Tính lương Net</button>
+
+        <div id="results" class="results-grid" style="display: none;">
+            <!-- Kết quả sẽ được hiển thị ở đây -->
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="customAlertModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Thông báo</h2>
+            </div>
+            <div class="modal-body">
+                <p id="modalMessage">Đây là nội dung thông báo.</p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Các hằng số giảm trừ và mức lương cơ sở/tối thiểu vùng (giả định, cần cập nhật theo quy định hiện hành)
+        const PERSONAL_DEDUCTION = 11000000; // Giảm trừ gia cảnh bản thân
+        const DEPENDENT_DEDUCTION_PER_PERSON = 4400000; // Giảm trừ cho mỗi người phụ thuộc
+        const BASE_SALARY = 1800000; // Lương cơ sở (ví dụ)
+        const MIN_REGIONAL_WAGE_REGION_I = 4680000; // Lương tối thiểu vùng I (ví dụ)
+
+        // Mức lương tối đa đóng BHXH, BHYT (20 lần lương cơ sở)
+        const MAX_SALARY_FOR_SI_HI = 20 * BASE_SALARY; 
+        // Mức lương tối đa đóng BHTN (20 lần lương tối thiểu vùng cao nhất)
+        const MAX_SALARY_FOR_UI = 20 * MIN_REGIONAL_WAGE_REGION_I;
+
+        // Custom alert function
+        function showAlert(title, message) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = message;
+            document.getElementById('customAlertModal').style.display = 'block';
+        }
+
+        // Close modal function
+        function closeModal() {
+            document.getElementById('customAlertModal').style.display = 'none';
+        }
+
+        // Close modal if user clicks outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById('customAlertModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function formatCurrency(value) {
+            return Math.round(value).toLocaleString('vi-VN');
+        }
+
+        function calculateNetSalary() {
+            const grossSalaryInput = document.getElementById('grossSalary');
+            const dependentsInput = document.getElementById('dependents');
+            const insuranceSalaryInput = document.getElementById('insuranceSalary');
+            const resultsDiv = document.getElementById('results');
+
+            const grossSalary = parseFloat(grossSalaryInput.value);
+            const dependents = parseInt(dependentsInput.value);
+            let insuranceBaseSalary = parseFloat(insuranceSalaryInput.value);
+
+            if (isNaN(grossSalary) || grossSalary <= 0) {
+                showAlert("Lỗi", "Vui lòng nhập tổng lương (Gross) hợp lệ.");
+                return;
+            }
+            if (isNaN(dependents) || dependents < 0) {
+                showAlert("Lỗi", "Vui lòng nhập số người phụ thuộc hợp lệ.");
+                return;
+            }
+            
+            // Nếu lương đóng bảo hiểm không được nhập hoặc bằng 0, thì lấy bằng lương gross
+            if (isNaN(insuranceBaseSalary) || insuranceBaseSalary <= 0) {
+                insuranceBaseSalary = grossSalary;
+            }
+
+
+            // 1. Tính các khoản bảo hiểm
+            // Lương đóng BHXH, BHYT không quá MAX_SALARY_FOR_SI_HI
+            const actualSalaryForSI_HI = Math.min(insuranceBaseSalary, MAX_SALARY_FOR_SI_HI);
+            // Lương đóng BHTN không quá MAX_SALARY_FOR_UI
+            const actualSalaryForUI = Math.min(insuranceBaseSalary, MAX_SALARY_FOR_UI);
+
+            const socialInsurance = actualSalaryForSI_HI * 0.08; // 8%
+            const healthInsurance = actualSalaryForSI_HI * 0.015; // 1.5%
+            const unemploymentInsurance = actualSalaryForUI * 0.01; // 1%
+            const totalInsurance = socialInsurance + healthInsurance + unemploymentInsurance;
+
+            // 2. Tính thu nhập trước thuế (Thu nhập chịu thuế - các khoản giảm trừ)
+            const incomeBeforeTax = grossSalary - totalInsurance;
+
+            // 3. Tính các khoản giảm trừ
+            const totalPersonalDeduction = PERSONAL_DEDUCTION;
+            const totalDependentDeduction = dependents * DEPENDENT_DEDUCTION_PER_PERSON;
+            const totalDeductions = totalPersonalDeduction + totalDependentDeduction;
+
+            // 4. Tính thu nhập tính thuế TNCN
+            let taxableIncome = incomeBeforeTax - totalDeductions;
+            if (taxableIncome < 0) {
+                taxableIncome = 0;
+            }
+
+            // 5. Tính thuế TNCN theo biểu thuế lũy tiến từng phần
+            let pit = 0;
+            if (taxableIncome > 0) {
+                if (taxableIncome <= 5000000) {
+                    pit = taxableIncome * 0.05;
+                } else if (taxableIncome <= 10000000) {
+                    pit = (5000000 * 0.05) + ((taxableIncome - 5000000) * 0.10);
+                } else if (taxableIncome <= 18000000) {
+                    pit = (5000000 * 0.05) + (5000000 * 0.10) + ((taxableIncome - 10000000) * 0.15);
+                } else if (taxableIncome <= 32000000) {
+                    pit = (5000000 * 0.05) + (5000000 * 0.10) + (8000000 * 0.15) + ((taxableIncome - 18000000) * 0.20);
+                } else if (taxableIncome <= 52000000) {
+                    pit = (5000000 * 0.05) + (5000000 * 0.10) + (8000000 * 0.15) + (14000000 * 0.20) + ((taxableIncome - 32000000) * 0.25);
+                } else if (taxableIncome <= 80000000) {
+                    pit = (5000000 * 0.05) + (5000000 * 0.10) + (8000000 * 0.15) + (14000000 * 0.20) + (20000000 * 0.25) + ((taxableIncome - 52000000) * 0.30);
+                } else { // > 80,000,000
+                    pit = (5000000 * 0.05) + (5000000 * 0.10) + (8000000 * 0.15) + (14000000 * 0.20) + (20000000 * 0.25) + (28000000 * 0.30) + ((taxableIncome - 80000000) * 0.35);
+                }
+            }
+             if (pit < 0) pit = 0; // Đảm bảo thuế không âm
+
+            // 6. Tính lương Net
+            const netSalary = grossSalary - totalInsurance - pit;
+
+            // Hiển thị kết quả
+            resultsDiv.style.display = 'grid';
+            resultsDiv.innerHTML = `
+                <div class="result-item">
+                    <p>Tổng lương (Gross): <strong class="currency">${formatCurrency(grossSalary)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Lương đóng bảo hiểm: <strong class="currency">${formatCurrency(insuranceBaseSalary)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Bảo hiểm xã hội (8%): <strong class="currency">${formatCurrency(socialInsurance)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Bảo hiểm y tế (1.5%): <strong class="currency">${formatCurrency(healthInsurance)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Bảo hiểm thất nghiệp (1%): <strong class="currency">${formatCurrency(unemploymentInsurance)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Tổng các khoản bảo hiểm: <strong class="currency">${formatCurrency(totalInsurance)}</strong></p>
+                </div>
+                 <div class="result-item">
+                    <p>Thu nhập trước thuế: <strong class="currency">${formatCurrency(incomeBeforeTax)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Giảm trừ gia cảnh bản thân: <strong class="currency">${formatCurrency(totalPersonalDeduction)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Giảm trừ người phụ thuộc (${dependents} người): <strong class="currency">${formatCurrency(totalDependentDeduction)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Tổng giảm trừ: <strong class="currency">${formatCurrency(totalDeductions)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Thu nhập tính thuế TNCN: <strong class="currency">${formatCurrency(taxableIncome)}</strong></p>
+                </div>
+                <div class="result-item">
+                    <p>Thuế thu nhập cá nhân (PIT): <strong class="currency">${formatCurrency(pit)}</strong></p>
+                </div>
+                <div class="result-item net-salary">
+                    <p>Lương thực nhận (Net): <strong class="currency">${formatCurrency(netSalary)}</strong></p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
