@@ -127,188 +127,197 @@
     <audio id="rainSound" loop></audio>
 
     <script>
-        // Lấy các phần tử DOM cần thiết từ HTML
+        // Get necessary DOM elements from HTML
         const canvas = document.getElementById('rainCanvas');
-        const ctx = canvas.getContext('2d'); // Lấy context 2D để vẽ
+        const ctx = canvas.getContext('2d'); // Get 2D context for drawing
         const rainSound = document.getElementById('rainSound');
         const rainOptions = document.querySelectorAll('input[name="rainIntensity"]');
 
-        let raindrops = []; // Mảng chứa tất cả các hạt mưa
-        let numDrops = 100; // Số lượng hạt mưa mặc định (mưa nhỏ)
-        let dropSpeed = 10; // Tốc độ rơi của hạt mưa mặc định
-        let dropLength = 15; // Chiều dài của mỗi hạt mưa mặc định
-        let dropOpacity = 0.6; // Độ mờ của hạt mưa mặc định
-        let soundVolume = 0.5; // Âm lượng âm thanh mặc định
-        let windSpeed = 0; // Tốc độ gió, làm hạt mưa nghiêng theo chiều ngang
+        let raindrops = []; // Array to hold all raindrops
+        let numDrops = 100; // Default number of raindrops (light rain)
+        let dropSpeed = 10; // Default drop speed
+        let dropLength = 15; // Default drop length
+        let dropOpacity = 0.6; // Default drop opacity
+        let soundVolume = 0.5; // Default sound volume
+        let windSpeed = 0; // Wind speed, makes raindrops tilt horizontally
 
-        // Các biến cho hiệu ứng sấm chớp
-        let isLightning = false; // Trạng thái sấm chớp đang hoạt động
-        let lastLightningTime = 0; // Thời điểm sấm chớp cuối cùng
-        let lightningIntervalMin = 5000; // Khoảng thời gian tối thiểu giữa các lần sấm chớp (5 giây)
-        let lightningIntervalMax = 15000; // Khoảng thời gian tối đa giữa các lần sấm chớp (15 giây)
-        let nextLightningTime = 0; // Thời điểm sấm chớp tiếp theo
-        let lightningDuration = 100; // Thời gian sấm chớp hiển thị (miligiây)
+        // Variables for lightning effect
+        let isLightning = false; // Lightning active state
+        let lastLightningTime = 0; // Last lightning strike time
+        let lightningIntervalMin = 5000; // Minimum interval between lightning strikes (5 seconds)
+        let lightningIntervalMax = 15000; // Maximum interval between lightning strikes (15 seconds)
+        let nextLightningTime = 0; // Next lightning strike time
+        let lightningDuration = 100; // Duration lightning is visible (milliseconds)
 
-        // Cấu hình nguồn âm thanh mưa
-        // QUAN TRỌNG: Vui lòng thay thế liên kết dưới đây bằng liên kết MP3 âm thanh mưa của riêng bạn.
-        // Bạn có thể tìm thấy các file MP3 âm thanh mưa miễn phí bản quyền trên các trang web như FreeSound.org
-        // hoặc các thư viện âm thanh khác.
-        rainSound.src = 'https://cdn.pixabay.com/audio/2024/01/25/audio_b05a8ceddc.mp3'; // Liên kết ví dụ
-        rainSound.volume = soundVolume; // Đặt âm lượng ban đầu
+        // --- NEW: Audio sources for each rain intensity ---
+        // IMPORTANT: Please replace these links with your actual MP3 rain sound links.
+        // You can find royalty-free rain sound MP3s on websites like FreeSound.org or other sound libraries.
+        const audioSources = {
+            light: 'https://cdn.pixabay.com/audio/2024/01/25/audio_b05a8ceddc.mp3', // Placeholder for light rain sound
+            medium: 'https://cdn.pixabay.com/audio/2025/02/07/audio_84e92d6021.mp3', // Placeholder for medium rain sound
+            heavy: 'https://cdn.pixabay.com/audio/2024/08/20/audio_e79013ed4c.mp3'  // Placeholder for heavy rain sound (previously used general sound)
+        };
+        // --- END NEW ---
 
-        // Hàm điều chỉnh kích thước canvas để nó luôn khớp với kích thước cửa sổ trình duyệt
+        rainSound.volume = soundVolume; // Set initial volume
+
+        // Function to resize the canvas to always match the browser window size
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            // Khởi tạo lại hạt mưa khi kích thước canvas thay đổi để chúng phân bổ đều
+            // Re-initialize raindrops when canvas size changes to distribute them evenly
             initRaindrops();
         }
 
-        // Hàm khởi tạo và điền các hạt mưa vào mảng 'raindrops'
+        // Function to initialize and populate the 'raindrops' array
         function initRaindrops() {
-            raindrops = []; // Xóa các hạt mưa cũ
+            raindrops = []; // Clear old raindrops
             for (let i = 0; i < numDrops; i++) {
                 raindrops.push({
-                    x: Math.random() * canvas.width, // Vị trí X ngẫu nhiên trong phạm vi canvas
-                    y: Math.random() * canvas.height, // Vị trí Y ngẫu nhiên trong phạm vi canvas
-                    length: dropLength + Math.random() * 5, // Thêm biến thể nhỏ về chiều dài
-                    speed: dropSpeed + Math.random() * 2, // Thêm biến thể nhỏ về tốc độ
-                    opacity: dropOpacity + Math.random() * 0.2 // Thêm biến thể nhỏ về độ mờ
+                    x: Math.random() * canvas.width, // Random X position within canvas
+                    y: Math.random() * canvas.height, // Random Y position within canvas
+                    length: dropLength + Math.random() * 5, // Add small variation to length
+                    speed: dropSpeed + Math.random() * 2, // Add small variation to speed
+                    opacity: dropOpacity + Math.random() * 0.2 // Add small variation to opacity
                 });
             }
         }
 
-        // Hàm vẽ một hạt mưa trên canvas, có tính đến gió
+        // Function to draw a raindrop on the canvas, considering wind
         function drawRaindrop(drop) {
-            ctx.beginPath(); // Bắt đầu một đường vẽ mới
-            ctx.moveTo(drop.x, drop.y); // Di chuyển đến điểm bắt đầu của hạt mưa
+            ctx.beginPath(); // Start a new path
+            ctx.moveTo(drop.x, drop.y); // Move to the starting point of the raindrop
 
-            // Tính toán điểm kết thúc của hạt mưa dựa trên tốc độ gió và độ dài hạt mưa
-            // drop.windOffset sẽ làm cho hạt mưa nghiêng theo chiều gió
+            // Calculate the end point of the raindrop based on wind speed and drop length
+            // drop.windOffset will make the raindrop tilt in the direction of the wind
             const windOffset = windSpeed * (drop.length / drop.speed);
-            ctx.lineTo(drop.x + windOffset, drop.y + drop.length); // Vẽ một đường thẳng nghiêng tạo thành hạt mưa
+            ctx.lineTo(drop.x + windOffset, drop.y + drop.length); // Draw a tilted line to form the raindrop
 
-            ctx.lineWidth = 1; // Chiều rộng của đường vẽ
-            ctx.strokeStyle = `rgba(173, 216, 230, ${drop.opacity})`; // Màu xanh nhạt với độ mờ
-            ctx.stroke(); // Thực hiện vẽ đường thẳng
+            ctx.lineWidth = 1; // Line width
+            ctx.strokeStyle = `rgba(173, 216, 230, ${drop.opacity})`; // Light blue color with opacity
+            ctx.stroke(); // Draw the line
         }
 
-        // Hàm cập nhật vị trí của tất cả các hạt mưa
+        // Function to update the position of all raindrops
         function updateRaindrops() {
             for (let i = 0; i < raindrops.length; i++) {
                 const drop = raindrops[i];
-                drop.y += drop.speed; // Di chuyển hạt mưa xuống dưới theo tốc độ
-                drop.x += windSpeed; // Di chuyển hạt mưa theo chiều ngang theo tốc độ gió
+                drop.y += drop.speed; // Move raindrop downwards by speed
+                drop.x += windSpeed; // Move raindrop horizontally by wind speed
 
-                // Nếu hạt mưa rơi ra khỏi màn hình (bao gồm cả chiều ngang do gió), đưa nó trở lại đỉnh canvas
-                // Bao gồm cả offset cho chiều dài hạt mưa để đảm bảo nó hoàn toàn ra khỏi màn hình
+                // If raindrop falls off screen (including horizontally due to wind), bring it back to the top of the canvas
+                // Include an offset for the drop length to ensure it's completely off screen
                 if (drop.y > canvas.height || drop.x > canvas.width + drop.length || drop.x < -drop.length) {
-                    drop.y = -drop.length; // Bắt đầu từ phía trên màn hình
-                    drop.x = Math.random() * canvas.width; // Vị trí X ngẫu nhiên mới để tạo sự tự nhiên
-                    // Đảm bảo rằng hạt mưa không xuất hiện quá xa ngoài biên do gió mạnh
+                    drop.y = -drop.length; // Start from above the screen
+                    drop.x = Math.random() * canvas.width; // New random X position for natural appearance
+                    // Ensure raindrop doesn't appear too far off-screen due to strong wind
                     if (windSpeed > 0 && drop.x < -windSpeed * 10) drop.x += canvas.width;
                     if (windSpeed < 0 && drop.x > canvas.width - windSpeed * 10) drop.x -= canvas.width;
                 }
             }
         }
 
-        // Hàm xử lý hiệu ứng sấm chớp
+        // Function to handle lightning effect
         function handleLightning() {
-            const currentTime = Date.now(); // Lấy thời gian hiện tại
+            const currentTime = Date.now(); // Get current time
             if (!isLightning && currentTime > nextLightningTime) {
-                // Có 10% cơ hội để sấm chớp xảy ra
+                // 10% chance for lightning to strike
                 if (Math.random() < 0.1) {
                     isLightning = true;
-                    // Đặt màu nền canvas thành màu trắng sáng để giả lập chớp
-                    canvas.style.backgroundColor = `rgba(255, 255, 255, ${Math.random() * 0.3 + 0.3})`; // Độ sáng ngẫu nhiên
-                    // Đặt thời gian sấm chớp tiếp theo
+                    // Set canvas background color to bright white to simulate lightning flash
+                    canvas.style.backgroundColor = `rgba(255, 255, 255, ${Math.random() * 0.3 + 0.3})`; // Random brightness
+                    // Set next lightning strike time
                     nextLightningTime = currentTime + lightningIntervalMin + Math.random() * (lightningIntervalMax - lightningIntervalMin);
 
-                    // Tắt sấm chớp sau một khoảng thời gian ngắn
+                    // Turn off lightning after a short duration
                     setTimeout(() => {
                         isLightning = false;
-                        canvas.style.backgroundColor = '#0d1117'; // Trở lại màu nền ban đầu
+                        canvas.style.backgroundColor = '#0d1117'; // Return to original background color
                     }, lightningDuration);
                 }
             }
         }
 
-        // Vòng lặp chính của animation, liên tục vẽ và cập nhật hạt mưa
+        // Main animation loop, continuously draws and updates raindrops
         function animate() {
-            // Xóa toàn bộ canvas để vẽ lại khung hình mới. Nếu đang sấm chớp, không cần xóa để hiệu ứng sáng hơn.
+            // Clear entire canvas to draw new frame. If lightning is active, don't clear for brighter effect.
             if (!isLightning) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             }
 
-            handleLightning(); // Xử lý hiệu ứng sấm chớp
+            handleLightning(); // Handle lightning effect
 
-            updateRaindrops(); // Cập nhật vị trí của tất cả hạt mưa
+            updateRaindrops(); // Update position of all raindrops
             for (let i = 0; i < raindrops.length; i++) {
-                drawRaindrop(raindrops[i]); // Vẽ từng hạt mưa
+                drawRaindrop(raindrops[i]); // Draw each raindrop
             }
-            requestAnimationFrame(animate); // Yêu cầu trình duyệt gọi lại hàm animate() trong khung hình tiếp theo
+            requestAnimationFrame(animate); // Request browser to call animate() in the next frame
         }
 
-        // Hàm cập nhật cường độ mưa dựa trên lựa chọn của người dùng
+        // Function to update rain intensity based on user selection
         function updateRainIntensity(intensity) {
+            // --- NEW: Set audio source based on intensity ---
+            rainSound.src = audioSources[intensity];
+            // --- END NEW ---
+
             switch (intensity) {
-                case 'light': // Mưa nhỏ
+                case 'light': // Light rain
                     numDrops = 100;
                     dropSpeed = 8;
                     dropLength = 12;
                     dropOpacity = 0.5;
                     soundVolume = 0.3;
-                    windSpeed = 0; // Không có gió
-                    lightningIntervalMin = 15000; // Sấm chớp ít hơn
+                    windSpeed = 0; // No wind
+                    lightningIntervalMin = 15000; // Less frequent lightning
                     lightningIntervalMax = 30000;
                     break;
-                case 'medium': // Mưa vừa
+                case 'medium': // Medium rain
                     numDrops = 300;
                     dropSpeed = 12;
                     dropLength = 18;
                     dropOpacity = 0.7;
                     soundVolume = 0.6;
-                    windSpeed = 2; // Gió nhẹ
-                    lightningIntervalMin = 8000; // Sấm chớp vừa phải
+                    windSpeed = 2; // Light wind
+                    lightningIntervalMin = 8000; // Moderate lightning
                     lightningIntervalMax = 20000;
                     break;
-                case 'heavy': // Mưa to
+                case 'heavy': // Heavy rain
                     numDrops = 700;
                     dropSpeed = 18;
                     dropLength = 25;
                     dropOpacity = 0.9;
                     soundVolume = 1.0;
-                    windSpeed = 5; // Gió mạnh hơn
-                    lightningIntervalMin = 3000; // Sấm chớp thường xuyên hơn
+                    windSpeed = 5; // Stronger wind
+                    lightningIntervalMin = 3000; // More frequent lightning
                     lightningIntervalMax = 10000;
                     break;
             }
-            initRaindrops(); // Khởi tạo lại số lượng và thuộc tính hạt mưa
-            rainSound.volume = soundVolume; // Điều chỉnh âm lượng
-            // Phát âm thanh nếu nó đang tạm dừng
+            initRaindrops(); // Re-initialize raindrop count and properties
+            rainSound.volume = soundVolume; // Adjust volume
+            // Play sound if it's paused
             if (rainSound.paused) {
-                // Sử dụng .catch() để xử lý lỗi nếu trình duyệt chặn tự động phát
-                rainSound.play().catch(e => console.error("Lỗi khi phát âm thanh:", e));
+                // Use .catch() to handle errors if browser blocks autoplay
+                rainSound.play().catch(e => console.error("Error playing audio:", e));
             }
-            // Đặt lại thời gian sấm chớp tiếp theo khi cường độ mưa thay đổi
+            // Reset next lightning time when rain intensity changes
             nextLightningTime = Date.now() + lightningIntervalMin + Math.random() * (lightningIntervalMax - lightningIntervalMin);
         }
 
-        // Lắng nghe sự kiện "change" trên các radio button cường độ mưa
+        // Listen for "change" event on rain intensity radio buttons
         rainOptions.forEach(option => {
             option.addEventListener('change', (event) => {
-                updateRainIntensity(event.target.value); // Gọi hàm cập nhật cường độ mưa
+                updateRainIntensity(event.target.value); // Call function to update rain intensity
             });
         });
 
-        // Xử lý sự kiện khi toàn bộ trang được tải
+        // Handle event when entire page is loaded
         window.addEventListener('load', () => {
-            resizeCanvas(); // Đặt kích thước canvas ban đầu
-            // Lấy giá trị của radio button được chọn ban đầu và cập nhật cường độ mưa
+            resizeCanvas(); // Set initial canvas size
+            // Get the value of the initially selected radio button and update rain intensity
             updateRainIntensity(document.querySelector('input[name="rainIntensity"]:checked').value);
-            animate(); // Bắt đầu vòng lặp animation
+            animate(); // Start animation loop
         });
-        // Lắng nghe sự kiện "resize" của cửa sổ để điều chỉnh canvas khi kích thước thay đổi
+        // Listen for "resize" event of the window to adjust canvas when size changes
         window.addEventListener('resize', resizeCanvas);
     </script>
 </body>
