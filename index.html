@@ -79,18 +79,56 @@
             margin-top: 2rem;
             color: #e0f2f7; /* Màu xanh nhạt cho thông báo thành công */
         }
-        .fire-spark { /* Hiệu ứng tia lửa */
+        .fire-spark { /* Hiệu ứng tia lửa (cho lúc đốt) */
             position: absolute;
             background-color: #ffcc00;
             border-radius: 50%;
             opacity: 0;
             animation: sparkle 1s ease-out forwards;
-            pointer-events: none; /* Không can thiệp vào các sự kiện click */
+            pointer-events: none;
         }
 
         @keyframes sparkle {
             0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
             100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
+        }
+
+        /* CSS cho hiệu ứng pháo bông */
+        .fireworks-container {
+            position: fixed; /* Chiếm toàn bộ màn hình */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: none; /* Mặc định ẩn */
+            z-index: 9999; /* Đảm bảo nằm trên các phần tử khác */
+            pointer-events: none; /* Không ngăn cản tương tác với các phần tử bên dưới */
+            background-color: rgba(0, 0, 0, 0.5); /* Nền hơi tối cho pháo bông */
+        }
+
+        .firework-particle {
+            position: absolute;
+            background-color: var(--color); /* Màu ngẫu nhiên */
+            border-radius: 50%;
+            opacity: 0;
+            animation: fireworkBurst var(--duration) ease-out forwards; /* Thời gian và easing động */
+            box-shadow: 0 0 5px var(--color), 0 0 10px var(--color);
+        }
+
+        @keyframes fireworkBurst {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 1;
+            }
+            10% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) scale(0);
+                opacity: 0;
+            }
         }
     </style>
 </head>
@@ -112,6 +150,9 @@
             <div class="flame flame4"></div> <!-- Thêm ngọn lửa thứ 4 -->
             <p class="position-absolute top-50 start-50 translate-middle text-center fs-3 fw-bold burning-text">Đang Đốt...</p>
         </div>
+
+        <!-- Container cho hiệu ứng pháo bông -->
+        <div id="fireworksContainer" class="fireworks-container"></div>
 
         <!-- Thông báo chúc mừng và phản hồi -->
         <div id="successSection" class="success-message">
@@ -137,9 +178,10 @@
         const fireEffect = document.getElementById('fireEffect');
         const successSection = document.getElementById('successSection');
         const burnAgainButton = document.getElementById('burnAgainButton');
+        const fireworksContainer = document.getElementById('fireworksContainer');
 
-        // Hàm tạo hiệu ứng tia lửa ngẫu nhiên
-        function createSpark() {
+        // Hàm tạo hiệu ứng tia lửa (cho lúc đốt)
+        function createBurnSpark() {
             const spark = document.createElement('div');
             spark.classList.add('fire-spark');
             const size = Math.random() * 5 + 3; // Kích thước tia lửa ngẫu nhiên từ 3px đến 8px
@@ -165,21 +207,83 @@
             });
         }
 
+        // Hàm tạo hiệu ứng pháo bông
+        function createFireworkBurst(count = 30, x, y) {
+            const colors = ['#FFC300', '#FF5733', '#C70039', '#900C3F', '#581845', '#33FF57', '#33B5FF', '#A033FF']; // Thêm nhiều màu hơn
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('firework-particle');
+
+                const size = Math.random() * 8 + 2; // Kích thước hạt pháo bông từ 2px đến 10px
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+
+                // Góc và khoảng cách bay ngẫu nhiên
+                const angle = Math.random() * Math.PI * 2; // Từ 0 đến 360 độ
+                const distance = Math.random() * 150 + 50; // Khoảng cách bay từ 50px đến 200px
+                const endX = Math.cos(angle) * distance;
+                const endY = Math.sin(angle) * distance;
+
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.setProperty('--x', `${endX}px`);
+                particle.style.setProperty('--y', `${endY}px`);
+                particle.style.setProperty('--color', randomColor);
+                particle.style.setProperty('--duration', `${Math.random() * 1.5 + 1.5}s`); // Thời gian hoạt ảnh từ 1.5s đến 3s
+
+                fireworksContainer.appendChild(particle);
+
+                particle.addEventListener('animationend', () => {
+                    particle.remove();
+                });
+            }
+        }
+
         // Hàm xử lý khi nhấn nút ĐỐT ONLINE
         burnButton.addEventListener('click', () => {
             burnButton.style.display = 'none';
             successSection.style.display = 'none';
+            fireworksContainer.style.display = 'none'; // Đảm bảo pháo bông ẩn ban đầu
             fireEffect.style.display = 'block';
 
             // Tạo tia lửa liên tục trong quá trình đốt
-            let sparkInterval = setInterval(createSpark, 100); // Tạo một tia lửa mỗi 100ms
+            let sparkInterval = setInterval(createBurnSpark, 100); // Tạo một tia lửa mỗi 100ms
 
-            // Giả lập thời gian đốt (ví dụ: 3 giây)
+            // Thời gian đốt ngẫu nhiên từ 5 đến 10 giây
+            const randomBurnDuration = Math.random() * (10000 - 5000) + 5000;
+            console.log(`Thời gian đốt: ${randomBurnDuration / 1000} giây`);
+
             setTimeout(() => {
-                clearInterval(sparkInterval); // Dừng tạo tia lửa
-                fireEffect.style.display = 'none';
-                successSection.style.display = 'block';
-            }, 3000); // 3000 milliseconds = 3 giây
+                clearInterval(sparkInterval); // Dừng tạo tia lửa đốt
+                fireEffect.style.display = 'none'; // Ẩn hiệu ứng đốt
+
+                // Hiển thị hiệu ứng pháo bông
+                fireworksContainer.style.display = 'block';
+
+                // Tạo nhiều đợt pháo bông ngẫu nhiên
+                let fireworkCount = 0;
+                const maxFireworks = 5; // Số lượng đợt pháo bông
+                const fireworkInterval = setInterval(() => {
+                    if (fireworkCount >= maxFireworks) {
+                        clearInterval(fireworkInterval);
+                        return;
+                    }
+                    // Vị trí ngẫu nhiên cho pháo bông trên màn hình
+                    const fireworkX = Math.random() * window.innerWidth;
+                    const fireworkY = Math.random() * window.innerHeight * 0.7; // Giới hạn ở phần trên màn hình
+                    createFireworkBurst(30, fireworkX, fireworkY); // 30 hạt mỗi đợt
+                    fireworkCount++;
+                }, 500); // Mỗi đợt pháo bông cách nhau 0.5 giây
+
+                // Sau khi pháo bông kết thúc, hiển thị thông báo chúc mừng
+                setTimeout(() => {
+                    fireworksContainer.style.display = 'none';
+                    successSection.style.display = 'block';
+                }, 3000); // Thời gian hiển thị pháo bông (ví dụ: 3 giây)
+
+            }, randomBurnDuration); // Sử dụng thời gian đốt ngẫu nhiên
         });
 
         // Hàm xử lý khi nhấn nút ĐỐT LẠI
