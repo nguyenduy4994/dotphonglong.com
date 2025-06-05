@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Đốt Phong Long Online</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      background-color: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      margin-top: 60px;
+      font-size: 2.5em;
+      color: #facc15;
+    }
+
+    .button {
+      background-color: #dc2626;
+      color: white;
+      padding: 20px 40px;
+      font-size: 1.5em;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 40px;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #b91c1c;
+    }
+
+    .fire {
+      margin-top: 50px;
+      display: none;
+    }
+
+    .message {
+      font-size: 1.2em;
+      margin-top: 30px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🔥 Đốt Phong Long Online 🔥</h1>
+  <button class="button" onclick="dotPhongLong()">Đốt Ngay!</button>
+
+  <div class="fire">
+    <img src="https://media.giphy.com/media/3oEjHCWdU7F4B1IYBa/giphy.gif" alt="Lửa cháy" width="200" />
+  </div>
+
+  <div class="message" id="message">
+    🔥 Bạn đã đốt phong long thành công! Mọi điều xui xẻo sẽ được hóa giải! 🔥
+  </div>
+
+  <script>
+    function dotPhongLong() {
+      document.querySelector('.fire').style.display = 'block';
+      document.getElementById('message').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
