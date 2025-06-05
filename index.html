@@ -11,49 +11,49 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #1a202c; /* Màu nền tối hơn cho body */
+            background-color: #1a202c; /* Darker background for body */
         }
         .custom-container {
             max-width: 90%;
             margin: 2rem auto;
             padding: 2rem;
-            background-color: #2d3748; /* Màu nền tối nhẹ hơn cho container */
+            background-color: #2d3748; /* Slightly lighter dark background for container */
             border-radius: 1rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Bóng đổ mạnh hơn */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); /* Stronger shadow */
             text-align: center;
         }
         .fire-container {
             position: relative;
-            width: 180px; /* Kích thước lớn hơn cho vùng lửa */
+            width: 180px; /* Larger size for fire area */
             height: 240px;
             margin: 2rem auto;
-            display: none; /* Mặc định ẩn */
+            display: none; /* Hidden by default */
             overflow: hidden;
-            animation: burnEffect 2s forwards ease-out; /* Hiệu ứng cháy */
-            border-radius: 1rem; /* Bo tròn góc vùng lửa */
-            background-color: rgba(0, 0, 0, 0.3); /* Nền tối cho vùng lửa */
-            box-shadow: 0 0 20px rgba(255, 165, 0, 0.5); /* Hiệu ứng tỏa sáng ban đầu */
+            animation: burnEffect 2s forwards ease-out; /* Burning effect */
+            border-radius: 1rem; /* Rounded corners for fire area */
+            background-color: rgba(0, 0, 0, 0.3); /* Dark background for fire area */
+            box-shadow: 0 0 20px rgba(255, 165, 0, 0.5); /* Initial glow effect */
         }
         .flame {
             position: absolute;
             bottom: 0;
-            background: linear-gradient(to top, #ff7e5f, #feb47b, #ffda2f); /* Màu gradient của lửa */
+            background: linear-gradient(to top, #ff7e5f, #feb47b, #ffda2f); /* Fire gradient colors */
             border-radius: 50% 50% 0 0;
             opacity: 0.8;
-            filter: blur(2px); /* Làm mờ cạnh lửa */
-            animation: flameUp 1s infinite alternate, flameFlicker 0.2s infinite; /* Hiệu ứng lửa bay lên và nhấp nháy */
+            filter: blur(2px); /* Soften flame edges */
+            animation: flameUp 1s infinite alternate, flameFlicker 0.2s infinite; /* Flame movement and flicker effects */
         }
         .flame.flame1 { width: 60px; height: 100px; left: 60px; animation-delay: 0s; }
         .flame.flame2 { width: 50px; height: 90px; left: 40px; animation-delay: 0.2s; }
         .flame.flame3 { width: 70px; height: 110px; left: 80px; animation-delay: 0.1s; }
-        .flame.flame4 { width: 45px; height: 85px; left: 20px; animation-delay: 0.3s; } /* Thêm ngọn lửa thứ tư */
+        .flame.flame4 { width: 45px; height: 85px; left: 20px; animation-delay: 0.3s; } /* Fourth flame added */
 
         @keyframes flameUp {
             0% { transform: translateY(0) scaleX(1); opacity: 0.8; }
-            50% { transform: translateY(-15px) scaleX(1.05); opacity: 0.9; } /* Lửa chuyển động mạnh hơn */
+            50% { transform: translateY(-15px) scaleX(1.05); opacity: 0.9; } /* More pronounced flame movement */
             100% { transform: translateY(0) scaleX(1); opacity: 0.8; }
         }
-        @keyframes flameFlicker { /* Hiệu ứng nhấp nháy mới */
+        @keyframes flameFlicker { /* New flickering effect */
             0%, 100% { opacity: 0.8; }
             50% { opacity: 0.9; }
         }
@@ -64,9 +64,9 @@
         }
 
         .burning-text {
-            color: #ffcc00; /* Màu vàng cam cho chữ "Đang Đốt..." */
+            color: #ffcc00; /* Orange-yellow color for "Đang Đốt..." text */
             text-shadow: 0 0 8px rgba(255, 204, 0, 0.7);
-            animation: textGlow 1.5s infinite alternate; /* Hiệu ứng chữ phát sáng */
+            animation: textGlow 1.5s infinite alternate; /* Text glow effect */
         }
 
         @keyframes textGlow {
@@ -75,11 +75,11 @@
         }
 
         .success-message {
-            display: none; /* Mặc định ẩn */
+            display: none; /* Hidden by default */
             margin-top: 2rem;
-            color: #e0f2f7; /* Màu xanh nhạt cho thông báo thành công */
+            color: #e0f2f7; /* Light blue for success message */
         }
-        .fire-spark { /* Hiệu ứng tia lửa (cho lúc đốt) */
+        .fire-spark { /* Spark effect for burning */
             position: absolute;
             background-color: #ffcc00;
             border-radius: 50%;
@@ -93,26 +93,26 @@
             100% { transform: translate(var(--x), var(--y)) scale(0); opacity: 0; }
         }
 
-        /* CSS cho hiệu ứng pháo bông */
+        /* CSS for fireworks effect */
         .fireworks-container {
-            position: fixed; /* Chiếm toàn bộ màn hình */
+            position: fixed; /* Occupy entire screen */
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             overflow: hidden;
-            display: none; /* Mặc định ẩn */
-            z-index: 9999; /* Đảm bảo nằm trên các phần tử khác */
-            pointer-events: none; /* Không ngăn cản tương tác với các phần tử bên dưới */
-            background-color: rgba(0, 0, 0, 0.5); /* Nền hơi tối cho pháo bông */
+            display: none; /* Hidden by default */
+            z-index: 9999; /* Ensure it's on top of other elements */
+            pointer-events: none; /* Do not block interaction with elements below */
+            background-color: rgba(0, 0, 0, 0.5); /* Slightly dark background for fireworks */
         }
 
         .firework-particle {
             position: absolute;
-            background-color: var(--color); /* Màu ngẫu nhiên */
+            background-color: var(--color); /* Random color */
             border-radius: 50%;
             opacity: 0;
-            animation: fireworkBurst var(--duration) ease-out forwards; /* Thời gian và easing động */
+            animation: fireworkBurst var(--duration) ease-out forwards; /* Dynamic duration and easing */
             box-shadow: 0 0 5px var(--color), 0 0 10px var(--color);
         }
 
@@ -137,7 +137,7 @@
         <h1 class="display-4 fw-bold text-warning mb-3">Đốt Phong Long Online 🕯️</h1>
         <p class="lead text-light mb-5">Bạn đang cảm thấy xui xẻo, gặp chuyện không may? Hãy đốt phong long online để xua tan mọi vận đen và cầu mong bình an, may mắn đến với mình!</p>
 
-        <!-- Nút Đốt Online -->
+        <!-- Nút Đốt Online (Chỉ hiển thị ban đầu) -->
         <button id="burnButton" class="btn btn-danger btn-lg rounded-pill shadow-lg d-inline-flex align-items-center">
             ĐỐT ONLINE <span class="ms-2">🔥</span>
         </button>
@@ -147,7 +147,7 @@
             <div class="flame flame1"></div>
             <div class="flame flame2"></div>
             <div class="flame flame3"></div>
-            <div class="flame flame4"></div> <!-- Thêm ngọn lửa thứ 4 -->
+            <div class="flame flame4"></div> <!-- Fourth flame -->
             <p class="position-absolute top-50 start-50 translate-middle text-center fs-3 fw-bold burning-text">Đang Đốt...</p>
         </div>
 
@@ -164,6 +164,7 @@
                 <button class="btn btn-outline-light btn-lg rounded-pill">Có, tôi thấy tốt hơn!</button>
                 <button class="btn btn-outline-secondary btn-lg rounded-pill">Chưa cảm nhận được...</button>
             </div>
+            <!-- Nút ĐỐT LẠI (Luôn hiển thị sau lần đốt đầu tiên để bắt đầu lại) -->
             <button id="burnAgainButton" class="btn btn-warning btn-lg rounded-pill shadow-lg mt-4 d-inline-flex align-items-center">
                 ĐỐT LẠI <span class="ms-2">🔁</span>
             </button>
@@ -180,50 +181,50 @@
         const burnAgainButton = document.getElementById('burnAgainButton');
         const fireworksContainer = document.getElementById('fireworksContainer');
 
-        // Hàm tạo hiệu ứng tia lửa (cho lúc đốt)
+        // Function to create random fire sparks during burning
         function createBurnSpark() {
             const spark = document.createElement('div');
             spark.classList.add('fire-spark');
-            const size = Math.random() * 5 + 3; // Kích thước tia lửa ngẫu nhiên từ 3px đến 8px
+            const size = Math.random() * 5 + 3; // Random spark size from 3px to 8px
             spark.style.width = `${size}px`;
             spark.style.height = `${size}px`;
 
             const startX = Math.random() * fireEffect.offsetWidth;
-            const startY = fireEffect.offsetHeight; // Bắt đầu từ đáy vùng lửa
+            const startY = fireEffect.offsetHeight; // Start from bottom of fire area
             spark.style.left = `${startX}px`;
-            spark.style.bottom = `0px`; // Vị trí ban đầu ở đáy
+            spark.style.bottom = `0px`; // Initial position at the bottom
 
-            // Vị trí kết thúc ngẫu nhiên cho tia lửa (bay lên và tản ra)
-            const endX = (Math.random() - 0.5) * 100; // Từ -50px đến 50px
-            const endY = -(Math.random() * 150 + 50); // Từ -50px đến -200px (bay lên)
+            // Random end position for the spark (flies up and spreads out)
+            const endX = (Math.random() - 0.5) * 100; // From -50px to 50px
+            const endY = -(Math.random() * 150 + 50); // From -50px to -200px (flies up)
             spark.style.setProperty('--x', `${endX}px`);
             spark.style.setProperty('--y', `${endY}px`);
 
             fireEffect.appendChild(spark);
 
-            // Xóa tia lửa sau khi hoạt ảnh kết thúc
+            // Remove spark after animation ends
             spark.addEventListener('animationend', () => {
                 spark.remove();
             });
         }
 
-        // Hàm tạo hiệu ứng pháo bông
+        // Function to create firework burst effect
         function createFireworkBurst(count = 30, x, y) {
-            const colors = ['#FFC300', '#FF5733', '#C70039', '#900C3F', '#581845', '#33FF57', '#33B5FF', '#A033FF']; // Thêm nhiều màu hơn
+            const colors = ['#FFC300', '#FF5733', '#C70039', '#900C3F', '#581845', '#33FF57', '#33B5FF', '#A033FF']; // More colors added
             for (let i = 0; i < count; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('firework-particle');
 
-                const size = Math.random() * 8 + 2; // Kích thước hạt pháo bông từ 2px đến 10px
+                const size = Math.random() * 8 + 2; // Firework particle size from 2px to 10px
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
 
                 particle.style.left = `${x}px`;
                 particle.style.top = `${y}px`;
 
-                // Góc và khoảng cách bay ngẫu nhiên
-                const angle = Math.random() * Math.PI * 2; // Từ 0 đến 360 độ
-                const distance = Math.random() * 150 + 50; // Khoảng cách bay từ 50px đến 200px
+                // Random angle and distance for particles to fly
+                const angle = Math.random() * Math.PI * 2; // From 0 to 360 degrees
+                const distance = Math.random() * 150 + 50; // Flight distance from 50px to 200px
                 const endX = Math.cos(angle) * distance;
                 const endY = Math.sin(angle) * distance;
 
@@ -231,7 +232,7 @@
                 particle.style.setProperty('--x', `${endX}px`);
                 particle.style.setProperty('--y', `${endY}px`);
                 particle.style.setProperty('--color', randomColor);
-                particle.style.setProperty('--duration', `${Math.random() * 1.5 + 1.5}s`); // Thời gian hoạt ảnh từ 1.5s đến 3s
+                particle.style.setProperty('--duration', `${Math.random() * 1.5 + 1.5}s`); // Animation duration from 1.5s to 3s
 
                 fireworksContainer.appendChild(particle);
 
@@ -241,55 +242,57 @@
             }
         }
 
-        // Hàm xử lý khi nhấn nút ĐỐT ONLINE
-        burnButton.addEventListener('click', () => {
-            burnButton.style.display = 'none';
-            successSection.style.display = 'none';
-            fireworksContainer.style.display = 'none'; // Đảm bảo pháo bông ẩn ban đầu
-            fireEffect.style.display = 'block';
+        // Function to start the burning process (reusable for both initial and re-burn)
+        function startBurning() {
+            burnButton.style.display = 'none'; // Hide the initial burn button
+            successSection.style.display = 'none'; // Hide success section if visible
+            fireworksContainer.style.display = 'none'; // Ensure fireworks are hidden initially
+            fireEffect.style.display = 'block'; // Show the fire effect
 
-            // Tạo tia lửa liên tục trong quá trình đốt
-            let sparkInterval = setInterval(createBurnSpark, 100); // Tạo một tia lửa mỗi 100ms
+            // Start generating fire sparks
+            let sparkInterval = setInterval(createBurnSpark, 100);
 
-            // Thời gian đốt ngẫu nhiên từ 5 đến 10 giây
+            // Random burn duration between 5 and 10 seconds
             const randomBurnDuration = Math.random() * (10000 - 5000) + 5000;
             console.log(`Thời gian đốt: ${randomBurnDuration / 1000} giây`);
 
             setTimeout(() => {
-                clearInterval(sparkInterval); // Dừng tạo tia lửa đốt
-                fireEffect.style.display = 'none'; // Ẩn hiệu ứng đốt
+                clearInterval(sparkInterval); // Stop generating fire sparks
+                fireEffect.style.display = 'none'; // Hide fire effect
 
-                // Hiển thị hiệu ứng pháo bông
-                fireworksContainer.style.display = 'block';
+                fireworksContainer.style.display = 'block'; // Show fireworks container
 
-                // Tạo nhiều đợt pháo bông ngẫu nhiên
+                // Create multiple firework bursts randomly
                 let fireworkCount = 0;
-                const maxFireworks = 5; // Số lượng đợt pháo bông
+                const maxFireworks = 5; // Number of firework bursts
                 const fireworkInterval = setInterval(() => {
                     if (fireworkCount >= maxFireworks) {
                         clearInterval(fireworkInterval);
                         return;
                     }
-                    // Vị trí ngẫu nhiên cho pháo bông trên màn hình
+                    // Random position for fireworks on screen
                     const fireworkX = Math.random() * window.innerWidth;
-                    const fireworkY = Math.random() * window.innerHeight * 0.7; // Giới hạn ở phần trên màn hình
-                    createFireworkBurst(30, fireworkX, fireworkY); // 30 hạt mỗi đợt
+                    const fireworkY = Math.random() * window.innerHeight * 0.7; // Limit to upper part of the screen
+                    createFireworkBurst(30, fireworkX, fireworkY); // 30 particles per burst
                     fireworkCount++;
-                }, 500); // Mỗi đợt pháo bông cách nhau 0.5 giây
+                }, 500); // Each firework burst appears every 0.5 seconds
 
-                // Sau khi pháo bông kết thúc, hiển thị thông báo chúc mừng
+                // After fireworks finish, display success message
                 setTimeout(() => {
                     fireworksContainer.style.display = 'none';
-                    successSection.style.display = 'block';
-                }, 3000); // Thời gian hiển thị pháo bông (ví dụ: 3 giây)
+                    successSection.style.display = 'block'; // Show success message
+                }, 3000); // Duration for fireworks display (e.g., 3 seconds)
 
-            }, randomBurnDuration); // Sử dụng thời gian đốt ngẫu nhiên
-        });
+            }, randomBurnDuration); // Use the random burning duration
+        }
 
-        // Hàm xử lý khi nhấn nút ĐỐT LẠI
+        // Event listener for initial burn button
+        burnButton.addEventListener('click', startBurning);
+
+        // Event listener for "ĐỐT LẠI" button - directly triggers the burn process
         burnAgainButton.addEventListener('click', () => {
-            successSection.style.display = 'none';
-            burnButton.style.display = 'block';
+            // No need to show burnButton again; startBurning handles hiding it.
+            startBurning();
         });
     </script>
 </body>
