@@ -14,12 +14,19 @@
             margin: 0;
             padding: 0;
             background-color: #0d1117; /* Màu nền tối để hiệu ứng mưa nổi bật */
+            display: flex; /* Sử dụng flexbox để căn giữa nội dung */
+            justify-content: center; /* Căn giữa theo chiều ngang */
+            align-items: center; /* Căn giữa theo chiều dọc */
+            min-height: 100vh; /* Chiếm toàn bộ chiều cao viewport */
+            position: relative; /* Đặt vị trí tương đối cho body để các phần tử cố định hoạt động đúng */
         }
         /* Đặt kiểu cho canvas để nó phủ toàn bộ màn hình */
         canvas {
             position: fixed; /* Giữ canvas cố định trên màn hình */
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
             z-index: 1; /* Đặt canvas ở lớp dưới các điều khiển */
         }
         /* Đặt kiểu cho vùng điều khiển (buttons) */
@@ -37,7 +44,15 @@
             gap: 1rem; /* Khoảng cách giữa các tùy chọn */
             flex-wrap: wrap; /* Cho phép các mục xuống dòng trên màn hình nhỏ */
             justify-content: center; /* Căn giữa các mục */
+            transition: opacity 0.5s ease; /* Hiệu ứng chuyển động mượt mà cho độ mờ */
+            opacity: 0; /* Mặc định ẩn các điều khiển */
+            pointer-events: none; /* Ngăn chặn tương tác khi ẩn */
         }
+        .controls.active {
+            opacity: 1; /* Hiển thị khi active */
+            pointer-events: auto; /* Cho phép tương tác khi active */
+        }
+
         /* Đặt kiểu cho mỗi tùy chọn mưa (label chứa radio button) */
         .rain-option {
             display: flex; /* Sử dụng flexbox để căn chỉnh radio và văn bản */
@@ -86,6 +101,31 @@
         .rain-option input[type="radio"]:checked::before {
             transform: scale(1); /* Phóng to dấu chấm */
         }
+
+        /* Kiểu cho nút BẮT ĐẦU MƯA */
+        #startButton {
+            background-color: #3b82f6; /* Màu xanh lam */
+            color: white; /* Chữ trắng */
+            padding: 1rem 2rem; /* Đệm */
+            border-radius: 0.75rem; /* Bo tròn góc */
+            font-size: 1.25rem; /* Cỡ chữ lớn */
+            font-weight: bold; /* Chữ đậm */
+            cursor: pointer; /* Con trỏ hình bàn tay */
+            border: none; /* Không viền */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ */
+            transition: background-color 0.2s ease, transform 0.1s ease; /* Hiệu ứng chuyển động */
+            z-index: 100; /* Đảm bảo nút nằm trên cùng */
+        }
+
+        #startButton:hover {
+            background-color: #2563eb; /* Màu xanh lam đậm hơn khi hover */
+            transform: translateY(-2px); /* Nhấc nhẹ lên */
+        }
+
+        #startButton:active {
+            transform: translateY(0); /* Trở lại vị trí ban đầu khi click */
+        }
+
         /* Điều chỉnh responsive cho thiết bị di động */
         @media (max-width: 640px) {
             .controls {
@@ -100,6 +140,10 @@
                 width: 100%; /* Mỗi tùy chọn chiếm toàn bộ chiều rộng */
                 justify-content: center; /* Căn giữa nội dung trong tùy chọn */
             }
+            #startButton {
+                font-size: 1rem; /* Cỡ chữ nhỏ hơn trên di động */
+                padding: 0.75rem 1.5rem; /* Đệm nhỏ hơn */
+            }
         }
     </style>
 </head>
@@ -107,8 +151,11 @@
     <!-- Canvas sẽ là nơi vẽ hiệu ứng mưa -->
     <canvas id="rainCanvas"></canvas>
 
-    <!-- Vùng chứa các tùy chọn cường độ mưa -->
-    <div class="controls">
+    <!-- Nút bắt đầu mưa -->
+    <button id="startButton">BẮT ĐẦU MƯA</button>
+
+    <!-- Vùng chứa các tùy chọn cường độ mưa (mặc định ẩn) -->
+    <div class="controls" id="rainControls">
         <label class="rain-option">
             <input type="radio" name="rainIntensity" value="light" checked>
             Mưa Nhỏ
@@ -132,6 +179,8 @@
         const ctx = canvas.getContext('2d'); // Lấy context 2D để vẽ
         const rainSound = document.getElementById('rainSound');
         const rainOptions = document.querySelectorAll('input[name="rainIntensity"]');
+        const startButton = document.getElementById('startButton');
+        const rainControls = document.getElementById('rainControls');
 
         let raindrops = []; // Mảng chứa tất cả các hạt mưa
         let numDrops = 100; // Số lượng hạt mưa mặc định (mưa nhỏ)
@@ -151,7 +200,7 @@
 
         // Đệm ngang để hạt mưa xuất hiện từ ngoài rìa màn hình
         // Giúp đảm bảo hiệu ứng mưa bao phủ toàn bộ canvas khi có gió
-        const horizontalSpawnBuffer = 200; // Số pixel bên ngoài canvas để hạt mưa có thể xuất hiện/biến mất
+        const horizontalSpawnBuffer = 100; // Số pixel bên ngoài canvas để hạt mưa có thể xuất hiện/biến mất
 
         // Cấu hình nguồn âm thanh mưa
         // QUAN TRỌNG: Vui lòng thay thế liên kết dưới đây bằng liên kết MP3 âm thanh mưa của riêng bạn.
@@ -194,7 +243,6 @@
             ctx.moveTo(drop.x, drop.y); // Di chuyển đến điểm bắt đầu của hạt mưa
 
             // Tính toán điểm kết thúc của hạt mưa dựa trên tốc độ gió và độ dài hạt mưa
-            // drop.windOffset sẽ làm cho hạt mưa nghiêng theo chiều gió
             const windOffset = windSpeed * (drop.length / drop.speed);
             ctx.lineTo(drop.x + windOffset, drop.y + drop.length); // Vẽ một đường thẳng nghiêng tạo thành hạt mưa
 
@@ -297,14 +345,26 @@
             }
             initRaindrops(); // Khởi tạo lại số lượng và thuộc tính hạt mưa
             rainSound.volume = soundVolume; // Điều chỉnh âm lượng
-            // Phát âm thanh nếu nó đang tạm dừng
-            if (rainSound.paused) {
-                // Sử dụng .catch() để xử lý lỗi nếu trình duyệt chặn tự động phát
+            // Phát âm thanh nếu nó đang tạm dừng hoặc nếu đây là lần đầu phát (sau khi nút được nhấn)
+            if (rainSound.paused || rainSound.src !== audioSources[intensity]) {
                 rainSound.play().catch(e => console.error("Lỗi khi phát âm thanh:", e));
             }
             // Đặt lại thời gian sấm chớp tiếp theo khi cường độ mưa thay đổi
             nextLightningTime = Date.now() + lightningIntervalMin + Math.random() * (lightningIntervalMax - lightningIntervalMin);
         }
+
+        // Hàm bắt đầu mưa khi nút được nhấn
+        function startRain() {
+            startButton.style.display = 'none'; // Ẩn nút "BẮT ĐẦU MƯA"
+            rainControls.classList.add('active'); // Hiển thị các điều khiển cường độ mưa
+            resizeCanvas(); // Đặt kích thước canvas ban đầu
+            // Lấy giá trị của radio button được chọn ban đầu và cập nhật cường độ mưa
+            updateRainIntensity(document.querySelector('input[name="rainIntensity"]:checked').value);
+            animate(); // Bắt đầu vòng lặp animation
+        }
+
+        // Lắng nghe sự kiện click trên nút BẮT ĐẦU MƯA
+        startButton.addEventListener('click', startRain);
 
         // Lắng nghe sự kiện "change" trên các radio button cường độ mưa
         rainOptions.forEach(option => {
@@ -315,10 +375,8 @@
 
         // Xử lý sự kiện khi toàn bộ trang được tải
         window.addEventListener('load', () => {
-            resizeCanvas(); // Đặt kích thước canvas ban đầu
-            // Lấy giá trị của radio button được chọn ban đầu và cập nhật cường độ mưa
-            updateRainIntensity(document.querySelector('input[name="rainIntensity"]:checked').value);
-            animate(); // Bắt đầu vòng lặp animation
+            resizeCanvas(); // Đặt kích thước canvas ban đầu (chỉ để canvas sẵn sàng, mưa chưa chạy)
+            // Không tự động gọi updateRainIntensity và animate ở đây nữa
         });
         // Lắng nghe sự kiện "resize" của cửa sổ để điều chỉnh canvas khi kích thước thay đổi
         window.addEventListener('resize', resizeCanvas);
