@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Duyệt Tháng Mini</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Tùy chỉnh font chữ cho toàn bộ trang */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s, color 0.3s; /* Chuyển động mượt mà khi đổi chế độ sáng/tối */
+        }
+
+        /* Căn giữa toàn bộ nội dung theo chiều dọc và ngang */
+        .min-vh-100 {
+            min-height: 100vh;
+        }
+
+        /* Kiểu dáng cho tiêu đề ứng dụng */
+        .app-title {
+            font-weight: 700;
+            color: #343a40; /* Màu chữ mặc định */
+        }
+
+        /* Kiểu dáng cho khung lịch (card) */
+        .calendar-card {
+            border-radius: 1rem; /* Bo tròn góc */
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Kiểu dáng cho các ô ngày trong lịch */
+        .day-cell {
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            font-weight: 600;
+            text-align: center; /* Căn giữa nội dung ô ngày */
+        }
+
+        /* Styles for table cells to make them look like the original grid cells */
+        .calendar-table {
+            width: 100%; /* Bảng chiếm toàn bộ chiều rộng container */
+            border-collapse: collapse; /* Gộp các đường viền của ô */
+        }
+
+        .calendar-table th,
+        .calendar-table td {
+            border: 1px solid var(--bs-border-color-translucent); /* Sử dụng biến Bootstrap cho viền nhất quán */
+            padding: 0.75rem; /* Điều chỉnh khoảng đệm cho ô */
+        }
+
+        .day-cell:hover:not(.empty-cell):not(.today) {
+            background-color: rgba(0, 123, 255, 0.2); /* Hiệu ứng hover nhẹ */
+        }
+
+        /* Kiểu dáng cho ngày hiện tại */
+        .today {
+            background-color: #007bff; /* Màu nền xanh dương */
+            color: white; /* Chữ trắng */
+            box-shadow: 0 0 0 2px #007bff; /* Viền nổi bật */
+        }
+
+        /* Kiểu dáng cho các ô trống (ngày không thuộc tháng) */
+        .empty-cell {
+            visibility: hidden; /* Ẩn các ô trống */
+        }
+
+        /* Điều chỉnh kích thước font cho các ngày trong tuần và ngày trong lịch */
+        .small-font {
+            font-size: 0.9rem;
+        }
+
+        /* Dark mode styles */
+        body[data-bs-theme="dark"] {
+            background-color: #212529; /* Nền tối */
+            color: #f8f9fa; /* Chữ sáng */
+        }
+
+        body[data-bs-theme="dark"] .app-title {
+            color: #e9ecef; /* Màu chữ sáng hơn cho tiêu đề */
+        }
+
+        body[data-bs-theme="dark"] .calendar-card {
+            background-color: #343a40 !important; /* Nền card tối hơn */
+            color: #f8f9fa;
+        }
+
+        body[data-bs-theme="dark"] .day-cell {
+            color: #f8f9fa;
+        }
+
+        body[data-bs-theme="dark"] .day-cell:hover:not(.empty-cell):not(.today) {
+            background-color: rgba(13, 110, 253, 0.2); /* Hover màu xanh đậm hơn */
+        }
+
+        body[data-bs-theme="dark"] .today {
+            background-color: #0d6efd; /* Màu xanh đậm hơn cho ngày hiện tại */
+            box-shadow: 0 0 0 2px #0d6efd;
+        }
+
+        body[data-bs-theme="dark"] .calendar-table th,
+        body[data-bs-theme="dark"] .calendar-table td {
+            border: 1px solid rgba(248, 249, 250, 0.2); /* Viền sáng hơn cho chế độ tối */
+        }
+
+        /* Footer styling */
+        footer {
+            background-color: #343a40;
+            color: white;
+        }
+
+        body[data-bs-theme="dark"] footer {
+            background-color: #212529;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100 bg-light">
+    <div class="container my-auto">
+        <h1 class="text-center my-4 app-title">Ứng dụng Lịch</h1>
+        <div class="card shadow-lg p-3 mb-5 bg-body calendar-card">
+            <!-- Nút bật/tắt chế độ sáng/tối -->
+            <div class="form-check form-switch d-flex justify-content-end mb-3">
+                <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                <label class="form-check-label ms-2" for="darkModeToggle">Chế độ tối</label>
+            </div>
+
+            <!-- Header lịch: Nút điều hướng, Tên tháng & Năm -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <button id="prevMonth" class="btn btn-primary rounded-pill py-2 px-3">&lsaquo;</button>
+                <h2 id="currentMonthYear" class="mb-0 text-center flex-grow-1"></h2>
+                <button id="nextMonth" class="btn btn-primary rounded-pill py-2 px-3">&rsaquo;</button>
+            </div>
+
+            <!-- Lưới các ngày trong tháng (Container cho bảng) -->
+            <div id="calendarTableContainer" class="text-center">
+                <!-- Bảng lịch sẽ được thêm vào đây bằng JavaScript -->
+            </div>
+
+            <!-- Hiển thị ngày hôm nay -->
+            <div class="text-center mt-4">
+                <p class="fs-5 mb-0" id="todayDateDisplay"></p>
+            </div>
+        </div>
+    </div>
+    <!-- Footer -->
+    <footer class="mt-auto py-3 bg-dark text-white text-center">
+        <div class="container">
+            <span>DOTPHONGLONG Mini App</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eJ5mXn9oJ/3" crossorigin="anonymous"></script>
+    <script>
+        // Lấy các phần tử DOM cần thiết
+        const currentMonthYearEl = document.getElementById('currentMonthYear');
+        const calendarTableContainerEl = document.getElementById('calendarTableContainer'); // Đã đổi ID container
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        const todayDateDisplayEl = document.getElementById('todayDateDisplay');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+        const calendarCard = document.querySelector('.calendar-card');
+        const appTitle = document.querySelector('.app-title');
+
+        let currentDate = new Date(); // Biến Date để theo dõi tháng hiện tại đang hiển thị
+
+        /**
+         * Hàm để lấy tên các ngày trong tuần bằng tiếng Việt.
+         * Đảm bảo thứ tự là Thứ 2 đến Chủ Nhật.
+         * @returns {string[]} Mảng chứa tên các ngày trong tuần (VD: ["T2", "T3", ...]).
+         */
+        function getWeekDayNames() {
+            // Sử dụng locale 'vi-VN' để đảm bảo tên ngày là tiếng Việt
+            const formatter = new Intl.DateTimeFormat('vi-VN', { weekday: 'short' });
+            const days = [];
+            // Bắt đầu từ một ngày Thứ 2 (ví dụ: 2023-01-02 là Thứ 2)
+            const monday = new Date(2023, 0, 2);
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + i);
+                days.push(formatter.format(date));
+            }
+            return days;
+        }
+
+        /**
+         * Hiển thị ngày hiện tại ở chân lịch bằng tiếng Việt.
+         */
+        function displayTodayDate() {
+            const today = new Date();
+            // Định dạng ngày theo tiếng Việt (VD: Thứ Năm, 12 tháng 9 năm 2024)
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            todayDateDisplayEl.textContent = `Hôm nay là: ${today.toLocaleDateString('vi-VN', options)}`;
+        }
+
+        /**
+         * Hàm chính để vẽ (render) lịch cho tháng hiện tại dưới dạng bảng.
+         */
+        function renderCalendar() {
+            // Lấy tháng và năm của currentDate
+            const month = currentDate.getMonth();
+            const year = currentDate.getFullYear();
+
+            // Định dạng tên tháng và năm theo tiếng Việt
+            const monthName = new Intl.DateTimeFormat('vi-VN', { month: 'long' }).format(currentDate);
+            currentMonthYearEl.textContent = `${monthName} ${year}`;
+
+            // Tạo hoặc lấy bảng lịch
+            let calendarTable = document.getElementById('calendarTable');
+            if (!calendarTable) {
+                calendarTable = document.createElement('table');
+                calendarTable.id = 'calendarTable';
+                calendarTable.classList.add('table', 'table-bordered', 'table-sm', 'text-center', 'calendar-table'); // Thêm class custom
+                calendarTableContainerEl.appendChild(calendarTable);
+            } else {
+                // Xóa thead và tbody hiện có để vẽ lại
+                const oldTbody = calendarTable.querySelector('tbody');
+                if (oldTbody) {
+                    oldTbody.remove();
+                }
+                const oldThead = calendarTable.querySelector('thead');
+                if (oldThead) {
+                    oldThead.remove();
+                }
+            }
+
+            // Tạo thead (Header bảng cho các ngày trong tuần)
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            const weekDayNames = getWeekDayNames();
+            weekDayNames.forEach(dayName => {
+                const th = document.createElement('th');
+                th.scope = 'col';
+                th.classList.add('small-font', 'fw-bold');
+                th.textContent = dayName;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            calendarTable.appendChild(thead);
+
+            // Tạo tbody (Body bảng cho các ngày trong tháng)
+            const tbody = document.createElement('tbody');
+            calendarTable.appendChild(tbody);
+
+            // Lấy ngày đầu tiên của tháng (ví dụ: ngày 1 tháng X năm Y)
+            const firstDayOfMonth = new Date(year, month, 1);
+            // Lấy số ngày trong tháng hiện tại (ngày 0 của tháng tiếp theo chính là ngày cuối cùng của tháng hiện tại)
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Lấy thứ của ngày đầu tiên của tháng (0 = Chủ Nhật, 1 = Thứ 2, ..., 6 = Thứ 7)
+            // Điều chỉnh để Thứ 2 là 0, ..., Chủ Nhật là 6
+            let startingDayIndex = firstDayOfMonth.getDay(); // 0 = Chủ Nhật, 1 = Thứ 2, ...
+            startingDayIndex = (startingDayIndex === 0) ? 6 : startingDayIndex - 1; // Chuyển đổi: Thứ 2 = 0, ..., Chủ Nhật = 6
+
+            // Lấy ngày hiện tại để đánh dấu
+            const today = new Date();
+            const todayDay = today.getDate();
+            const todayMonth = today.getMonth();
+            const todayYear = today.getFullYear();
+
+            let dayCounter = 1;
+
+            // Lặp để tạo các hàng (tuần) và ô (ngày)
+            for (let i = 0; i < 6; i++) { // Lịch có thể có tối đa 6 tuần
+                const weekRow = document.createElement('tr');
+                let rowHasActualDays = false; // Cờ kiểm tra xem hàng có ngày nào thực sự không
+
+                for (let j = 0; j < 7; j++) { // 7 ngày trong một tuần
+                    const dayCell = document.createElement('td');
+                    dayCell.classList.add('day-cell');
+
+                    if (i === 0 && j < startingDayIndex) {
+                        // Các ô trống trước ngày 1 của tháng
+                        dayCell.classList.add('empty-cell');
+                    } else if (dayCounter <= daysInMonth) {
+                        // Điền các ngày trong tháng
+                        dayCell.textContent = dayCounter;
+                        // Đánh dấu ngày hiện tại
+                        if (dayCounter === todayDay && month === todayMonth && year === todayYear) {
+                            dayCell.classList.add('today');
+                        }
+                        dayCounter++;
+                        rowHasActualDays = true; // Đánh dấu rằng hàng này có ngày thực sự
+                    } else {
+                        // Các ô trống sau ngày cuối cùng của tháng
+                        dayCell.classList.add('empty-cell');
+                    }
+                    weekRow.appendChild(dayCell);
+                }
+
+                // Nếu hàng không có ngày nào thực sự (ví dụ: tuần cuối cùng toàn ô trống)
+                // và không phải là hàng đầu tiên, thì dừng lại.
+                if (!rowHasActualDays && i > 0 && dayCounter > daysInMonth) {
+                    break;
+                }
+                tbody.appendChild(weekRow);
+            }
+        }
+
+        /**
+         * Hàm xử lý chuyển tháng (tiến/lùi).
+         * @param {number} offset - Số tháng cần thay đổi (1 cho tháng sau, -1 cho tháng trước).
+         */
+        function changeMonth(offset) {
+            currentDate.setMonth(currentDate.getMonth() + offset);
+            renderCalendar(); // Vẽ lại lịch với tháng mới
+        }
+
+        /**
+         * Hàm xử lý chuyển đổi chế độ sáng/tối.
+         */
+        function toggleDarkMode() {
+            if (darkModeToggle.checked) {
+                body.setAttribute('data-bs-theme', 'dark');
+                calendarCard.classList.remove('bg-body');
+                calendarCard.classList.add('bg-dark');
+                appTitle.classList.remove('text-dark');
+                appTitle.classList.add('text-light');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.setAttribute('data-bs-theme', 'light');
+                calendarCard.classList.remove('bg-dark');
+                calendarCard.classList.add('bg-body');
+                appTitle.classList.remove('text-light');
+                appTitle.classList.add('text-dark');
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // --- Đăng ký sự kiện (Event Listeners) ---
+        prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+        nextMonthBtn.addEventListener('click', () => changeMonth(1));
+        darkModeToggle.addEventListener('change', toggleDarkMode);
+
+        // --- Khởi tạo ứng dụng khi trang được tải ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Kiểm tra trạng thái dark mode đã lưu
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                darkModeToggle.checked = true;
+                toggleDarkMode();
+            } else {
+                // Đảm bảo ở chế độ sáng nếu không có hoặc là 'light'
+                body.setAttribute('data-bs-theme', 'light');
+                calendarCard.classList.remove('bg-dark');
+                calendarCard.classList.add('bg-body');
+                appTitle.classList.remove('text-light');
+                appTitle.classList.add('text-dark');
+            }
+
+            renderCalendar(); // Vẽ lịch cho tháng hiện tại
+            displayTodayDate(); // Hiển thị ngày hôm nay
+        });
+    </script>
+</body>
+</html>

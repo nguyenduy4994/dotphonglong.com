@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo mã QR theo ngày giờ</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- QRCode.js library -->
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <style>
+        /* Custom styles */
+        body {
+            /* Using Bootstrap's default font stack for simplicity, which is responsive and clean.
+               Alternatively, you could link a Google Font here. */
+        }
+        .app-title {
+            font-size: 2rem; /* Large font for title */
+            font-weight: bold;
+            margin-bottom: 1.5rem; /* Added margin for better spacing */
+        }
+        #currentTime {
+            font-size: 1.5rem; /* Large font for time */
+            margin-bottom: 1.5rem; /* Consistent margin */
+            font-family: 'Courier New', Courier, monospace; /* Monospaced font for time */
+        }
+        .footer-text {
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            color: var(--bs-secondary-color); /* Using Bootstrap variable for text color */
+        }
+        .theme-toggle-button {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050; /* Ensure it's above most content */
+        }
+        #qrcode canvas,
+        #qrcode img {
+            display: block; /* Ensure QR code is block element */
+            margin: 0 auto; /* Center QR code within its container */
+        }
+        .card-qr {
+            border-radius: 0.75rem; /* Softer rounded corners for the card */
+        }
+         /* Ensure the QR code container itself is centered if it's larger than the QR code */
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 266px; /* Slightly more space for border/padding around QR */
+            min-width: 266px;
+            padding: 5px; /* Small padding around the QR code image/canvas */
+            border: 1px solid var(--bs-border-color); /* Border around QR code area */
+            border-radius: 0.5rem; /* Rounded corners for QR code area */
+            background-color: var(--bs-tertiary-bg); /* Subtle background for QR code area */
+        }
+
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Theme Toggle Button -->
+    <button id="themeToggle" class="btn btn-outline-secondary theme-toggle-button" aria-label="Toggle theme">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun-fill" viewBox="0 0 16 16" id="themeIconSun">
+            <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707z"/>
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon-stars-fill d-none" viewBox="0 0 16 16" id="themeIconMoon">
+            <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+            <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.312 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </svg>
+    </button>
+
+    <!-- Main Content Area -->
+    <div class="container-fluid d-flex flex-column justify-content-center align-items-center flex-grow-1 p-3">
+        
+        <div class="text-center">
+            <h1 class="app-title">Tạo mã QR theo ngày giờ</h1>
+        </div>
+
+        <div class="card shadow-sm p-3 p-md-4 card-qr" style="max-width: 420px; width: 100%;">
+            <div class="card-body text-center">
+                <div id="currentTime" class="mb-3">Đang tải thời gian...</div>
+                <div id="qrcode" class="mb-3">
+                    <!-- QR code will be generated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center footer-text">
+            <p>DOTPHONGLONG Mini App</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Get DOM elements
+        const currentTimeElement = document.getElementById('currentTime');
+        const qrcodeElement = document.getElementById('qrcode');
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIconSun = document.getElementById('themeIconSun');
+        const themeIconMoon = document.getElementById('themeIconMoon');
+        const htmlElement = document.documentElement;
+
+        let qrcodeInstance = null; // To hold the QRCode.js instance
+        const QR_CODE_SIZE = 256; // Define QR code size
+
+        // Helper function to format numbers to two digits (e.g., 1 -> 01)
+        function formatTwoDigits(n) {
+            return n < 10 ? '0' + n : n.toString();
+        }
+
+        // Function to update date, time, and QR code
+        function updateDateTimeAndQR() {
+            const now = new Date();
+            const hours = formatTwoDigits(now.getHours());
+            const minutes = formatTwoDigits(now.getMinutes());
+            const seconds = formatTwoDigits(now.getSeconds());
+            const day = formatTwoDigits(now.getDate());
+            const month = formatTwoDigits(now.getMonth() + 1); // JavaScript months are 0-indexed
+            const year = now.getFullYear();
+
+            const timeString = `${hours}:${minutes}:${seconds} - ${day}/${month}/${year}`;
+            currentTimeElement.textContent = timeString;
+
+            // If QR code instance exists, update it. Otherwise, create a new one.
+            if (qrcodeInstance) {
+                qrcodeInstance.makeCode(timeString); // Update existing QR code
+            } else {
+                // This part should ideally run only once or when theme changes require re-creation
+                // Initial creation is handled in initializeApp
+                console.error("QR code instance not initialized before update. This shouldn't happen frequently.");
+            }
+        }
+        
+        // Function to apply the selected theme and update QR code colors
+        function applyTheme(theme) {
+            htmlElement.setAttribute('data-bs-theme', theme); // Set theme on root element
+            // Toggle visibility of theme icons
+            if (theme === 'dark') {
+                themeIconSun.classList.add('d-none');
+                themeIconMoon.classList.remove('d-none');
+            } else {
+                themeIconSun.classList.remove('d-none');
+                themeIconMoon.classList.add('d-none');
+            }
+
+            // Define QR code colors based on the theme
+            const colorDark = theme === 'dark' ? "#f8f9fa" : "#000000"; // Light dots for dark theme, dark for light
+            const colorLight = theme === 'dark' ? "#292e33" : "#ffffff"; // Dark background for dark theme, light for light
+                                                                         // #292e33 is a custom dark grey, adjust if needed
+
+            // If QR code instance exists, clear and re-create it with new colors
+            if (qrcodeInstance) {
+                qrcodeElement.innerHTML = ''; // Clear previous QR code
+                qrcodeInstance = new QRCode(qrcodeElement, {
+                    text: currentTimeElement.textContent || "Initializing...", // Use current time or placeholder
+                    width: QR_CODE_SIZE,
+                    height: QR_CODE_SIZE,
+                    colorDark: colorDark,
+                    colorLight: colorLight,
+                    correctLevel: QRCode.CorrectLevel.H // High error correction
+                });
+            }
+        }
+
+        // Function to initialize the application
+        function initializeApp() {
+            // Load saved theme from localStorage or default to 'light'
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme); // Apply loaded theme (this also sets initial icons)
+
+            // Initial date, time, and QR code generation
+            const now = new Date();
+            const hours = formatTwoDigits(now.getHours());
+            const minutes = formatTwoDigits(now.getMinutes());
+            const seconds = formatTwoDigits(now.getSeconds());
+            const day = formatTwoDigits(now.getDate());
+            const month = formatTwoDigits(now.getMonth() + 1);
+            const year = now.getFullYear();
+            const initialTimeString = `${hours}:${minutes}:${seconds} - ${day}/${month}/${year}`;
+            
+            currentTimeElement.textContent = initialTimeString;
+
+            // Determine initial QR colors based on the currently applied theme
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            const initialColorDark = currentTheme === 'dark' ? "#f8f9fa" : "#000000";
+            const initialColorLight = currentTheme === 'dark' ? "#292e33" : "#ffffff";
+
+            // Create the initial QR code instance
+            qrcodeInstance = new QRCode(qrcodeElement, {
+                text: initialTimeString,
+                width: QR_CODE_SIZE,
+                height: QR_CODE_SIZE,
+                colorDark: initialColorDark,
+                colorLight: initialColorLight,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Set an interval to update the time and QR code every second
+            setInterval(updateDateTimeAndQR, 1000);
+        }
+
+        // Event listener for the theme toggle button
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme); // Save new theme preference
+            applyTheme(newTheme); // Apply the new theme
+        });
+
+        // Start the application
+        initializeApp();
+    </script>
+</body>
+</html>

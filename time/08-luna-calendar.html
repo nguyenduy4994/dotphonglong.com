@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Âm Lịch</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+
+        .calendar-app-container {
+            max-width: 550px; /* Increased max-width for better spacing */
+            width: 100%;
+            padding: 1.5rem; /* Adjusted padding */
+            border-radius: 0.75rem;
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1); /* Softer shadow */
+            background-color: var(--bs-tertiary-bg); /* Use Bootstrap's tertiary background */
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        .app-title {
+            font-weight: 700;
+            color: var(--bs-primary); /* Use primary color for title */
+        }
+
+        .date-display {
+            margin-bottom: 0.5rem;
+            padding: 0.75rem; /* Added padding for date sections */
+            border-radius: 0.5rem; /* Rounded corners for date sections */
+            background-color: var(--bs-body-bg); /* Slightly different background for emphasis */
+        }
+        
+        .solar-date-line {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .lunar-date-main {
+            font-size: 1.3rem; /* Adjusted size */
+            font-weight: 700;
+            color: var(--bs-emphasis-color); /* Use emphasis color */
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+        .lunar-date-details, .hoang-dao-title, .hoang-dao-list {
+            font-size: 0.95rem; /* Adjusted size */
+        }
+
+        .hoang-dao-title {
+            font-weight: 600;
+            margin-top: 0.75rem;
+        }
+        .hoang-dao-list {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping for smaller screens */
+            gap: 0.5rem; /* Space between items */
+            justify-content: center; /* Center items */
+            font-size: 0.9rem;
+        }
+        .hoang-dao-item {
+            padding: 0.25rem 0.5rem;
+            background-color: var(--bs-success-bg-subtle); /* Subtle background for auspicious hours */
+            color: var(--bs-success-text-emphasis);
+            border-radius: 0.25rem;
+            border: 1px solid var(--bs-success-border-subtle);
+        }
+
+
+        .nav-buttons button {
+            margin: 0 0.3rem; /* Adjusted margin */
+            font-size: 0.9rem; /* Smaller font size for buttons */
+            padding: 0.4rem 0.8rem; /* Adjusted padding */
+        }
+
+        .theme-toggle-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1030; /* Ensure it's above other content */
+        }
+        
+        .footer-text {
+            font-size: 0.85rem;
+        }
+
+        /* Ensure consistent button styles for light/dark mode */
+        .btn-outline-primary:hover {
+             color: var(--bs-white); /* Or appropriate contrast color */
+        }
+        .btn-outline-secondary:hover {
+             color: var(--bs-white);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle-container">
+        <button class="btn btn-outline-secondary btn-sm" id="themeToggle" aria-label="Toggle theme">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon-stars-fill" viewBox="0 0 16 16" id="themeIconMoon">
+                <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+                <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16" id="themeIconSun" style="display:none;">
+                <path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707z"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- App Title -->
+    <h1 class="text-center mb-3 app-title">Ứng Dụng Mini Âm Lịch</h1>
+
+    <!-- Calendar Container -->
+    <div class="calendar-app-container">
+        <div id="dateDisplayContainer" class="text-center">
+            <!-- Solar Date -->
+            <div class="date-display solar-date-line" id="solarDateDisplay">Đang tải...</div>
+            <!-- Lunar Date -->
+            <div class="date-display">
+                <div class="lunar-date-main" id="lunarDateDisplay">Đang tải...</div>
+                <div class="lunar-date-details" id="lunarDayChiDisplay"></div>
+                <div class="lunar-date-details" id="lunarMonthChiDisplay"></div>
+                <div class="lunar-date-details" id="lunarYearChiDisplay"></div>
+            </div>
+            <!-- Auspicious Hours (Giờ Hoàng Đạo) -->
+            <div class="date-display" id="hoangDaoContainer">
+                <div class="hoang-dao-title">Giờ Hoàng Đạo:</div>
+                <div class="hoang-dao-list" id="hoangDaoDisplay">Đang tải...</div>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-center my-3 nav-buttons">
+            <button id="prevDayBtn" class="btn btn-outline-primary">Ngày Trước</button>
+            <button id="todayBtn" class="btn btn-primary">Hôm Nay</button> <!-- Changed to primary for emphasis -->
+            <button id="nextDayBtn" class="btn btn-outline-primary">Ngày Sau</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-auto py-3">
+        <p class="text-muted footer-text">DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <!-- Lunar Calendar Logic and DOM Manipulation -->
+    <script>
+        // --- Constants ---
+        const CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
+        const CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+        const DAYS_OF_WEEK_VI = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+        
+        const HOANG_DAO_RULES = {
+            "Dần": ["Tý", "Sửu", "Thìn", "Tỵ", "Mùi", "Tuất"], "Thân": ["Tý", "Sửu", "Thìn", "Tỵ", "Mùi", "Tuất"],
+            "Mão": ["Dần", "Thìn", "Tỵ", "Thân", "Dậu", "Hợi"], "Dậu": ["Dần", "Thìn", "Tỵ", "Thân", "Dậu", "Hợi"],
+            "Thìn": ["Dần", "Mão", "Ngọ", "Mùi", "Dậu", "Tuất"], "Tuất": ["Dần", "Mão", "Ngọ", "Mùi", "Dậu", "Tuất"],
+            "Tỵ": ["Sửu", "Mão", "Ngọ", "Thân", "Tuất", "Hợi"], "Hợi": ["Sửu", "Mão", "Ngọ", "Thân", "Tuất", "Hợi"],
+            "Tý": ["Tý", "Sửu", "Mão", "Ngọ", "Mùi", "Dậu"], "Ngọ": ["Tý", "Sửu", "Mão", "Ngọ", "Mùi", "Dậu"],
+            "Sửu": ["Dần", "Mão", "Tỵ", "Thân", "Tuất", "Hợi"], "Mùi": ["Dần", "Mão", "Tỵ", "Thân", "Tuất", "Hợi"],
+        };
+
+        const GIO_CHI_DETAILS = {
+            "Tý": "23h-1h", "Sửu": "1h-3h", "Dần": "3h-5h", "Mão": "5h-7h",
+            "Thìn": "7h-9h", "Tỵ": "9h-11h", "Ngọ": "11h-13h", "Mùi": "13h-15h",
+            "Thân": "15h-17h", "Dậu": "17h-19h", "Tuất": "19h-21h", "Hợi": "21h-23h"
+        };
+
+        // --- State ---
+        let currentDisplayDate = new Date(); // Initialize with today's date
+
+        // --- DOM Elements ---
+        const solarDateDisplay = document.getElementById('solarDateDisplay');
+        const lunarDateDisplay = document.getElementById('lunarDateDisplay');
+        const lunarDayChiDisplay = document.getElementById('lunarDayChiDisplay');
+        const lunarMonthChiDisplay = document.getElementById('lunarMonthChiDisplay'); // Added
+        const lunarYearChiDisplay = document.getElementById('lunarYearChiDisplay');
+        const hoangDaoDisplay = document.getElementById('hoangDaoDisplay');
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const themeIconMoon = document.getElementById('themeIconMoon');
+        const themeIconSun = document.getElementById('themeIconSun');
+
+        // --- Lunar Conversion Functions (Adapted from public domain algorithms) ---
+        // Function to convert Solar date to Julian Day Number
+        function getJulianDay(dd, mm, yy) {
+            const a = Math.floor((14 - mm) / 12);
+            const y = yy + 4800 - a;
+            const m = mm + 12 * a - 3;
+            return dd + Math.floor((153 * m + 2) / 5) + 365 * y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400) - 32045;
+        }
+
+        // Core Solar to Lunar conversion logic
+        // This is a simplified version for demonstration. A full, accurate library is complex.
+        // For this example, we'll use a structure based on Hồ Ngọc Đức's algorithm principles.
+        // Timezone for Vietnam
+        const VN_TIMEZONE = 7;
+
+        function getNewMoonDay(k, timeZone) {
+            const T = k / 1236.85;
+            const T2 = T * T;
+            const T3 = T2 * T;
+            const T4 = T3 * T;
+            // Formula for mean new moon time (Jean Meeus, Astronomical Algorithms, 2nd Ed., p. 349)
+            let jd = 2451550.09766 + 29.530588861 * k + 0.00015437 * T2 - 0.000000150 * T3 + 0.00000000073 * T4;
+
+            // Perturbations (simplified from Meeus)
+            const E = 1 - 0.002516 * T - 0.0000074 * T2; // Eccentricity of Earth's orbit
+            // Mean anomaly of the Sun
+            const M_sun = (359.2242 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3) * Math.PI / 180;
+            // Mean anomaly of the Moon
+            const M_moon = (306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3) * Math.PI / 180;
+            // Moon's argument of latitude
+            const F = (21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3) * Math.PI / 180;
+
+            let term = 
+                -0.4068 * Math.sin(M_moon) +
+                0.1721 * E * Math.sin(M_sun) +
+                0.0161 * Math.sin(2 * M_moon) +
+                -0.0097 * Math.sin(2 * F) +
+                0.0073 * E * Math.sin(M_moon - M_sun) +
+                -0.0051 * E * Math.sin(M_moon + M_sun) +
+                -0.0023 * Math.sin(M_moon - 2 * F) +
+                0.0021 * E * Math.sin(2 * M_sun);
+
+            jd += term;
+            return jd - timeZone / 24.0; // Adjust for timezone
+        }
+        
+        function getSunLongitude(jd, timeZone) { // For Solar terms, not strictly needed for basic conversion here
+            const jdn = jd + timeZone / 24.0;
+            const n = jdn - 2451545.0;
+            let L = 280.460 + 0.9856474 * n;
+            let g = (357.528 + 0.9856003 * n) * Math.PI / 180;
+            L = L + 1.915 * Math.sin(g) + 0.020 * Math.sin(2 * g);
+            if (L < 0) L += 360;
+            L = L % 360;
+            return L;
+        }
+
+
+        function getLunarMonth11(yy, timeZone) { // New moon of 11th lunar month
+            const day = Date.UTC(yy, 0, 1) / 86400000; // Days since Jan 1, 1970 UTC
+            const k = Math.floor((day - 2451550.09766) / 29.530588861 - 2.5); // Approximate k for year yy
+            
+            let off = getSunLongitude(getNewMoonDay(k, timeZone), timeZone) - (11 - 1) * 30 - 270;
+            if (off < 0) off += 360;
+            off = Math.floor(off / 30);
+
+            return getNewMoonDay(k - off, timeZone);
+        }
+
+        function getLeapMonthOffset(m11, timeZone) {
+            let k = Math.floor((m11 - 2451550.09766) / 29.530588861 + 0.5);
+            let lastMonth = 12;
+            for (let i = 1; i <= 14; i++) {
+                const nm = getNewMoonDay(k + i, timeZone);
+                const sl = getSunLongitude(nm, timeZone);
+                const month = Math.floor(sl / 30) + 1; // Solar term index, approx lunar month
+                if (month === lastMonth) return i -1;
+                lastMonth = month;
+            }
+            return 0;
+        }
+
+        function convertSolarToLunar(dd, mm, yy, timeZone) {
+            const jd = getJulianDay(dd, mm, yy) - timeZone / 24.0;
+            let m11 = getLunarMonth11(yy, timeZone);
+            let k = Math.floor((jd - m11) / 29.530588861 + 0.5);
+
+            if (k < 0) { // Date is before this year's 11th month, check previous year
+                m11 = getLunarMonth11(yy - 1, timeZone);
+                k = Math.floor((jd - m11) / 29.530588861 + 0.5);
+            }
+            
+            const newMoon = getNewMoonDay(Math.floor((m11 - 2451550.09766) / 29.530588861 + 0.5) + k, timeZone);
+            const lunarDay = Math.floor(jd - newMoon) + 1;
+            const leapOffset = getLeapMonthOffset(m11, timeZone);
+            
+            let lunarMonth = (k + 10) % 12 + 1;
+            let lunarYear = yy - Math.floor((13-(lunarMonth - (leapOffset > 0 && k >= leapOffset ? 1:0)))/12); // Adjust year based on month
+            if (lunarMonth > 12) lunarMonth -=12;
+
+
+            let isLeap = false;
+            if (leapOffset > 0) {
+                if (k === leapOffset) {
+                    isLeap = true;
+                    lunarMonth = (k + 10) % 12; // The month *before* the one counted twice
+                    if (lunarMonth === 0) lunarMonth = 12; // handle case of 12th month leap
+                } else if (k > leapOffset) {
+                    lunarMonth = (k + 10 -1) % 12 + 1; // Decrement month if after leap
+                }
+            }
+             if (lunarMonth === 0) lunarMonth = 12; // Safety for modulo result
+
+            return {
+                day: lunarDay,
+                month: lunarMonth,
+                year: lunarYear,
+                isLeap: isLeap,
+                jd: getJulianDay(dd, mm, yy) // Return the original JD for CanChiDay
+            };
+        }
+
+        // --- Can Chi Calculation ---
+        function getCanChiName(val, canArr, chiArr, canOffset, chiOffset) {
+            return `${canArr[(val + canOffset) % 10]} ${chiArr[(val + chiOffset) % 12]}`;
+        }
+
+        function getCanChiYear(lunarYear) {
+            return getCanChiName(lunarYear - 4, CAN, CHI, 0, 0); // Adjust for Giap Ty at 4 AD (offset)
+        }
+
+        function getCanChiDay(jd) { // Julian Day Number
+            const dayCan = CAN[(jd + 9) % 10]; // (jd - 1 + 10) % 10 = (jd + 9) % 10, Giap = 0
+            const dayChi = CHI[(jd + 1) % 12]; // (jd - 1 + 2) % 12 = (jd + 1) % 12, Ty = 0
+            return `${dayCan} ${dayChi}`;
+        }
+        
+        // Can Chi for month is complex; simplified version:
+        function getCanChiMonth(lunarMonth, lunarYear, isLeap) {
+            // First Can of year (e.g., Giáp year is 0)
+            const yearCanIndex = (lunarYear - 4) % 10;
+            // Can of the first month (Tháng Giêng - Dần)
+            // Rule: (CanNăm * 2 + 1) % 10, then add 1 for each subsequent month. Giáp (0) -> Bính (2)
+            let firstMonthCanIndex = (yearCanIndex * 2 + 2) % 10; // Adjusted: Bính is index 2. (0*2+2)%10 = 2
+            if (firstMonthCanIndex < 0) firstMonthCanIndex += 10;
+
+            let monthCanIndex = (firstMonthCanIndex + lunarMonth -1) % 10;
+            if (monthCanIndex < 0) monthCanIndex += 10;
+            
+            // Chi of month starts with Dần (index 2) for tháng 1
+            let monthChiIndex = (lunarMonth - 1 + 2) % 12;
+             if (monthChiIndex < 0) monthChiIndex += 12;
+
+
+            return `${CAN[monthCanIndex]} ${CHI[monthChiIndex]}`;
+        }
+
+
+        // --- Display Update Function ---
+        function updateDisplay() {
+            const day = currentDisplayDate.getDate();
+            const month = currentDisplayDate.getMonth() + 1; // JS months are 0-indexed
+            const year = currentDisplayDate.getFullYear();
+            const dayOfWeek = DAYS_OF_WEEK_VI[currentDisplayDate.getDay()];
+
+            // Solar Date
+            solarDateDisplay.textContent = `Hôm nay: ${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year} - ${dayOfWeek}`;
+
+            // Lunar Date
+            const lunarData = convertSolarToLunar(day, month, year, VN_TIMEZONE);
+            
+            const lunarDayString = `Ngày ${lunarData.day}`;
+            const lunarMonthString = `Tháng ${lunarData.month}${lunarData.isLeap ? " (Nhuận)" : ""}`;
+            const lunarYearString = `Năm ${lunarData.year}`;
+
+            lunarDateDisplay.textContent = `${lunarDayString} ${lunarMonthString} ${lunarYearString}`;
+            
+            // Can Chi
+            const dayCanChi = getCanChiDay(lunarData.jd);
+            lunarDayChiDisplay.textContent = `(Ngày ${dayCanChi})`;
+            
+            const monthCanChi = getCanChiMonth(lunarData.month, lunarData.year, lunarData.isLeap);
+            lunarMonthChiDisplay.textContent = `(Tháng ${monthCanChi})`;
+
+            const yearCanChi = getCanChiYear(lunarData.year);
+            lunarYearChiDisplay.textContent = `(Năm ${yearCanChi})`;
+
+
+            // Giờ Hoàng Đạo
+            const chiOfDay = dayCanChi.split(" ")[1]; // Get the Chi part of the day (e.g., "Tý")
+            const hoangDaoChis = HOANG_DAO_RULES[chiOfDay] || [];
+            
+            hoangDaoDisplay.innerHTML = ''; // Clear previous hours
+            if (hoangDaoChis.length > 0) {
+                hoangDaoChis.forEach(chi => {
+                    const el = document.createElement('span');
+                    el.classList.add('hoang-dao-item');
+                    el.textContent = `${chi} (${GIO_CHI_DETAILS[chi]})`;
+                    hoangDaoDisplay.appendChild(el);
+                });
+            } else {
+                hoangDaoDisplay.textContent = "Không có thông tin giờ hoàng đạo cho ngày này.";
+            }
+        }
+
+        // --- Theme Toggle ---
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            if (theme === 'dark') {
+                themeIconMoon.style.display = 'none';
+                themeIconSun.style.display = 'inline-block';
+            } else {
+                themeIconMoon.style.display = 'inline-block';
+                themeIconSun.style.display = 'none';
+            }
+            localStorage.setItem('miniCalendarTheme', theme);
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        });
+        
+        // Load saved theme or default to system preference
+        const savedTheme = localStorage.getItem('miniCalendarTheme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme) {
+            applyTheme(savedTheme);
+        } else {
+            applyTheme(prefersDark ? 'dark' : 'light');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('miniCalendarTheme')) { // Only if no explicit choice made
+                 applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+
+
+        // --- Event Listeners for Navigation ---
+        document.getElementById('prevDayBtn').addEventListener('click', () => {
+            currentDisplayDate.setDate(currentDisplayDate.getDate() - 1);
+            updateDisplay();
+        });
+
+        document.getElementById('todayBtn').addEventListener('click', () => {
+            currentDisplayDate = new Date(); // Reset to current actual date
+            updateDisplay();
+        });
+
+        document.getElementById('nextDayBtn').addEventListener('click', () => {
+            currentDisplayDate.setDate(currentDisplayDate.getDate() + 1);
+            updateDisplay();
+        });
+
+        // --- Initial Load ---
+        updateDisplay();
+    </script>
+</body>
+</html>

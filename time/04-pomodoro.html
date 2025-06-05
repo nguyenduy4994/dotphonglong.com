@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure full viewport height */
+            margin: 0;
+            color: #343a40; /* Dark text color */
+        }
+        .pomodoro-container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* Softer shadow */
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 480px; /* Max width for better control on larger screens */
+            text-align: center;
+            position: relative; /* For the mini app footer */
+        }
+        .timer-display {
+            font-size: 5rem; /* Larger font for time */
+            font-weight: 700;
+            color: #dc3545; /* Red color for timer */
+            margin-bottom: 1.5rem;
+            padding: 1rem 0;
+            border: 2px solid #e9ecef; /* Light border around timer */
+            border-radius: 1rem;
+        }
+        .status-message {
+            font-size: 1.5rem; /* Larger font for status */
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #28a745; /* Green for status */
+        }
+        .btn-custom {
+            font-size: 1.2rem;
+            padding: 0.8rem 2rem;
+            border-radius: 0.75rem; /* Rounded buttons */
+            margin: 0.5rem;
+            min-width: 150px; /* Ensure buttons have a consistent minimum width */
+            transition: all 0.2s ease-in-out;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px); /* Slight lift on hover */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .btn-start-pause {
+            background-color: #007bff; /* Primary blue */
+            border-color: #007bff;
+            color: #fff;
+        }
+        .btn-start-pause:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .btn-reset {
+            background-color: #6c757d; /* Secondary gray */
+            border-color: #6c757d;
+            color: #fff;
+        }
+        .btn-reset:hover {
+            background-color: #5a6268;
+            border-color: #5a6268;
+        }
+        .pomodoro-count {
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            color: #6c757d;
+        }
+        .footer-text {
+            font-size: 0.9rem;
+            color: #adb5bd; /* Lighter gray for footer */
+            margin-top: 2.5rem; /* Add some space above the footer */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .pomodoro-container {
+                padding: 1.5rem;
+            }
+            .timer-display {
+                font-size: 4rem;
+            }
+            .status-message {
+                font-size: 1.2rem;
+            }
+            .btn-custom {
+                font-size: 1rem;
+                padding: 0.6rem 1.5rem;
+                min-width: unset; /* Remove min-width on small screens */
+                width: 100%; /* Make buttons full width */
+                margin: 0.5rem 0; /* Adjust margin for stacked buttons */
+            }
+            .btn-group-responsive {
+                flex-direction: column; /* Stack buttons vertically on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="pomodoro-container">
+        <h1 class="mb-4 text-center">Pomodoro Timer</h1>
+
+        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div class="status-message" id="statusMessage">Đang làm việc</div>
+
+        <div class="d-flex justify-content-center flex-wrap btn-group-responsive">
+            <button class="btn btn-custom btn-start-pause" id="startPauseBtn">Bắt đầu</button>
+            <button class="btn btn-custom btn-reset" id="resetBtn">Đặt lại</button>
+        </div>
+
+        <div class="pomodoro-count" id="pomodoroCount">
+            Số phiên Pomodoro đã hoàn thành: 0
+        </div>
+
+        <div class="footer-text">
+            DOTPHONGLONG Mini App
+        </div>
+    </div>
+
+    <!-- Bootstrap JS (Popper.js and Bootstrap JS) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Lấy các phần tử DOM
+        const timerDisplay = document.getElementById('timerDisplay');
+        const statusMessage = document.getElementById('statusMessage');
+        const startPauseBtn = document.getElementById('startPauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const pomodoroCountDisplay = document.getElementById('pomodoroCount');
+
+        // Âm thanh báo thức
+        const alarmSound = new Audio('https://www.soundjay.com/buttons/beep-07a.mp3'); // Nguồn âm thanh đơn giản
+
+        // Biến trạng thái
+        const WORK_DURATION = 25 * 60; // 25 phút làm việc
+        const BREAK_DURATION = 5 * 60;  // 5 phút nghỉ
+        let currentTime = WORK_DURATION;
+        let isWorking = true; // true = Đang làm việc, false = Đang nghỉ
+        let isRunning = false;
+        let intervalId = null;
+        let pomodoroCount = 0;
+
+        /**
+         * Helper function to save state to local storage.
+         * Hàm hỗ trợ để lưu trạng thái vào bộ nhớ cục bộ.
+         */
+        function saveState() {
+            localStorage.setItem('pomodoroCurrentTime', currentTime);
+            localStorage.setItem('pomodoroIsWorking', isWorking);
+            localStorage.setItem('pomodoroCount', pomodoroCount);
+        }
+
+        /**
+         * Cập nhật hiển thị thời gian trên giao diện.
+         * Updates the time display on the interface.
+         * @param {number} seconds - Số giây còn lại.
+         */
+        function updateDisplay(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            timerDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        /**
+         * Chuyển đổi giữa chế độ làm việc và nghỉ.
+         * Switches between work and break modes.
+         */
+        function switchMode() {
+            // Phát âm thanh báo thức khi chuyển đổi chế độ
+            alarmSound.play();
+
+            isWorking = !isWorking; // Đảo ngược trạng thái
+            if (isWorking) {
+                currentTime = WORK_DURATION;
+                statusMessage.textContent = 'Đang làm việc';
+                pomodoroCount++; // Tăng số phiên Pomodoro đã hoàn thành
+                pomodoroCountDisplay.textContent = `Số phiên Pomodoro đã hoàn thành: ${pomodoroCount}`;
+                statusMessage.style.color = '#28a745'; // Màu xanh lá cho làm việc
+            } else {
+                currentTime = BREAK_DURATION;
+                statusMessage.textContent = 'Đang nghỉ';
+                statusMessage.style.color = '#ffc107'; // Màu vàng cho nghỉ
+            }
+            updateDisplay(currentTime); // Cập nhật hiển thị ngay lập tức
+            saveState(); // Lưu trạng thái sau khi chuyển đổi chế độ
+        }
+
+        /**
+         * Hàm đếm ngược được gọi mỗi giây.
+         * Countdown function called every second.
+         */
+        function countdown() {
+            if (currentTime <= 0) {
+                clearInterval(intervalId); // Dừng đếm ngược
+                switchMode(); // Chuyển đổi chế độ
+                startTimer(); // Bắt đầu lại đếm ngược cho chế độ mới
+            } else {
+                currentTime--;
+                updateDisplay(currentTime);
+                // Optionally save more frequently if the user closes the tab mid-session, e.g., every 5 seconds.
+                // localStorage.setItem('pomodoroCurrentTime', currentTime); // For continuous saving
+            }
+        }
+
+        /**
+         * Bắt đầu Bộ đếm thời gian.
+         * Starts the timer.
+         */
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                startPauseBtn.textContent = 'Tạm dừng';
+                startPauseBtn.classList.remove('btn-start-pause');
+                startPauseBtn.classList.add('btn-warning'); // Nút tạm dừng màu vàng
+                intervalId = setInterval(countdown, 1000); // Gọi countdown mỗi giây
+            } else {
+                pauseTimer();
+            }
+        }
+
+        /**
+         * Tạm dừng Bộ đếm thời gian.
+         * Pauses the timer.
+         */
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(intervalId);
+            startPauseBtn.textContent = 'Tiếp tục';
+            startPauseBtn.classList.remove('btn-warning');
+            startPauseBtn.classList.add('btn-start-pause'); // Nút tiếp tục màu xanh
+            saveState(); // Lưu trạng thái khi tạm dừng
+        }
+
+        /**
+         * Đặt lại Bộ đếm thời gian về trạng thái ban đầu.
+         * Resets the timer to its initial state.
+         */
+        function resetTimer() {
+            pauseTimer(); // Dừng bộ đếm nếu đang chạy
+            isWorking = true;
+            currentTime = WORK_DURATION;
+            pomodoroCount = 0; // Đặt lại số phiên
+            updateDisplay(currentTime);
+            statusMessage.textContent = 'Đang làm việc';
+            statusMessage.style.color = '#28a745';
+            startPauseBtn.textContent = 'Bắt đầu';
+            startPauseBtn.classList.remove('btn-warning');
+            startPauseBtn.classList.add('btn-start-pause');
+            pomodoroCountDisplay.textContent = `Số phiên Pomodoro đã hoàn thành: 0`;
+            saveState(); // Lưu trạng thái sau khi đặt lại
+        }
+
+        // Gắn sự kiện cho các nút
+        // Attach event listeners for buttons
+        startPauseBtn.addEventListener('click', startTimer);
+        resetBtn.addEventListener('click', resetTimer);
+
+        // Khởi tạo hiển thị khi tải trang
+        // Initialize display when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tải trạng thái từ Local Storage
+            const savedTime = localStorage.getItem('pomodoroCurrentTime');
+            const savedIsWorking = localStorage.getItem('pomodoroIsWorking');
+            const savedCount = localStorage.getItem('pomodoroCount');
+
+            if (savedTime !== null && savedIsWorking !== null && savedCount !== null) {
+                currentTime = parseInt(savedTime);
+                isWorking = (savedIsWorking === 'true'); // Convert string to boolean
+                pomodoroCount = parseInt(savedCount);
+
+                // Cập nhật hiển thị dựa trên trạng thái đã lưu
+                updateDisplay(currentTime);
+                statusMessage.textContent = isWorking ? 'Đang làm việc' : 'Đang nghỉ';
+                statusMessage.style.color = isWorking ? '#28a745' : '#ffc107';
+                pomodoroCountDisplay.textContent = `Số phiên Pomodoro đã hoàn thành: ${pomodoroCount}`;
+            } else {
+                // Nếu không có dữ liệu lưu trữ, sử dụng giá trị mặc định
+                updateDisplay(WORK_DURATION);
+                statusMessage.textContent = 'Đang làm việc';
+                statusMessage.style.color = '#28a745';
+                pomodoroCountDisplay.textContent = `Số phiên Pomodoro đã hoàn thành: 0`;
+            }
+        });
+    </script>
+</body>
+</html>

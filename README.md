@@ -2,16 +2,16 @@
 
 ## 📅 Thời gian & Lịch
 
-1.  ⏰ [Đồng hồ kỹ thuật số](https://dotphonglong.com/time/01-digital-clock.html)
-2.  🕰 [Đồng hồ analog](https://dotphonglong.com/time/02-analog-clock.html)
-3.  ⏳ Đếm ngược đến ngày đặc biệt (Countdown)
-4.  🍅 Bộ đếm thời gian Pomodoro
-5.  🌐 Đồng hồ thế giới
-6.  ⌚ Đồng hồ bấm giờ
-7.  📆 Lịch duyệt tháng
-8.  🗓 Lịch âm (tĩnh)
-9.  👶 Máy tính tuổi
-10. 🧾 Tạo mã QR theo ngày giờ
+1.  ⏰ [Đồng hồ kỹ thuật số](https://dotphonglong.com/time/01-digital-clock.html) ✅
+2.  🕰 [Đồng hồ analog](https://dotphonglong.com/time/02-analog-clock.html) ✅
+3.  ⏳ [Đếm ngược đến ngày đặc biệt (Countdown)](https://dotphonglong.com/time/03-countdown.html) ✅
+4.  🍅 [Bộ đếm thời gian Pomodoro](https://dotphonglong.com/time/04-pomodoro.html) ✅
+5.  🌐 [Đồng hồ thế giới](https://dotphonglong.com/time/05-world-clock.html) ✅
+6.  ⌚ [Đồng hồ bấm giờ](https://dotphonglong.com/time/06-stopwatch.html)
+7.  📆 [Lịch duyệt tháng](https://dotphonglong.com/time/07-calendar.html)
+8.  🗓 [Lịch âm (tĩnh)](https://dotphonglong.com/time/08-luna-calendar.html)
+9.  👶 [Máy tính tuổi](https://dotphonglong.com/time/09-age-calculator.html)
+10. 🧾 [Tạo mã QR theo ngày giờ](https://dotphonglong.com/time/10-time-qr-code-generator.html)
 
 ## ✍️ Ghi chú & Viết
 

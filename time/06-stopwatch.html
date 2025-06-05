@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đồng hồ bấm giờ mini</title>
+    <!-- Link Bootstrap 5.3.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao viewport */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--bs-body-bg); /* Sử dụng biến Bootstrap cho màu nền */
+            color: var(--bs-body-color); /* Sử dụng biến Bootstrap cho màu chữ */
+            transition: background-color 0.3s, color 0.3s; /* Hiệu ứng chuyển đổi màu nền/chữ */
+        }
+        .app-container {
+            padding: 2.5rem;
+            border-radius: 1.5rem; /* Bo tròn góc */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: var(--bs-card-bg); /* Sử dụng biến Bootstrap cho màu nền card */
+            color: var(--bs-body-color);
+            border: none;
+        }
+        .display-time {
+            font-size: 4.5rem; /* Kích thước chữ lớn cho thời gian */
+            font-weight: 700; /* Đậm */
+            letter-spacing: 0.1rem;
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+            border-radius: 1rem;
+            background-color: var(--bs-tertiary-bg); /* Nền nhẹ nhàng cho hiển thị thời gian */
+            color: var(--bs-emphasis-color); /* Màu chữ nổi bật */
+        }
+        .button-group-custom .btn {
+            border-radius: 0.75rem; /* Bo tròn góc nút */
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            margin: 0.5rem;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .button-group-custom .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .form-check-label {
+            margin-left: 0.5rem;
+        }
+        .footer-text {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: var(--bs-secondary-color);
+        }
+
+        /* Thêm hiệu ứng cho toggle switch */
+        .form-switch .form-check-input {
+            width: 3.5em; /* Tăng chiều rộng */
+            height: 2em; /* Tăng chiều cao */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%236c757d'/%3e%3c/svg%3e"); /* Icon chế độ sáng */
+            background-position: left center;
+            transition: background-position .15s ease-in-out;
+        }
+
+        .form-switch .form-check-input:checked {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23212529'/%3e%3c/svg%3e"); /* Icon chế độ tối */
+            background-position: right center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .app-container {
+                padding: 1.5rem;
+            }
+            .display-time {
+                font-size: 3rem;
+            }
+            .button-group-custom .btn {
+                width: 100%; /* Nút đầy đủ chiều rộng trên màn hình nhỏ */
+                margin: 0.3rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center py-4">
+        <!-- Tên ứng dụng -->
+        <h1 class="mb-4 text-primary">Đồng hồ bấm giờ mini</h1>
+
+        <!-- Phần ứng dụng chính -->
+        <div class="app-container shadow-lg">
+            <!-- Hiển thị thời gian -->
+            <div id="timeDisplay" class="display-time text-center">00:00:00</div>
+
+            <!-- Hiển thị ngày hôm nay -->
+            <p id="todayDate" class="text-center text-muted mb-4"></p>
+
+            <!-- Các nút điều khiển -->
+            <div class="d-flex flex-wrap justify-content-center button-group-custom">
+                <button id="startButton" class="btn btn-success btn-lg">Bắt đầu</button>
+                <button id="pauseButton" class="btn btn-warning btn-lg" disabled>Tạm dừng</button>
+                <button id="resumeButton" class="btn btn-info btn-lg" disabled>Tiếp tục</button>
+                <button id="resetButton" class="btn btn-danger btn-lg" disabled>Đặt lại</button>
+            </div>
+
+            <!-- Chế độ sáng/tối -->
+            <div class="form-check form-switch d-flex justify-content-center align-items-center mt-4">
+                <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                <label class="form-check-label" for="darkModeToggle">Chế độ tối</label>
+            </div>
+        </div>
+
+        <!-- Chữ ký cuối trang -->
+        <p class="footer-text">DOTPHONGLONG Mini App</p>
+    </div>
+
+    <!-- Link Bootstrap 5.3.3 JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Lấy các phần tử DOM
+        const timeDisplay = document.getElementById('timeDisplay');
+        const todayDate = document.getElementById('todayDate');
+        const startButton = document.getElementById('startButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const resumeButton = document.getElementById('resumeButton');
+        const resetButton = document.getElementById('resetButton');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const htmlElement = document.documentElement;
+
+        // Biến trạng thái đồng hồ bấm giờ
+        let timerInterval = null; // Biến lưu trữ ID của setInterval
+        let startTime = 0;       // Thời điểm bắt đầu đếm
+        let elapsedTime = 0;     // Thời gian đã trôi qua (tính bằng milliseconds)
+        let isRunning = false;   // Trạng thái đồng hồ đang chạy hay không
+
+        /**
+         * @function formatTime
+         * @description Chuyển đổi mili giây thành định dạng HH:MM:SS
+         * @param {number} ms - Thời gian tính bằng mili giây.
+         * @returns {string} - Chuỗi thời gian định dạng HH:MM:SS.
+         */
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            // Đảm bảo định dạng hai chữ số (VD: 01, 05)
+            const pad = (num) => num.toString().padStart(2, '0');
+
+            return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        }
+
+        /**
+         * @function updateTimeDisplay
+         * @description Cập nhật hiển thị thời gian trên giao diện.
+         */
+        function updateTimeDisplay() {
+            const currentTime = Date.now();
+            elapsedTime = currentTime - startTime;
+            timeDisplay.textContent = formatTime(elapsedTime);
+        }
+
+        /**
+         * @function startTimer
+         * @description Bắt đầu đồng hồ bấm giờ.
+         */
+        function startTimer() {
+            if (isRunning) return; // Không làm gì nếu đã chạy rồi
+
+            startTime = Date.now(); // Lưu thời điểm bắt đầu
+            timerInterval = setInterval(updateTimeDisplay, 1000); // Cập nhật mỗi giây
+            isRunning = true;
+
+            // Cập nhật trạng thái nút
+            startButton.disabled = true;
+            pauseButton.disabled = false;
+            resumeButton.disabled = true; // Resume chỉ khi đã tạm dừng
+            resetButton.disabled = false;
+        }
+
+        /**
+         * @function pauseTimer
+         * @description Tạm dừng đồng hồ bấm giờ.
+         */
+        function pauseTimer() {
+            if (!isRunning) return; // Không làm gì nếu chưa chạy hoặc đã tạm dừng
+
+            clearInterval(timerInterval); // Dừng cập nhật
+            isRunning = false;
+
+            // Cập nhật trạng thái nút
+            startButton.disabled = true; // Không thể start lại từ 0 khi đã có thời gian
+            pauseButton.disabled = true;
+            resumeButton.disabled = false;
+            resetButton.disabled = false;
+        }
+
+        /**
+         * @function resumeTimer
+         * @description Tiếp tục đồng hồ bấm giờ từ thời điểm tạm dừng.
+         */
+        function resumeTimer() {
+            if (isRunning) return; // Không làm gì nếu đang chạy rồi
+
+            // Điều chỉnh startTime để tiếp tục từ elapsedTime
+            startTime = Date.now() - elapsedTime;
+            timerInterval = setInterval(updateTimeDisplay, 1000); // Bắt đầu lại cập nhật
+            isRunning = true;
+
+            // Cập nhật trạng thái nút
+            startButton.disabled = true;
+            pauseButton.disabled = false;
+            resumeButton.disabled = true;
+            resetButton.disabled = false;
+        }
+
+        /**
+         * @function resetTimer
+         * @description Đặt lại đồng hồ bấm giờ về 0.
+         */
+        function resetTimer() {
+            clearInterval(timerInterval); // Dừng cập nhật
+            startTime = 0;
+            elapsedTime = 0;
+            isRunning = false;
+            timeDisplay.textContent = formatTime(elapsedTime); // Hiển thị 00:00:00
+
+            // Cập nhật trạng thái nút
+            startButton.disabled = false;
+            pauseButton.disabled = true;
+            resumeButton.disabled = true;
+            resetButton.disabled = true;
+        }
+
+        /**
+         * @function displayTodayDate
+         * @description Hiển thị ngày hiện tại.
+         */
+        function displayTodayDate() {
+            const date = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            todayDate.textContent = `Hôm nay là: ${date.toLocaleDateString('vi-VN', options)}`;
+        }
+
+        /**
+         * @function toggleDarkMode
+         * @description Chuyển đổi chế độ sáng/tối của ứng dụng.
+         */
+        function toggleDarkMode() {
+            if (darkModeToggle.checked) {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+            }
+        }
+
+        // --- Gắn các sự kiện (Event Listeners) ---
+        startButton.addEventListener('click', startTimer);
+        pauseButton.addEventListener('click', pauseTimer);
+        resumeButton.addEventListener('click', resumeTimer);
+        resetButton.addEventListener('click', resetTimer);
+        darkModeToggle.addEventListener('change', toggleDarkMode);
+
+        // --- Khởi tạo khi tải trang ---
+        window.onload = function() {
+            displayTodayDate(); // Hiển thị ngày hiện tại khi tải trang
+            // Đặt trạng thái ban đầu của toggle dựa trên theme hiện tại
+            if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                darkModeToggle.checked = true;
+            } else {
+                darkModeToggle.checked = false;
+            }
+        };
+
+    </script>
+</body>
+</html>
