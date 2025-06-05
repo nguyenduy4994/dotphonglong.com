@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tính lương Gross sang Net</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Tính lương Gross sang Net (Bootstrap)</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -13,56 +14,35 @@
         }
         .container {
             max-width: 600px;
-            margin: 2rem auto;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
             padding: 2rem;
             background-color: white;
-            border-radius: 12px; /* Bo góc lớn hơn */
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Đổ bóng mềm mại hơn */
-        }
-        .input-group {
-            margin-bottom: 1.5rem; /* Tăng khoảng cách giữa các nhóm input */
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
         label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600; /* Chữ đậm hơn cho label */
-            color: #374151; /* Màu chữ xám đậm */
+            font-weight: 600;
+            color: #374151;
         }
-        input[type="number"], input[type="text"] {
-            width: 100%;
-            padding: 0.75rem 1rem; /* Tăng padding cho input */
-            border: 1px solid #d1d5db; /* Màu viền xám nhạt */
-            border-radius: 8px; /* Bo góc lớn hơn cho input */
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-        input[type="number"]:focus, input[type="text"]:focus {
-            border-color: #3b82f6; /* Màu viền xanh khi focus */
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* Hiệu ứng bóng mờ khi focus */
-        }
-        /* Updated button styles */
-        button {
-            width: 100%;
-            padding: 0.875rem 1.5rem;
-            background-image: linear-gradient(to right, #4f46e5, #7c3aed); /* Gradient background */
+        .btn-calculate { /* Custom button style */
+            background-image: linear-gradient(to right, #4f46e5, #7c3aed);
             color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
             border: none;
-            border-radius: 8px;
-            font-weight: 700; /* Bolder font */
-            font-size: 1.1rem; /* Slightly larger font */
-            cursor: pointer;
-            transition: all 0.3s ease; /* Smooth transition for all properties */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* More prominent shadow */
-            letter-spacing: 0.5px; /* Added letter spacing for clarity */
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 0.5px;
         }
-        button:hover {
-            background-image: linear-gradient(to right, #5e55ea, #8a4fff); /* Lighter gradient on hover */
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); /* Larger shadow on hover */
-            transform: translateY(-2px); /* Slight lift on hover */
+        .btn-calculate:hover {
+            background-image: linear-gradient(to right, #5e55ea, #8a4fff);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            transform: translateY(-2px);
+            color: white;
         }
-        button:active {
-            transform: translateY(0px); /* Button press effect */
+        .btn-calculate:active {
+            transform: translateY(0px);
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         .results-grid {
@@ -71,121 +51,84 @@
             gap: 1rem;
             margin-top: 2rem;
             padding-top: 1.5rem;
-            border-top: 1px solid #e5e7eb; /* Đường kẻ phân cách */
+            border-top: 1px solid #e5e7eb;
         }
         .result-item {
-            background-color: #f9fafb; /* Màu nền xám rất nhạt cho kết quả */
+            background-color: #f9fafb;
             padding: 1rem;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .result-item p {
-            margin: 0.25rem 0;
-            color: #4b5563; /* Màu chữ xám trung bình */
+            margin-bottom: 0.25rem;
+            color: #4b5563;
         }
         .result-item p strong {
-            color: #1f2937; /* Màu chữ xám đậm cho giá trị */
+            color: #1f2937;
         }
-        .result-item .net-salary {
-            font-size: 1.25rem; /* Cỡ chữ lớn hơn cho lương net */
+        .result-item .net-salary p {
+            font-size: 1.25rem;
             font-weight: 700;
-            color: #16a34a; /* Màu xanh lá cây cho lương net */
+            color: #16a34a;
         }
         .currency::after {
             content: " VNĐ";
         }
-        /* Custom modal for alerts */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
-            max-width: 400px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .modal-header {
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.25rem;
-            color: #333;
-        }
-        .modal-body {
-            padding: 10px 0;
-            color: #555;
-        }
-        .modal-footer button {
-            background-color: #3b82f6;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            width: auto; /* Override full width for modal button */
-            margin-top: 10px;
-        }
-        .modal-footer button:hover {
-            background-color: #2563eb;
+        .modal-title {
+             font-weight: 600;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Công cụ tính lương Gross sang Net</h1>
+        <h1 class="text-center font-weight-bold mb-4" style="font-size: 1.75rem; color: #343a40;">Công cụ tính lương Gross sang Net</h1>
 
-        <div class="input-group">
+        <div class="form-group">
             <label for="grossSalary">Tổng lương (Gross):</label>
-            <input type="number" id="grossSalary" placeholder="Nhập lương gross" class="text-right">
+            <input type="number" class="form-control text-right" id="grossSalary" placeholder="Nhập lương gross">
         </div>
 
-        <div class="input-group">
+        <div class="form-group">
             <label for="dependents">Số người phụ thuộc:</label>
-            <input type="number" id="dependents" value="0" min="0" class="text-right">
+            <input type="number" class="form-control text-right" id="dependents" value="0" min="0">
         </div>
         
-        <div class="input-group">
+        <div class="form-group">
             <label for="insuranceSalary">Lương đóng bảo hiểm (Nếu khác lương Gross, nếu không nhập sẽ lấy theo lương Gross):</label>
-            <input type="number" id="insuranceSalary" placeholder="Nhập lương đóng bảo hiểm" class="text-right">
+            <input type="number" class="form-control text-right" id="insuranceSalary" placeholder="Nhập lương đóng bảo hiểm">
         </div>
 
-        <button onclick="calculateNetSalary()">Tính lương Net</button>
+        <button class="btn btn-calculate btn-block" onclick="calculateNetSalary()">Tính lương Net</button>
 
         <div id="results" class="results-grid" style="display: none;">
             <!-- Kết quả sẽ được hiển thị ở đây -->
         </div>
     </div>
 
-    <!-- Custom Modal -->
-    <div id="customAlertModal" class="modal">
+    <!-- Bootstrap Modal for Alerts -->
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modalTitle">Thông báo</h2>
-            </div>
-            <div class="modal-body">
-                <p id="modalMessage">Đây là nội dung thông báo.</p>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closeModal()">Đóng</button>
-            </div>
+          <div class="modal-header">
+            <h5 class="modal-title" id="alertModalLabel">Thông báo</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p id="modalMessage">Đây là nội dung thông báo.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Đóng</button>
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
         // Các hằng số giảm trừ và mức lương cơ sở/tối thiểu vùng (giả định, cần cập nhật theo quy định hiện hành)
@@ -199,24 +142,11 @@
         // Mức lương tối đa đóng BHTN (20 lần lương tối thiểu vùng cao nhất)
         const MAX_SALARY_FOR_UI = 20 * MIN_REGIONAL_WAGE_REGION_I;
 
-        // Custom alert function
+        // Custom alert function using Bootstrap modal
         function showAlert(title, message) {
-            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('alertModalLabel').innerText = title;
             document.getElementById('modalMessage').innerText = message;
-            document.getElementById('customAlertModal').style.display = 'block';
-        }
-
-        // Close modal function
-        function closeModal() {
-            document.getElementById('customAlertModal').style.display = 'none';
-        }
-
-        // Close modal if user clicks outside of it
-        window.onclick = function(event) {
-            const modal = document.getElementById('customAlertModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
+            $('#alertModal').modal('show'); // JQuery to show modal
         }
 
         function formatCurrency(value) {
@@ -242,38 +172,28 @@
                 return;
             }
             
-            // Nếu lương đóng bảo hiểm không được nhập hoặc bằng 0, thì lấy bằng lương gross
             if (isNaN(insuranceBaseSalary) || insuranceBaseSalary <= 0) {
                 insuranceBaseSalary = grossSalary;
             }
 
-
-            // 1. Tính các khoản bảo hiểm
-            // Lương đóng BHXH, BHYT không quá MAX_SALARY_FOR_SI_HI
             const actualSalaryForSI_HI = Math.min(insuranceBaseSalary, MAX_SALARY_FOR_SI_HI);
-            // Lương đóng BHTN không quá MAX_SALARY_FOR_UI
             const actualSalaryForUI = Math.min(insuranceBaseSalary, MAX_SALARY_FOR_UI);
 
-            const socialInsurance = actualSalaryForSI_HI * 0.08; // 8%
-            const healthInsurance = actualSalaryForSI_HI * 0.015; // 1.5%
-            const unemploymentInsurance = actualSalaryForUI * 0.01; // 1%
+            const socialInsurance = actualSalaryForSI_HI * 0.08; 
+            const healthInsurance = actualSalaryForSI_HI * 0.015;
+            const unemploymentInsurance = actualSalaryForUI * 0.01;
             const totalInsurance = socialInsurance + healthInsurance + unemploymentInsurance;
 
-            // 2. Tính thu nhập trước thuế (Thu nhập chịu thuế - các khoản giảm trừ)
             const incomeBeforeTax = grossSalary - totalInsurance;
-
-            // 3. Tính các khoản giảm trừ
             const totalPersonalDeduction = PERSONAL_DEDUCTION;
             const totalDependentDeduction = dependents * DEPENDENT_DEDUCTION_PER_PERSON;
             const totalDeductions = totalPersonalDeduction + totalDependentDeduction;
 
-            // 4. Tính thu nhập tính thuế TNCN
             let taxableIncome = incomeBeforeTax - totalDeductions;
             if (taxableIncome < 0) {
                 taxableIncome = 0;
             }
 
-            // 5. Tính thuế TNCN theo biểu thuế lũy tiến từng phần
             let pit = 0;
             if (taxableIncome > 0) {
                 if (taxableIncome <= 5000000) {
@@ -288,16 +208,14 @@
                     pit = (5000000 * 0.05) + (5000000 * 0.10) + (8000000 * 0.15) + (14000000 * 0.20) + ((taxableIncome - 32000000) * 0.25);
                 } else if (taxableIncome <= 80000000) {
                     pit = (5000000 * 0.05) + (5000000 * 0.10) + (8000000 * 0.15) + (14000000 * 0.20) + (20000000 * 0.25) + ((taxableIncome - 52000000) * 0.30);
-                } else { // > 80,000,000
+                } else { 
                     pit = (5000000 * 0.05) + (5000000 * 0.10) + (8000000 * 0.15) + (14000000 * 0.20) + (20000000 * 0.25) + (28000000 * 0.30) + ((taxableIncome - 80000000) * 0.35);
                 }
             }
-             if (pit < 0) pit = 0; // Đảm bảo thuế không âm
+             if (pit < 0) pit = 0;
 
-            // 6. Tính lương Net
             const netSalary = grossSalary - totalInsurance - pit;
 
-            // Hiển thị kết quả
             resultsDiv.style.display = 'grid';
             resultsDiv.innerHTML = `
                 <div class="result-item">
