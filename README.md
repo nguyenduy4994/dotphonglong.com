@@ -2,7 +2,7 @@
 
 ## 📅 Thời gian & Lịch
 
-1.  ⏰ Đồng hồ kỹ thuật số [Link|https://dotphonglong.com/time/01-digital-clock.html]
+1.  ⏰ [Đồng hồ kỹ thuật số](https://dotphonglong.com/time/01-digital-clock.html)
 2.  🕰 Đồng hồ analog
 3.  ⏳ Đếm ngược đến ngày đặc biệt (Countdown)
 4.  🍅 Bộ đếm thời gian Pomodoro
