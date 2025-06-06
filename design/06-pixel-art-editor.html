@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình tạo Pixel Art</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Tùy chỉnh CSS để hoàn thiện giao diện */
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            overflow-x: hidden; /* Ngăn cuộn ngang */
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        #pixel-canvas {
+            border: 3px solid var(--bs-border-color-translucent);
+            cursor: crosshair;
+            touch-action: none; /* Tối ưu cho cảm ứng */
+        }
+
+        .tool-panel .btn {
+            font-size: 1.1rem;
+            padding: 0.75rem;
+        }
+        
+        .tool-panel .btn.active {
+            border-width: 2px;
+            box-shadow: 0 0 0 0.25rem var(--bs-primary-border-subtle);
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
+            gap: 10px;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+
+        .color-swatch {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.2s ease-in-out, border-color 0.2s;
+        }
+
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+
+        .color-swatch.active {
+            border-color: var(--bs-primary);
+            transform: scale(1.2);
+            box-shadow: 0 0 10px var(--bs-primary-border-subtle);
+        }
+        
+        .config-bar {
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Tiêu đề ứng dụng -->
+        <h1 class="display-5 fw-bold text-center my-3">🎨 Trình tạo Pixel Art</h1>
+
+        <div class="container-fluid">
+            <div class="row g-4 justify-content-center">
+
+                <!-- Bảng công cụ bên trái -->
+                <div class="col-lg-2 col-md-3 col-sm-12 text-center">
+                    <div class="p-3 rounded-3 tool-panel">
+                        <h5 class="mb-3">Công cụ</h5>
+                        <button id="pen-tool" class="btn btn-outline-primary w-100 mb-2 active" title="Bút vẽ">
+                            <i class="bi bi-pencil-fill"></i> Bút vẽ
+                        </button>
+                        <button id="eraser-tool" class="btn btn-outline-secondary w-100" title="Cục tẩy">
+                            <i class="bi bi-eraser-fill"></i> Tẩy
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Vùng vẽ ở giữa -->
+                <div class="col-lg-6 col-md-9 col-sm-12 text-center">
+                    <!-- Thanh cấu hình -->
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-3 config-bar">
+                        <div class="input-group" style="width: auto;">
+                            <label class="input-group-text" for="grid-size-select">Kích thước:</label>
+                            <select class="form-select" id="grid-size-select">
+                                <option value="16">16x16</option>
+                                <option value="32" selected>32x32</option>
+                                <option value="48">48x48</option>
+                                <option value="64">64x64</option>
+                            </select>
+                        </div>
+                        <button id="clear-canvas" class="btn btn-danger" title="Xóa hết"><i class="bi bi-trash-fill"></i></button>
+                        <button id="download-btn" class="btn btn-success" title="Tải xuống"><i class="bi bi-download"></i></button>
+                        <button id="theme-toggle" class="btn btn-outline-secondary" title="Chuyển chế độ Sáng/Tối">
+                            <i class="bi bi-sun-fill"></i>
+                        </button>
+                    </div>
+
+                    <!-- Canvas -->
+                    <canvas id="pixel-canvas" width="512" height="512"></canvas>
+                </div>
+
+                <!-- Bảng màu bên phải -->
+                <div class="col-lg-2 col-md-12 col-sm-12 text-center">
+                     <div class="p-3 rounded-3">
+                         <h5 class="mb-3">Bảng màu</h5>
+                         <div id="color-palette" class="color-palette">
+                             <!-- Màu sắc sẽ được tạo bằng JavaScript -->
+                         </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-auto py-3 text-center text-muted">
+            <p>DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Chờ DOM tải xong rồi mới thực thi mã
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Lấy các phần tử DOM ---
+            const canvas = document.getElementById('pixel-canvas');
+            const ctx = canvas.getContext('2d');
+            const gridSizeSelect = document.getElementById('grid-size-select');
+            const colorPaletteContainer = document.getElementById('color-palette');
+            const penToolBtn = document.getElementById('pen-tool');
+            const eraserToolBtn = document.getElementById('eraser-tool');
+            const clearBtn = document.getElementById('clear-canvas');
+            const downloadBtn = document.getElementById('download-btn');
+            const themeToggleBtn = document.getElementById('theme-toggle');
+
+            // --- Cấu hình và Trạng thái ---
+            let gridSize = parseInt(gridSizeSelect.value, 10);
+            let pixelSize = canvas.width / gridSize;
+            let currentColor = '#000000'; // Màu mặc định là đen
+            let currentTool = 'pen'; // 'pen' hoặc 'eraser'
+            let isDrawing = false;
+            const eraserColor = 'rgba(0,0,0,0)'; // Tẩy sẽ vẽ màu trong suốt
+
+            // Danh sách các màu sắc cho bảng màu
+            const colors = [
+                '#000000', '#FFFFFF', '#FF0000', '#FF7F00', '#FFFF00', '#00FF00',
+                '#0000FF', '#4B0082', '#9400D3', '#FF1493', '#00FFFF', '#7FFF00',
+                '#D2691E', '#8B4513', '#A9A9A9', '#2F4F4F'
+            ];
+
+            // --- Hàm Khởi tạo & Thiết lập ---
+
+            /**
+             * Khởi tạo bảng màu dựa trên mảng `colors`.
+             */
+            function initializeColorPalette() {
+                colorPaletteContainer.innerHTML = ''; // Xóa bảng màu cũ
+                colors.forEach(color => {
+                    const swatch = document.createElement('div');
+                    swatch.className = 'color-swatch';
+                    swatch.style.backgroundColor = color;
+                    swatch.dataset.color = color;
+                    if (color === currentColor) {
+                        swatch.classList.add('active');
+                    }
+                    colorPaletteContainer.appendChild(swatch);
+                });
+            }
+
+            /**
+             * Thiết lập lại vùng vẽ khi kích thước thay đổi.
+             */
+            function setupGrid() {
+                gridSize = parseInt(gridSizeSelect.value, 10);
+                pixelSize = canvas.width / gridSize;
+                
+                // Tắt khử răng cưa để giữ các pixel sắc nét
+                ctx.imageSmoothingEnabled = false;
+                
+                clearCanvas(false); // Xóa canvas mà không cần hỏi
+            }
+
+            /**
+             * Xóa toàn bộ nội dung trên canvas.
+             * @param {boolean} confirm - Yêu cầu xác nhận từ người dùng hay không.
+             */
+            function clearCanvas(confirm = true) {
+                const doClear = confirm ? window.confirm('Bạn có chắc muốn xóa toàn bộ tác phẩm?') : true;
+                if (doClear) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            // --- Hàm Xử lý sự kiện ---
+
+            /**
+             * Lấy tọa độ chuột tương đối so với canvas.
+             * @param {MouseEvent | TouchEvent} e - Sự kiện chuột hoặc chạm.
+             * @returns {{x: number, y: number}} Tọa độ x, y.
+             */
+            function getMousePos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            /**
+             * Bắt đầu quá trình vẽ.
+             * @param {MouseEvent | TouchEvent} e - Sự kiện mousedown hoặc touchstart.
+             */
+            function startDrawing(e) {
+                isDrawing = true;
+                draw(e); // Vẽ ngay tại điểm nhấn chuột/chạm
+                e.preventDefault();
+            }
+
+            /**
+             * Dừng quá trình vẽ.
+             */
+            function stopDrawing() {
+                isDrawing = false;
+            }
+
+            /**
+             * Hàm vẽ chính, được gọi khi di chuyển chuột/ngón tay.
+             * @param {MouseEvent | TouchEvent} e - Sự kiện mousemove hoặc touchmove.
+             */
+            function draw(e) {
+                if (!isDrawing) return;
+
+                const { x, y } = getMousePos(e);
+                const col = Math.floor(x / pixelSize);
+                const row = Math.floor(y / pixelSize);
+                
+                // Đảm bảo không vẽ ra ngoài canvas
+                if (col < 0 || col >= gridSize || row < 0 || row >= gridSize) return;
+
+                ctx.fillStyle = (currentTool === 'pen') ? currentColor : eraserColor;
+                
+                // Khi tẩy, ta cần xóa vùng đó trước khi vẽ màu trong suốt
+                if(currentTool === 'eraser'){
+                    ctx.clearRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
+                } else {
+                    ctx.fillRect(col * pixelSize, row * pixelSize, pixelSize, pixelSize);
+                }
+                
+                e.preventDefault();
+            }
+
+            /**
+             * Tải canvas xuống dưới dạng file PNG.
+             */
+            function downloadCanvas() {
+                const link = document.createElement('a');
+                link.download = `pixel-art-${Date.now()}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }
+
+            /**
+             * Chọn một công cụ (pen hoặc eraser).
+             * @param {string} tool - Tên công cụ.
+             */
+            function selectTool(tool) {
+                currentTool = tool;
+                if (tool === 'pen') {
+                    penToolBtn.classList.add('active');
+                    penToolBtn.classList.replace('btn-outline-secondary', 'btn-outline-primary');
+                    eraserToolBtn.classList.remove('active');
+                    eraserToolBtn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
+                } else {
+                    eraserToolBtn.classList.add('active');
+                    eraserToolBtn.classList.replace('btn-outline-secondary', 'btn-outline-primary');
+                    penToolBtn.classList.remove('active');
+                    penToolBtn.classList.replace('btn-outline-primary', 'btn-outline-secondary');
+                }
+            }
+
+            /**
+             * Chuyển đổi giữa chế độ sáng và tối.
+             */
+            function toggleTheme() {
+                const htmlElement = document.documentElement;
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const icon = themeToggleBtn.querySelector('i');
+
+                if (currentTheme === 'dark') {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    icon.classList.remove('bi-moon-fill');
+                    icon.classList.add('bi-sun-fill');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    icon.classList.remove('bi-sun-fill');
+                    icon.classList.add('bi-moon-fill');
+                }
+            }
+
+
+            // --- Gán các sự kiện ---
+            gridSizeSelect.addEventListener('change', setupGrid);
+            clearBtn.addEventListener('click', () => clearCanvas(true));
+            downloadBtn.addEventListener('click', downloadCanvas);
+            penToolBtn.addEventListener('click', () => selectTool('pen'));
+            eraserToolBtn.addEventListener('click', () => selectTool('eraser'));
+            themeToggleBtn.addEventListener('click', toggleTheme);
+
+            // Sử dụng event delegation cho bảng màu để tăng hiệu suất
+            colorPaletteContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('color-swatch')) {
+                    currentColor = e.target.dataset.color;
+                    
+                    // Bỏ active ở màu cũ
+                    const oldActive = colorPaletteContainer.querySelector('.active');
+                    if (oldActive) oldActive.classList.remove('active');
+                    
+                    // Thêm active cho màu mới
+                    e.target.classList.add('active');
+                }
+            });
+
+            // Sự kiện vẽ trên canvas cho cả chuột và cảm ứng
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseleave', stopDrawing); // Dừng vẽ khi chuột ra ngoài canvas
+
+            canvas.addEventListener('touchstart', startDrawing, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing);
+            canvas.addEventListener('touchmove', draw, { passive: false });
+            canvas.addEventListener('touchcancel', stopDrawing);
+
+
+            // --- Khởi chạy ứng dụng ---
+            initializeColorPalette();
+            setupGrid();
+            selectTool('pen'); // Chọn bút vẽ làm công cụ mặc định
+        });
+    </script>
+</body>
+</html>
