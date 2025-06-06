@@ -29,7 +29,7 @@
 ## 🎨 Thiết kế & Hình ảnh
 
 1.  🎨 [Color Picker](https://dotphonglong.com/design/01-color-picker.html) ✅
-2.  🌈 Gradient Generator
+2.  🌈 [Gradient Generator](https://dotphonglong.com/design/02-gradient-generator.html) ✅
 3.  🧊 Tạo màu ngẫu nhiên
 4.  🎨 Bảng màu đẹp
 5.  🖼 Chỉnh ảnh đơn giản (sáng, tương phản...)

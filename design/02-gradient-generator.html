@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ tạo Gradient CSS</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Google Fonts: Inter cho nội dung và Fira Code cho mã -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Fira+Code&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .preview-box {
+            width: 100%;
+            height: 350px;
+            border-radius: 1rem;
+            transition: background 0.3s ease-in-out;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .color-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .color-input-container input[type="color"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: transparent;
+        }
+
+        /* Tùy chỉnh con trỏ cho Chrome/Edge/Safari */
+        .color-input-container input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        .color-input-container input[type="color"]::-webkit-color-swatch {
+            border: 2px solid var(--bs-body-color);
+            border-radius: 50%;
+        }
+
+        /* Tùy chỉnh con trỏ cho Firefox */
+        .color-input-container input[type="color"]::-moz-color-swatch {
+            border: 2px solid var(--bs-body-color);
+            border-radius: 50%;
+        }
+
+        #css-output {
+            font-family: 'Fira Code', monospace;
+            resize: none;
+            height: 120px;
+        }
+        
+        .direction-buttons .btn {
+            width: 45px;
+            height: 45px;
+        }
+        
+        .main-card {
+            max-width: 900px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center min-vh-100 py-4 bg-body-tertiary">
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                <div class="card shadow-lg border-0 rounded-4 main-card position-relative">
+                    <div class="position-absolute top-0 end-0 p-3">
+                        <button class="btn btn-outline-secondary border-0" id="theme-toggle">
+                            <i class="bi bi-sun-fill"></i>
+                        </button>
+                    </div>
+                    <div class="card-body p-4 p-sm-5">
+                        <h1 class="card-title text-center fw-bold mb-4">Công cụ tạo Gradient CSS</h1>
+                        
+                        <div class="row g-4 align-items-center">
+                            <!-- Preview Section -->
+                            <div class="col-md-6">
+                                <div class="preview-box" id="preview-box"></div>
+                            </div>
+
+                            <!-- Controls Section -->
+                            <div class="col-md-6">
+                                <div class="d-flex flex-column h-100">
+                                    <h5 class="fw-medium">Tùy chọn</h5>
+                                    
+                                    <!-- Color Pickers -->
+                                    <div class="d-flex justify-content-around align-items-center my-3">
+                                        <div class="color-input-container text-center">
+                                            <input type="color" id="color1" value="#ff9a9e">
+                                            <span id="color1-text" class="fw-medium">#ff9a9e</span>
+                                        </div>
+                                        
+                                        <button class="btn btn-light" id="swap-colors" data-bs-toggle="tooltip" data-bs-placement="top" title="Đảo màu">
+                                            <i class="bi bi-arrow-left-right"></i>
+                                        </button>
+
+                                        <div class="color-input-container text-center">
+                                            <input type="color" id="color2" value="#fad0c4">
+                                            <span id="color2-text" class="fw-medium">#fad0c4</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Direction Buttons -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-medium">Hướng</label>
+                                        <div class="d-flex flex-wrap gap-2 direction-buttons">
+                                            <button class="btn btn-outline-primary active" data-direction="to top right"><i class="bi bi-arrow-up-right"></i></button>
+                                            <button class="btn btn-outline-primary" data-direction="to top"><i class="bi bi-arrow-up"></i></button>
+                                            <button class="btn btn-outline-primary" data-direction="to top left"><i class="bi bi-arrow-up-left"></i></button>
+                                            <button class="btn btn-outline-primary" data-direction="to right"><i class="bi bi-arrow-right"></i></button>
+                                            <button class="btn btn-outline-primary" data-direction="to left"><i class="bi bi-arrow-left"></i></button>
+                                            <button class="btn btn-outline-primary" data-direction="to bottom right"><i class="bi bi-arrow-down-right"></i></button>
+                                            <button class="btn btn-outline-primary" data-direction="to bottom"><i class="bi bi-arrow-down"></i></button>
+                                            <button class="btn btn-outline-primary" data-direction="to bottom left"><i class="bi bi-arrow-down-left"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CSS Output Section -->
+                        <div class="mt-4">
+                            <label for="css-output" class="form-label fw-medium">Mã CSS</label>
+                            <div class="input-group">
+                                <textarea id="css-output" class="form-control" readonly></textarea>
+                                <button class="btn btn-primary" id="copy-code-btn">
+                                    <i class="bi bi-clipboard me-2"></i>Sao chép
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="card-footer text-center bg-transparent border-0 pb-3">
+                        <small class="text-muted">DOTPHONGLONG Mini App</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Bootstrap JS Bundle (for tooltips) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // DOM Elements
+        const color1Input = document.getElementById('color1');
+        const color2Input = document.getElementById('color2');
+        const color1Text = document.getElementById('color1-text');
+        const color2Text = document.getElementById('color2-text');
+        const previewBox = document.getElementById('preview-box');
+        const cssOutput = document.getElementById('css-output');
+        const copyBtn = document.getElementById('copy-code-btn');
+        const swapBtn = document.getElementById('swap-colors');
+        const directionBtns = document.querySelectorAll('.direction-buttons .btn');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = themeToggleBtn.querySelector('i');
+        const htmlElement = document.documentElement;
+
+        // Application State
+        let state = {
+            color1: color1Input.value,
+            color2: color2Input.value,
+            direction: 'to top right',
+        };
+
+        // --- Core Functions ---
+
+        /**
+         * Generates the gradient CSS string and updates the UI.
+         */
+        function generateGradient() {
+            const gradientString = `linear-gradient(${state.direction}, ${state.color1}, ${state.color2})`;
+            
+            // Update the preview box background
+            previewBox.style.background = gradientString;
+            
+            // Update the CSS output textarea
+            cssOutput.value = `background: ${state.color1};\nbackground: ${gradientString};`;
+            
+            // Update color text labels
+            color1Text.textContent = state.color1;
+            color2Text.textContent = state.color2;
+        }
+        
+        /**
+         * Copies the generated CSS to the clipboard.
+         */
+        function copyToClipboard() {
+            cssOutput.select();
+            // Use document.execCommand for better compatibility within iFrames
+            document.execCommand('copy');
+
+            // Provide user feedback
+            const originalText = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Đã chép!';
+            copyBtn.classList.remove('btn-primary');
+            copyBtn.classList.add('btn-success');
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalText;
+                copyBtn.classList.remove('btn-success');
+                copyBtn.classList.add('btn-primary');
+            }, 2000);
+        }
+
+        /**
+         * Toggles the color theme between light and dark mode.
+         */
+        function toggleTheme() {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            if (currentTheme === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                themeIcon.classList.remove('bi-moon-stars-fill');
+                themeIcon.classList.add('bi-sun-fill');
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                themeIcon.classList.remove('bi-sun-fill');
+                themeIcon.classList.add('bi-moon-stars-fill');
+            }
+        }
+        
+        // --- Event Listeners ---
+
+        color1Input.addEventListener('input', (e) => {
+            state.color1 = e.target.value;
+            generateGradient();
+        });
+
+        color2Input.addEventListener('input', (e) => {
+            state.color2 = e.target.value;
+            generateGradient();
+        });
+
+        directionBtns.forEach(button => {
+            button.addEventListener('click', () => {
+                // Update active state for buttons
+                directionBtns.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Update state and regenerate
+                state.direction = button.dataset.direction;
+                generateGradient();
+            });
+        });
+
+        swapBtn.addEventListener('click', () => {
+            // Swap values in state
+            [state.color1, state.color2] = [state.color2, state.color1];
+            
+            // Swap values in the color input elements
+            color1Input.value = state.color1;
+            color2Input.value = state.color2;
+            
+            // Regenerate gradient with swapped colors
+            generateGradient();
+        });
+
+        copyBtn.addEventListener('click', copyToClipboard);
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // --- Initialization ---
+
+        // Initialize tooltips
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+        // Generate the initial gradient on page load
+        window.addEventListener('load', generateGradient);
+
+    </script>
+</body>
+</html>
