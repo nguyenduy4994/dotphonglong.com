@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình Chỉnh Sửa Ảnh Đơn Giản</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Tùy chỉnh CSS */
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .main-container {
+            min-height: 100vh;
+        }
+
+        .editor-panel {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        /* Vùng tải ảnh lên */
+        #upload-container {
+            border: 3px dashed var(--bs-border-color);
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-height: 400px;
+            height: 100%;
+        }
+
+        #upload-container:hover {
+            background-color: var(--bs-secondary-bg);
+        }
+
+        /* Canvas hiển thị ảnh */
+        #image-canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            display: none; /* Ban đầu ẩn đi */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Nhãn của thanh trượt */
+        .form-label {
+            font-weight: 500;
+        }
+        
+        /* Ẩn input file mặc định */
+        #file-input {
+            display: none;
+        }
+        
+        .footer-text {
+            font-size: 0.9rem;
+            color: var(--bs-secondary-color);
+        }
+    </style>
+</head>
+<body class="bg-body-tertiary">
+
+    <div class="container-fluid d-flex flex-column justify-content-center align-items-center main-container p-3 p-md-4">
+        <div class="editor-panel">
+            <header class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="text-center fw-bold fs-2 mb-0 flex-grow-1">Trình Chỉnh Sửa Ảnh</h1>
+                <button class="btn btn-outline-secondary" id="theme-toggle">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+            </header>
+
+            <main class="card shadow-sm">
+                <div class="card-body p-lg-4">
+                    <div class="row g-4">
+                        <!-- Cột Trái: Bảng điều khiển -->
+                        <div class="col-lg-4">
+                            <h4 class="mb-3 fw-bold">Bảng Điều Khiển</h4>
+                            <div class="controls-wrapper">
+                                <!-- Độ sáng -->
+                                <div class="mb-3">
+                                    <label for="brightness" class="form-label">Độ sáng</label>
+                                    <input type="range" class="form-range filter-slider" id="brightness" min="0" max="200" value="100" data-unit="%">
+                                </div>
+                                <!-- Độ tương phản -->
+                                <div class="mb-3">
+                                    <label for="contrast" class="form-label">Tương phản</label>
+                                    <input type="range" class="form-range filter-slider" id="contrast" min="0" max="200" value="100" data-unit="%">
+                                </div>
+                                <!-- Độ bão hòa -->
+                                <div class="mb-3">
+                                    <label for="saturation" class="form-label">Độ bão hòa</label>
+                                    <input type="range" class="form-range filter-slider" id="saturation" min="0" max="200" value="100" data-unit="%">
+                                </div>
+                                <!-- Thang độ xám -->
+                                <div class="mb-3">
+                                    <label for="grayscale" class="form-label">Thang độ xám</label>
+                                    <input type="range" class="form-range filter-slider" id="grayscale" min="0" max="100" value="0" data-unit="%">
+                                </div>
+                                <!-- Độ mờ -->
+                                <div class="mb-3">
+                                    <label for="blur" class="form-label">Độ mờ</label>
+                                    <input type="range" class="form-range filter-slider" id="blur" min="0" max="10" value="0" step="0.1" data-unit="px">
+                                </div>
+                                 <!-- Đảo ngược -->
+                                <div class="mb-3">
+                                    <label for="invert" class="form-label">Đảo ngược</label>
+                                    <input type="range" class="form-range filter-slider" id="invert" min="0" max="100" value="0" data-unit="%">
+                                </div>
+
+                                <hr class="my-4">
+
+                                <!-- Nút chức năng -->
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-secondary" id="reset-button" disabled>
+                                        <i class="bi bi-arrow-counterclockwise"></i> Đặt lại
+                                    </button>
+                                    <button class="btn btn-primary" id="download-button" disabled>
+                                        <i class="bi bi-download"></i> Tải xuống
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cột Phải: Vùng hiển thị ảnh -->
+                        <div class="col-lg-8 d-flex align-items-center justify-content-center">
+                            <div class="w-100">
+                                <input type="file" id="file-input" accept="image/*">
+                                
+                                <!-- Placeholder để tải ảnh lên -->
+                                <div id="upload-container">
+                                    <i class="bi bi-image-fill fs-1 text-muted"></i>
+                                    <p class="mt-2 text-muted">Nhấn để tải ảnh lên</p>
+                                </div>
+                                
+                                <!-- Canvas để hiển thị và chỉnh sửa ảnh -->
+                                <canvas id="image-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        <footer class="mt-4 text-center">
+            <p class="footer-text">DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Lấy các phần tử DOM
+            const fileInput = document.getElementById('file-input');
+            const uploadContainer = document.getElementById('upload-container');
+            const canvas = document.getElementById('image-canvas');
+            const ctx = canvas.getContext('2d');
+            const sliders = document.querySelectorAll('.filter-slider');
+            const resetButton = document.getElementById('reset-button');
+            const downloadButton = document.getElementById('download-button');
+            const themeToggleButton = document.getElementById('theme-toggle');
+
+            let originalImage = null;
+
+            // Xử lý sự kiện khi nhấn vào vùng tải lên
+            uploadContainer.addEventListener('click', () => fileInput.click());
+
+            // Xử lý sự kiện khi người dùng chọn file
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            originalImage = img; // Lưu ảnh gốc
+                            
+                            // Cập nhật giao diện
+                            uploadContainer.style.display = 'none';
+                            canvas.style.display = 'block';
+                            resetButton.disabled = false;
+                            downloadButton.disabled = false;
+                            
+                            // Thiết lập kích thước canvas và vẽ ảnh
+                            canvas.width = img.naturalWidth;
+                            canvas.height = img.naturalHeight;
+                            ctx.drawImage(img, 0, 0);
+
+                            // Đặt lại các bộ lọc và áp dụng
+                            resetFilters();
+                        };
+                        img.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Hàm áp dụng các bộ lọc vào canvas
+            function applyFilters() {
+                if (!originalImage) return;
+
+                let filterString = '';
+                sliders.forEach(slider => {
+                    const value = slider.value;
+                    const unit = slider.dataset.unit;
+                    const filterName = slider.id;
+                    // Chỉ thêm vào chuỗi nếu giá trị khác mặc định
+                    if ( (filterName === 'brightness' || filterName === 'contrast' || filterName === 'saturation') && value !== '100') {
+                         filterString += `${filterName}(${value}${unit}) `;
+                    } else if ((filterName === 'grayscale' || filterName === 'blur' || filterName === 'invert') && value !== '0') {
+                         filterString += `${filterName}(${value}${unit}) `;
+                    }
+                });
+                
+                canvas.style.filter = filterString.trim();
+            }
+            
+            // Lắng nghe sự kiện thay đổi trên các thanh trượt
+            sliders.forEach(slider => {
+                slider.addEventListener('input', applyFilters);
+            });
+
+            // Hàm đặt lại các bộ lọc
+            function resetFilters() {
+                sliders.forEach(slider => {
+                    if (slider.id === 'brightness' || slider.id === 'contrast' || slider.id === 'saturation') {
+                        slider.value = 100;
+                    } else {
+                        slider.value = 0;
+                    }
+                });
+                applyFilters();
+            }
+
+            // Xử lý sự kiện nhấn nút "Đặt lại"
+            resetButton.addEventListener('click', resetFilters);
+            
+            // Xử lý sự kiện nhấn nút "Tải xuống"
+            downloadButton.addEventListener('click', () => {
+                if (!originalImage) return;
+
+                // Tạo một canvas tạm thời để vẽ ảnh đã lọc
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Đặt kích thước cho canvas tạm thời
+                tempCanvas.width = originalImage.naturalWidth;
+                tempCanvas.height = originalImage.naturalHeight;
+
+                // Áp dụng bộ lọc cho context của canvas tạm thời
+                tempCtx.filter = canvas.style.filter;
+
+                // Vẽ ảnh gốc lên canvas tạm thời (bộ lọc sẽ được áp dụng khi vẽ)
+                tempCtx.drawImage(originalImage, 0, 0);
+
+                // Tạo link tải xuống
+                const link = document.createElement('a');
+                link.download = 'edited-image.png';
+                link.href = tempCanvas.toDataURL('image/png');
+                
+                // Kích hoạt việc tải xuống
+                link.click();
+            });
+            
+            // Xử lý chuyển đổi chế độ Sáng/Tối
+            themeToggleButton.addEventListener('click', () => {
+                const htmlElement = document.documentElement;
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                
+                htmlElement.setAttribute('data-bs-theme', newTheme);
+                
+                // Đổi icon tương ứng
+                const icon = themeToggleButton.querySelector('i');
+                if (newTheme === 'dark') {
+                    icon.classList.remove('bi-moon-stars-fill');
+                    icon.classList.add('bi-sun-fill');
+                } else {
+                    icon.classList.remove('bi-sun-fill');
+                    icon.classList.add('bi-moon-stars-fill');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
