@@ -23,8 +23,8 @@
 6.  🕵️ [Kiểm tra chính tả](https://dotphonglong.com/writing/06-spell-checker.html)
 7.  📚 [Viết nhật ký](https://dotphonglong.com/writing/07-journal.html)
 8.  #️⃣ [Gợi ý hashtag](https://dotphonglong.com/writing/08-hashtag-generator.html)
-9.  💬 Quote ngẫu nhiên
-10. ✍️ Gợi ý chủ đề viết blog
+9.  💬 [Quote ngẫu nhiên](https://dotphonglong.com/writing/09-quote-generator.html)
+10. ✍️ [Gợi ý chủ đề viết blog](https://dotphonglong.com/writing/10-blog-generator.html)
 
 ## 🎨 Thiết kế & Hình ảnh
 

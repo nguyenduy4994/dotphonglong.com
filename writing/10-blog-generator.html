@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ Gợi ý Ý tưởng Blog</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Google Fonts: Be Vietnam Pro -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS tùy chỉnh để làm cho ứng dụng trông đẹp hơn */
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Thiết lập chiều cao tối thiểu cho body để căn giữa hoạt động */
+        .main-container {
+            min-height: 100vh;
+        }
+
+        .main-card {
+            max-width: 600px;
+            width: 100%;
+            border: none;
+            border-radius: 1rem;
+        }
+
+        .result-card {
+            border-radius: 0.75rem;
+            min-height: 150px;
+            transition: all 0.3s ease;
+            background-color: var(--bs-secondary-bg);
+        }
+
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Hiệu ứng mờ dần khi hiện kết quả */
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--bs-secondary-color);
+        }
+    </style>
+</head>
+<body class="bg-body-tertiary">
+
+    <div class="main-container d-flex align-items-center justify-content-center p-3">
+        <div class="card shadow main-card">
+            <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                <h1 class="card-title text-center fs-4 fw-bold flex-grow-1 m-0">
+                    <i class="bi bi-lightbulb-fill me-2"></i>Công cụ gợi ý ý tưởng Blog
+                </h1>
+                <!-- Nút chuyển đổi chế độ Sáng/Tối -->
+                <button class="btn btn-outline-secondary border-0" id="theme-toggle">
+                    <i class="bi bi-moon-stars-fill"></i>
+                </button>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                
+                <!-- Khu vực nhập liệu -->
+                <div class="mb-3">
+                    <label for="keywordInput" class="form-label fw-medium">Nhập lĩnh vực hoặc từ khóa của bạn</label>
+                    <input type="text" class="form-control form-control-lg" id="keywordInput" placeholder="Ví dụ: marketing, nấu ăn, du lịch...">
+                </div>
+
+                <!-- Nút chính -->
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-lg fw-bold" id="generateBtn">
+                        <i class="bi bi-magic me-2"></i>Tìm ý tưởng!
+                    </button>
+                </div>
+                
+                <!-- Khu vực hiển thị kết quả -->
+                <div id="resultContainer" class="mt-4 d-none">
+                    <div class="result-card d-flex flex-column justify-content-center align-items-center p-4">
+                        <h3 id="ideaText" class="text-center fw-bold mb-0"></h3>
+                    </div>
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <button class="btn btn-secondary" id="retryBtn">
+                            <i class="bi bi-arrow-repeat me-1"></i>Thử lại
+                        </button>
+                        <button class="btn btn-success" id="copyBtn">
+                            <i class="bi bi-clipboard me-1"></i>Sao chép
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // --- DOM Elements ---
+        const keywordInput = document.getElementById('keywordInput');
+        const generateBtn = document.getElementById('generateBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const ideaText = document.getElementById('ideaText');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = themeToggle.querySelector('i');
+        const htmlElement = document.documentElement;
+
+        // --- Dữ liệu cho việc tạo ý tưởng ---
+
+        // Các mẫu câu tiêu đề
+        const templates = [
+            "Hướng dẫn toàn tập về [K]",
+            "10 sai lầm cần tránh khi [K]",
+            "Tại sao [K] lại quan trọng cho người mới bắt đầu?",
+            "Bí mật về [K] mà không ai nói cho bạn biết",
+            "Làm thế nào để trở thành chuyên gia [K] trong 30 ngày",
+            "[K]: Từ cơ bản đến nâng cao",
+            "5 công cụ miễn phí tốt nhất cho [K]",
+            "Câu chuyện thành công từ việc áp dụng [K]",
+            "Tương lai của [K] sẽ như thế nào?",
+            "So sánh chi tiết giữa [K] và [Đối thủ]",
+            "Checklist không thể thiếu cho người làm [K]",
+            "Những lầm tưởng phổ biến về [K] được giải mã",
+            "Cách [K] có thể thay đổi cuộc sống của bạn",
+            "Tổng hợp tài nguyên hữu ích nhất về [K]",
+            "Case study: Chúng tôi đã tăng trưởng 200% nhờ [K] như thế nào?",
+        ];
+
+        // Các chủ đề chung nếu người dùng không nhập từ khóa
+        const genericTopics = [
+            "phát triển bản thân", "quản lý thời gian", "tài chính cá nhân", "sức khỏe tinh thần", "học một kỹ năng mới", "làm việc hiệu quả", "xây dựng thói quen tốt", "sáng tạo nội dung", "marketing kỹ thuật số", "khởi nghiệp", "phong cách sống tối giản"
+        ];
+        
+        // Các chủ đề "Đối thủ" để dùng trong một số mẫu câu
+        const competitors = [
+            "các phương pháp cũ", "đối thủ cạnh tranh", "công nghệ khác", "xu hướng cũ"
+        ];
+
+        // --- Functions ---
+
+        /**
+         * Lấy một phần tử ngẫu nhiên từ một mảng.
+         * @param {Array} arr - Mảng đầu vào.
+         * @returns {*} - Một phần tử ngẫu nhiên từ mảng.
+         */
+        function getRandomElement(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+        
+        /**
+         * Tạo ra một ý tưởng blog mới và hiển thị nó.
+         */
+        function generateIdea() {
+            // Lấy từ khóa, nếu trống thì lấy chủ đề chung
+            let keyword = keywordInput.value.trim();
+            if (!keyword) {
+                keyword = getRandomElement(genericTopics);
+            }
+
+            // Chọn một mẫu câu ngẫu nhiên
+            let template = getRandomElement(templates);
+
+            // Thay thế placeholder [K] bằng từ khóa
+            let finalIdea = template.replace(/\[K\]/g, keyword);
+            
+            // Xử lý placeholder [Đối thủ] nếu có
+            if (finalIdea.includes('[Đối thủ]')) {
+                finalIdea = finalIdea.replace('[Đối thủ]', getRandomElement(competitors));
+            }
+
+            // Hiển thị kết quả
+            ideaText.textContent = finalIdea;
+            resultContainer.classList.remove('d-none');
+            resultContainer.classList.add('fade-in');
+            
+            // Xóa animation class để có thể tái sử dụng
+            resultContainer.addEventListener('animationend', () => {
+                resultContainer.classList.remove('fade-in');
+            }, { once: true });
+        }
+
+        /**
+         * Sao chép văn bản ý tưởng vào clipboard.
+         */
+        function copyToClipboard() {
+            const textToCopy = ideaText.textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Phản hồi cho người dùng
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Đã chép!';
+                copyBtn.classList.remove('btn-success');
+                copyBtn.classList.add('btn-outline-success');
+
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.classList.remove('btn-outline-success');
+                    copyBtn.classList.add('btn-success');
+                }, 2000);
+            }).catch(err => {
+                console.error('Lỗi khi sao chép: ', err);
+                alert("Không thể sao chép. Vui lòng thử lại.");
+            });
+        }
+        
+        /**
+         * Chuyển đổi giữa chế độ sáng và tối.
+         */
+        function toggleTheme() {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            if (currentTheme === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                themeIcon.classList.remove('bi-sun-fill');
+                themeIcon.classList.add('bi-moon-stars-fill');
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                themeIcon.classList.remove('bi-moon-stars-fill');
+                themeIcon.classList.add('bi-sun-fill');
+            }
+        }
+
+
+        // --- Event Listeners ---
+        generateBtn.addEventListener('click', generateIdea);
+        retryBtn.addEventListener('click', generateIdea);
+        copyBtn.addEventListener('click', copyToClipboard);
+        themeToggle.addEventListener('click', toggleTheme);
+        
+        // Cho phép nhấn Enter trong ô input để tạo ý tưởng
+        keywordInput.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Ngăn form submit (nếu có)
+                generateBtn.click();
+            }
+        });
+
+    </script>
+</body>
+</html>
