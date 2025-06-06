@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm tra chính tả Tiếng Việt</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS tùy chỉnh */
+        html, body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bs-secondary-bg);
+            transition: background-color 0.3s ease;
+        }
+
+        .main-container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        textarea#text-input {
+            height: 200px;
+            font-size: 1.1rem;
+        }
+
+        #result-output {
+            height: 200px;
+            font-size: 1.1rem;
+            background-color: var(--bs-tertiary-bg);
+            border-radius: var(--bs-border-radius);
+            padding: 1rem;
+            overflow-y: auto;
+            white-space: pre-wrap; /* Giữ nguyên định dạng xuống dòng và khoảng trắng */
+        }
+
+        /* Kiểu cho từ bị lỗi */
+        .error-word {
+            background-color: rgba(255, 0, 0, 0.2);
+            color: var(--bs-danger-text-emphasis);
+            padding: 2px 0;
+            border-radius: 3px;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-style: wavy;
+            text-decoration-color: red;
+        }
+
+        /* Tùy chỉnh Popover của Bootstrap */
+        .popover-header {
+            font-weight: bold;
+        }
+
+        .suggestion-btn {
+            background-color: var(--bs-primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .suggestion-btn:hover {
+            background-color: var(--bs-primary-dark);
+        }
+
+        .popover-body {
+            padding: 0.5rem;
+        }
+        
+        .popover-body .list-group-item {
+            cursor: pointer;
+        }
+        .popover-body .list-group-item:hover {
+            background-color: var(--bs-primary-bg-subtle);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container p-3">
+        <div class="card shadow-lg border-0">
+            <div class="card-body p-4 p-md-5 position-relative">
+
+                <!-- Nút chuyển đổi giao diện Sáng/Tối -->
+                <button id="theme-toggle" class="btn btn-outline-secondary position-absolute top-0 end-0 m-3" type="button" title="Chuyển đổi giao diện">
+                    <i class="bi bi-sun-fill"></i>
+                </button>
+
+                <h1 class="card-title text-center mb-4 fw-bold text-primary">Kiểm tra chính tả Tiếng Việt</h1>
+
+                <!-- Vùng nhập liệu -->
+                <div class="mb-3">
+                    <label for="text-input" class="form-label fw-bold">Nhập văn bản cần kiểm tra:</label>
+                    <textarea class="form-control" id="text-input" placeholder="Dán hoặc gõ văn bản của bạn vào đây... Ví dụ: Chào mùng bạn đến với chương chình kiểm cha chính tả suất sắc này."></textarea>
+                </div>
+
+                <!-- Các nút chức năng -->
+                <div class="d-flex flex-wrap gap-2 mb-3 justify-content-center">
+                    <button id="check-btn" class="btn btn-primary btn-lg fw-bold">
+                        <i class="bi bi-spellcheck"></i> Kiểm tra
+                    </button>
+                    <button id="copy-btn" class="btn btn-success">
+                        <i class="bi bi-clipboard-check"></i> Sao chép
+                    </button>
+                    <button id="clear-btn" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Xóa hết
+                    </button>
+                </div>
+
+                <!-- Vùng hiển thị kết quả -->
+                <div>
+                    <label for="result-output" class="form-label fw-bold">Văn bản đã sửa:</label>
+                    <div id="result-output">
+                        <span class="text-muted">Kết quả sẽ được hiển thị ở đây sau khi bạn nhấn nút "Kiểm tra".</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <footer class="text-center text-muted mt-3">DOTPHONGLONG Mini App</footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle (bao gồm Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Lấy các phần tử DOM
+        const textInput = document.getElementById('text-input');
+        const checkBtn = document.getElementById('check-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const resultOutput = document.getElementById('result-output');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIcon = themeToggleBtn.querySelector('i');
+        
+        let activePopover = null;
+
+        /**
+         * HÀM GIẢ LẬP API KIỂM TRA CHÍNH TẢ
+         * Trong thực tế, bạn sẽ thay thế hàm này bằng một lệnh gọi `fetch` đến API thật.
+         * Hàm này trả về một Promise mô phỏng độ trễ mạng.
+         * @param {string} text - Văn bản cần kiểm tra.
+         * @returns {Promise<Array<Object>>} - Một danh sách các đối tượng lỗi.
+         */
+        function mockSpellCheckAPI(text) {
+            console.log("Đang gọi API giả lập...");
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const errors = [];
+                    // Các cặp từ sai và gợi ý đúng
+                    const errorDictionary = {
+                        "chương chình": ["chương trình"],
+                        "suất sắc": ["xuất sắc"],
+                        "chào mùng": ["chào mừng"],
+                        "kiểm cha": ["kiểm tra"],
+                        "lổi": ["lỗi"],
+                        "diển đàn": ["diễn đàn"],
+                        "dử dụng": ["sử dụng"],
+                        "nổi tiếng": ["nổi tiếng"], // ví dụ từ đúng để không bị bắt
+                    };
+
+                    // Tìm kiếm lỗi bằng cách sử dụng biểu thức chính quy
+                    const words = Object.keys(errorDictionary).join('|');
+                    const regex = new RegExp(`\\b(${words})\\b`, 'gi');
+                    
+                    let match;
+                    while ((match = regex.exec(text)) !== null) {
+                        const wrongWord = match[0];
+                        const lowerCaseWord = wrongWord.toLowerCase();
+                        if (errorDictionary[lowerCaseWord]) {
+                             errors.push({
+                                word: wrongWord,
+                                suggestions: errorDictionary[lowerCaseWord],
+                                index: match.index
+                            });
+                        }
+                    }
+                    console.log("API giả lập trả về:", errors);
+                    resolve(errors);
+                }, 500); // Giả lập độ trễ 0.5 giây
+            });
+        }
+        
+        /**
+         * Hiển thị kết quả lên giao diện
+         * @param {string} originalText - Văn bản gốc
+         * @param {Array<Object>} errors - Danh sách lỗi từ API
+         */
+        function displayResults(originalText, errors) {
+            resultOutput.innerHTML = '';
+            // Sắp xếp lỗi theo vị trí để xử lý tuần tự
+            errors.sort((a, b) => a.index - b.index);
+
+            let lastIndex = 0;
+            let errorIdCounter = 0;
+
+            errors.forEach(error => {
+                // Thêm phần văn bản đúng trước từ lỗi
+                resultOutput.appendChild(document.createTextNode(originalText.substring(lastIndex, error.index)));
+
+                // Tạo span cho từ lỗi
+                const errorSpan = document.createElement('span');
+                const errorId = `error-${errorIdCounter++}`;
+                errorSpan.id = errorId;
+                errorSpan.className = 'error-word';
+                errorSpan.textContent = error.word;
+                
+                // Tạo nội dung cho Popover
+                const popoverContent = document.createElement('div');
+                popoverContent.className = 'list-group list-group-flush';
+                error.suggestions.forEach(suggestion => {
+                    const suggestionItem = document.createElement('a');
+                    suggestionItem.className = 'list-group-item list-group-item-action';
+                    suggestionItem.textContent = suggestion;
+                    suggestionItem.onclick = () => replaceWord(errorId, suggestion);
+                    popoverContent.appendChild(suggestionItem);
+                });
+
+                resultOutput.appendChild(errorSpan);
+                
+                // Khởi tạo Popover cho từ lỗi
+                new bootstrap.Popover(errorSpan, {
+                    title: 'Gợi ý sửa lỗi',
+                    content: popoverContent,
+                    html: true,
+                    trigger: 'click', // Hiển thị khi click
+                    placement: 'bottom'
+                });
+
+                lastIndex = error.index + error.word.length;
+            });
+
+            // Thêm phần văn bản còn lại sau lỗi cuối cùng
+            resultOutput.appendChild(document.createTextNode(originalText.substring(lastIndex)));
+
+        }
+        
+        /**
+         * Thay thế từ lỗi bằng từ gợi ý
+         * @param {string} errorId - ID của span chứa lỗi
+         * @param {string} correctWord - Từ đúng để thay thế
+         */
+        window.replaceWord = function(errorId, correctWord) {
+            const errorSpan = document.getElementById(errorId);
+            if (errorSpan) {
+                // Đóng popover trước khi thay thế
+                const popoverInstance = bootstrap.Popover.getInstance(errorSpan);
+                if (popoverInstance) {
+                    popoverInstance.hide();
+                }
+                errorSpan.replaceWith(document.createTextNode(correctWord));
+            }
+        }
+        
+        // Xử lý sự kiện click nút "Kiểm tra"
+        checkBtn.addEventListener('click', async () => {
+            const text = textInput.value.trim();
+            if (!text) {
+                resultOutput.innerHTML = '<span class="text-muted">Vui lòng nhập văn bản để kiểm tra.</span>';
+                return;
+            }
+
+            // Hiệu ứng loading
+            checkBtn.disabled = true;
+            checkBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang xử lý...';
+            
+            // Đóng bất kỳ popover nào đang mở
+            if (activePopover) {
+                activePopover.hide();
+                activePopover = null;
+            }
+
+            try {
+                const errors = await mockSpellCheckAPI(text);
+                if (errors.length === 0) {
+                     resultOutput.innerHTML = '<span class="text-success">Không tìm thấy lỗi chính tả nào.</span><br>' + text;
+                } else {
+                    displayResults(text, errors);
+                }
+            } catch (err) {
+                console.error("Lỗi khi kiểm tra:", err);
+                resultOutput.innerHTML = '<span class="text-danger">Đã có lỗi xảy ra. Vui lòng thử lại.</span>';
+            } finally {
+                // Hoàn tất loading
+                checkBtn.disabled = false;
+                checkBtn.innerHTML = '<i class="bi bi-spellcheck"></i> Kiểm tra';
+            }
+        });
+
+        // Xử lý sự kiện click nút "Xóa hết"
+        clearBtn.addEventListener('click', () => {
+            textInput.value = '';
+            resultOutput.innerHTML = '<span class="text-muted">Kết quả sẽ được hiển thị ở đây sau khi bạn nhấn nút "Kiểm tra".</span>';
+            textInput.focus();
+        });
+
+        // Xử lý sự kiện click nút "Sao chép"
+        copyBtn.addEventListener('click', () => {
+            // innerText sẽ lấy nội dung text, bỏ qua các thẻ HTML
+            const correctedText = resultOutput.innerText;
+            navigator.clipboard.writeText(correctedText).then(() => {
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="bi bi-check-lg"></i> Đã sao chép!';
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Không thể sao chép: ', err);
+                alert('Sao chép thất bại!');
+            });
+        });
+        
+        // Lắng nghe sự kiện hiển thị popover để đảm bảo chỉ có một cái được mở
+        resultOutput.addEventListener('show.bs.popover', (event) => {
+            const newPopover = bootstrap.Popover.getInstance(event.target);
+            if(activePopover && activePopover !== newPopover) {
+                activePopover.hide();
+            }
+            activePopover = newPopover;
+        });
+        
+         resultOutput.addEventListener('hide.bs.popover', () => {
+            activePopover = null;
+        });
+
+        // Xử lý chuyển đổi giao diện Sáng/Tối
+        themeToggleBtn.addEventListener('click', () => {
+            const htmlElement = document.documentElement;
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+
+            if (currentTheme === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                themeIcon.className = 'bi bi-sun-fill';
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                themeIcon.className = 'bi bi-moon-stars-fill';
+            }
+        });
+    });
+    </script>
+
+</body>
+</html>

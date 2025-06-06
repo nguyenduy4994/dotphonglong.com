@@ -16,13 +16,13 @@
 ## ✍️ Ghi chú & Viết
 
 1.  📝 [Ghi chú đơn giản](https://dotphonglong.com/writing/01-note-taker.html)
-2.  ✅ To-do list
-3.  📄 Markdown preview
-4.  🔢 Bộ đếm từ/ký tự
-5.  🧪 Tạo Lorem Ipsum
-6.  🕵️ Kiểm tra chính tả (offline JS)
-7.  📚 Viết nhật ký (localStorage)
-8.  #️⃣ Gợi ý hashtag
+2.  ✅ [To-do list](https://dotphonglong.com/writing/02-to-do-list.html)
+3.  📄 [Markdown preview](https://dotphonglong.com/writing/03-markdown-preview.html)
+4.  🔢 [Bộ đếm từ/ký tự](https://dotphonglong.com/writing/04-word-counter.html)
+5.  🧪 [Tạo Lorem Ipsum](https://dotphonglong.com/writing/05-lorem-ipsum-generator.html)
+6.  🕵️ [Kiểm tra chính tả](https://dotphonglong.com/writing/06-spell-checker.html)
+7.  📚 [Viết nhật ký](https://dotphonglong.com/writing/07-journal.html)
+8.  #️⃣ [Gợi ý hashtag](https://dotphonglong.com/writing/08-hashtag-generator.html)
 9.  💬 Quote ngẫu nhiên
 10. ✍️ Gợi ý chủ đề viết blog
 

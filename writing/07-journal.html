@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhật Ký Cá Nhân</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Tùy chỉnh chung */
+        :root {
+            --app-bg-light: #f8f9fa;
+            --app-bg-dark: #212529;
+            --app-text-light: #212529;
+            --app-text-dark: #dee2e6;
+            --app-border-light: #dee2e6;
+            --app-border-dark: #495057;
+            --list-hover-bg-light: #e9ecef;
+            --list-hover-bg-dark: #343a40;
+            --list-active-bg-light: #cfe2ff;
+            --list-active-bg-dark: #0d6efd;
+            --list-active-text-light: #000;
+            --list-active-text-dark: #fff;
+        }
+
+        [data-bs-theme="light"] {
+            --bs-body-bg: var(--app-bg-light);
+            --bs-body-color: var(--app-text-light);
+        }
+
+        [data-bs-theme="dark"] {
+            --bs-body-bg: var(--app-bg-dark);
+            --bs-body-color: var(--app-text-dark);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Nút chuyển chế độ được đặt cố định trên màn hình */
+        .theme-toggle-container {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1030; /* Đảm bảo nút nổi trên các thành phần khác */
+        }
+        
+        #theme-toggle-btn {
+            font-size: 1.25rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Tiêu đề ứng dụng */
+        .app-title {
+            color: var(--bs-body-color);
+        }
+
+        /* Container chính của ứng dụng */
+        .app-container {
+            max-width: 1200px;
+            height: 85vh;
+            max-height: 800px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--app-border-light);
+        }
+
+        [data-bs-theme="dark"] .app-container {
+            border-color: var(--app-border-dark);
+        }
+        
+        /* Vùng soạn thảo */
+        #note-content {
+            height: calc(100% - 150px);
+            resize: none;
+        }
+
+        /* Danh sách ghi chú */
+        .notes-list-container {
+            overflow-y: auto;
+        }
+
+        .note-list-item {
+            cursor: pointer;
+            border-bottom: 1px solid var(--app-border-light);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        
+        [data-bs-theme="dark"] .note-list-item {
+            border-bottom-color: var(--app-border-dark);
+        }
+
+        .note-list-item:hover {
+            background-color: var(--list-hover-bg-light);
+        }
+        [data-bs-theme="dark"] .note-list-item:hover {
+            background-color: var(--list-hover-bg-dark);
+        }
+
+        .note-list-item.active {
+            background-color: var(--list-active-bg-light);
+            color: var(--list-active-text-light);
+            font-weight: 500;
+        }
+        [data-bs-theme="dark"] .note-list-item.active {
+            background-color: var(--list-active-bg-dark);
+            color: var(--list-active-text-dark);
+        }
+
+        .note-list-item-title {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column align-items-center justify-content-center vh-100 p-3">
+
+    <!-- Nút chuyển chế độ Sáng/Tối -->
+    <div class="theme-toggle-container">
+        <button class="btn btn-outline-secondary" id="theme-toggle-btn" title="Chuyển chế độ Sáng/Tối">
+            <i class="bi" id="theme-icon"></i>
+        </button>
+    </div>
+
+    <h1 class="h3 mb-3 app-title">Nhật ký cá nhân</h1>
+
+    <!-- Container chính -->
+    <main class="container-fluid app-container rounded-3 p-0 d-flex flex-column bg-body-tertiary">
+        <!-- Thân ứng dụng -->
+        <div class="row g-0 flex-grow-1">
+            <!-- Cột trái: Danh sách ghi chú -->
+            <div class="col-md-4 border-end d-flex flex-column h-100 p-3">
+                <button class="btn btn-primary w-100 mb-3" id="new-note-btn">
+                    <i class="bi bi-pencil-square"></i> Viết ghi chú mới
+                </button>
+                <div class="notes-list-container flex-grow-1" id="notes-list">
+                    <!-- Danh sách các mục nhật ký sẽ được thêm vào đây bằng JS -->
+                </div>
+            </div>
+
+            <!-- Cột phải: Vùng soạn thảo -->
+            <div class="col-md-8 d-flex flex-column h-100 p-3">
+                <div id="editor" class="d-flex flex-column h-100">
+                    <input type="text" id="note-title" class="form-control form-control-lg mb-3" placeholder="Tiêu đề...">
+                    <textarea id="note-content" class="form-control flex-grow-1" placeholder="Hôm nay của bạn thế nào?"></textarea>
+                    <div class="mt-3">
+                        <button class="btn btn-success" id="save-note-btn">
+                            <i class="bi bi-check-circle"></i> Lưu
+                        </button>
+                        <button class="btn btn-danger" id="delete-note-btn" style="display: none;">
+                            <i class="bi bi-trash"></i> Xóa
+                        </button>
+                    </div>
+                </div>
+                 <div id="welcome-message" class="d-flex align-items-center justify-content-center h-100 text-muted">
+                    <h5>Chọn một ghi chú để xem hoặc tạo ghi chú mới.</h5>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center text-muted mt-4">
+        <small>DOTPHONGLONG Mini App</small>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lGZdGmM6M8QW+6E9gK55eF3hV8zYqY6_M2DtkpI2ARaK2_7vDpjWpG" crossorigin="anonymous"></script>
+
+    <!-- JavaScript của ứng dụng -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lấy các phần tử DOM
+            const notesListEl = document.getElementById('notes-list');
+            const titleInput = document.getElementById('note-title');
+            const contentInput = document.getElementById('note-content');
+            const newNoteBtn = document.getElementById('new-note-btn');
+            const saveNoteBtn = document.getElementById('save-note-btn');
+            const deleteNoteBtn = document.getElementById('delete-note-btn');
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const themeIcon = document.getElementById('theme-icon');
+            const editorEl = document.getElementById('editor');
+            const welcomeMessageEl = document.getElementById('welcome-message');
+
+            const STORAGE_KEY_NOTES = 'dotphonglong-diary-app-notes';
+            const STORAGE_KEY_THEME = 'dotphonglong-diary-app-theme';
+            let currentNoteId = null;
+
+            // --- Quản lý dữ liệu với LocalStorage ---
+            const getNotes = () => {
+                const notesJSON = localStorage.getItem(STORAGE_KEY_NOTES);
+                try {
+                    return notesJSON ? JSON.parse(notesJSON) : [];
+                } catch (e) {
+                    console.error("Lỗi khi đọc dữ liệu từ localStorage:", e);
+                    return [];
+                }
+            };
+
+            const saveNotes = (notes) => {
+                localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notes));
+            };
+
+            // --- Chế độ sáng/tối ---
+            const applyTheme = (theme) => {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem(STORAGE_KEY_THEME, theme);
+                themeIcon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+            };
+
+            const toggleTheme = () => {
+                const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                applyTheme(newTheme);
+            };
+
+            // --- Hiển thị và Giao diện ---
+            const renderNotesList = () => {
+                const notes = getNotes();
+                notes.sort((a, b) => new Date(b.updated) - new Date(a.updated)); // Sắp xếp mới nhất lên đầu
+                
+                notesListEl.innerHTML = '';
+                if (notes.length === 0) {
+                    notesListEl.innerHTML = '<p class="text-center text-muted p-3">Chưa có ghi chú nào.</p>';
+                    return;
+                }
+
+                notes.forEach(note => {
+                    const noteEl = document.createElement('div');
+                    noteEl.classList.add('note-list-item', 'p-3');
+                    noteEl.dataset.noteId = note.id;
+
+                    if (note.id === currentNoteId) {
+                        noteEl.classList.add('active');
+                    }
+
+                    const title = note.title.trim() === '' ? 'Ghi chú không tiêu đề' : note.title;
+                    const date = new Date(note.updated).toLocaleString('vi-VN', {
+                        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                    });
+
+                    noteEl.innerHTML = `
+                        <div class="fw-bold note-list-item-title">${title}</div>
+                        <small class="text-muted">${date}</small>
+                    `;
+
+                    noteEl.addEventListener('click', () => displayNote(note.id));
+                    notesListEl.appendChild(noteEl);
+                });
+            };
+
+            const displayNote = (noteId) => {
+                const notes = getNotes();
+                const note = notes.find(n => n.id === noteId);
+                if (!note) return;
+
+                currentNoteId = noteId;
+                titleInput.value = note.title;
+                contentInput.value = note.content;
+                deleteNoteBtn.style.display = 'inline-block';
+                
+                showEditor();
+                highlightActiveNote();
+            };
+            
+            const showEditor = (show = true) => {
+                editorEl.style.display = show ? 'flex' : 'none';
+                welcomeMessageEl.style.display = show ? 'none' : 'flex';
+            };
+            
+            const highlightActiveNote = () => {
+                document.querySelectorAll('.note-list-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.dataset.noteId === String(currentNoteId)) {
+                        item.classList.add('active');
+                    }
+                });
+            }
+
+            // --- Hành động của người dùng ---
+            const handleNewNote = () => {
+                currentNoteId = null;
+                titleInput.value = '';
+                contentInput.value = '';
+                deleteNoteBtn.style.display = 'none';
+                showEditor();
+                titleInput.focus();
+                highlightActiveNote();
+            };
+
+            const handleSaveNote = () => {
+                const title = titleInput.value.trim();
+                const content = contentInput.value;
+
+                if (!title && !content) {
+                    alert('Bạn cần nhập tiêu đề hoặc nội dung để lưu.');
+                    return;
+                }
+
+                let notes = getNotes();
+                const now = new Date().toISOString();
+
+                const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+
+                if (noteIndex > -1) {
+                    // Cập nhật ghi chú cũ
+                    notes[noteIndex] = { ...notes[noteIndex], title, content, updated: now };
+                } else {
+                    // Tạo ghi chú mới
+                    const newNote = { id: Date.now(), title, content, updated: now };
+                    notes.push(newNote);
+                    currentNoteId = newNote.id;
+                }
+
+                saveNotes(notes);
+                renderNotesList();
+            };
+
+            const handleDeleteNote = () => {
+                if (!currentNoteId) return;
+
+                const confirmed = confirm('Bạn có chắc chắn muốn xóa ghi chú này không?');
+                if (confirmed) {
+                    let notes = getNotes();
+                    notes = notes.filter(n => n.id !== currentNoteId);
+                    saveNotes(notes);
+                    currentNoteId = null;
+                    titleInput.value = '';
+                    contentInput.value = '';
+                    showEditor(false); // Ẩn editor, hiện welcome message
+                    renderNotesList();
+                }
+            };
+
+            // --- Khởi tạo ứng dụng ---
+            const init = () => {
+                const savedTheme = localStorage.getItem(STORAGE_KEY_THEME) || 'light';
+                applyTheme(savedTheme);
+
+                newNoteBtn.addEventListener('click', handleNewNote);
+                saveNoteBtn.addEventListener('click', handleSaveNote);
+                deleteNoteBtn.addEventListener('click', handleDeleteNote);
+                themeToggleBtn.addEventListener('click', toggleTheme);
+                
+                renderNotesList();
+                showEditor(false); // Mặc định ẩn editor
+            };
+
+            init();
+        });
+    </script>
+</body>
+</html>

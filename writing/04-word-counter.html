@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bộ đếm từ & ký tự</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS tùy chỉnh để cải thiện giao diện */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Đảm bảo textarea có chiều cao tối thiểu và cho phép thay đổi kích thước theo chiều dọc */
+        #text-input {
+            min-height: 250px;
+            resize: vertical;
+            font-size: 1.1rem;
+        }
+
+        /* Tạo kiểu cho các thẻ hiển thị số liệu */
+        .stat-card {
+            background-color: var(--bs-tertiary-bg);
+            border: 1px solid var(--bs-border-color-translucent);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .stat-card h5 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--bs-primary);
+        }
+        
+        .stat-card p {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+        
+        /* Đảm bảo nút chuyển đổi chủ đề trông đẹp */
+        .theme-toggle-btn {
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center min-vh-100 bg-body-tertiary">
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-xl-9">
+                
+                <div class="card shadow-lg border-0">
+                    <div class="card-header bg-body-secondary p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h1 class="h4 mb-0 fw-bold">
+                                <i class="bi bi-card-text me-2"></i>Bộ đếm từ & ký tự
+                            </h1>
+                            <button id="theme-toggle" class="btn btn-outline-secondary border-0 theme-toggle-btn" title="Chuyển đổi chủ đề">
+                                <i class="bi bi-moon-stars-fill"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body p-4">
+                        <!-- Hàng hiển thị các kết quả đếm -->
+                        <div class="row g-3 mb-4 text-center">
+                            <div class="col-6 col-md-4">
+                                <div class="stat-card p-3 rounded">
+                                    <h5 id="word-count">0</h5>
+                                    <p class="text-body-secondary">Từ</p>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <div class="stat-card p-3 rounded">
+                                    <h5 id="char-count-spaces">0</h5>
+                                    <p class="text-body-secondary">Ký tự (cả dấu cách)</p>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                 <div class="stat-card p-3 rounded">
+                                    <h5 id="char-count-no-spaces">0</h5>
+                                    <p class="text-body-secondary">Ký tự (không dấu cách)</p>
+                                </div>
+                            </div>
+                             <div class="col-6 col-md-6">
+                                <div class="stat-card p-3 rounded">
+                                    <h5 id="sentence-count">0</h5>
+                                    <p class="text-body-secondary">Câu</p>
+                                </div>
+                            </div>
+                             <div class="col-6 col-md-6">
+                                <div class="stat-card p-3 rounded">
+                                    <h5 id="paragraph-count">0</h5>
+                                    <p class="text-body-secondary">Đoạn văn</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vùng nhập liệu -->
+                        <div class="form-floating">
+                            <textarea class="form-control" placeholder="Nhập văn bản của bạn vào đây..." id="text-input"></textarea>
+                            <label for="text-input">Nhập văn bản của bạn vào đây...</label>
+                        </div>
+                        
+                        <!-- Nút Xóa -->
+                        <div class="text-end mt-3">
+                            <button id="clear-btn" class="btn btn-danger">
+                               <i class="bi bi-trash3 me-2"></i>Xóa hết
+                            </button>
+                        </div>
+
+                    </div>
+                    <div class="card-footer text-center text-body-secondary py-3">
+                        DOTPHONGLONG Mini App
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // --- Lấy các phần tử DOM ---
+        const textInput = document.getElementById('text-input');
+        const clearBtn = document.getElementById('clear-btn');
+        const themeToggle = document.getElementById('theme-toggle');
+
+        // Các phần tử hiển thị kết quả
+        const wordCountEl = document.getElementById('word-count');
+        const charCountSpacesEl = document.getElementById('char-count-spaces');
+        const charCountNoSpacesEl = document.getElementById('char-count-no-spaces');
+        const sentenceCountEl = document.getElementById('sentence-count');
+        const paragraphCountEl = document.getElementById('paragraph-count');
+        
+        // --- Hàm chính để cập nhật các bộ đếm ---
+        function updateCounts() {
+            const text = textInput.value;
+
+            // 1. Đếm từ
+            // Sử dụng regex để tìm các chuỗi ký tự được coi là một từ.
+            // \b\w+\b khớp với các từ nguyên vẹn.
+            const words = text.match(/\b[\w'-]+\b/g) || [];
+            wordCountEl.textContent = words.length;
+
+            // 2. Đếm ký tự (bao gồm cả khoảng trắng)
+            charCountSpacesEl.textContent = text.length;
+            
+            // 3. Đếm ký tự (không bao gồm khoảng trắng)
+            // Sử dụng regex để xóa tất cả các ký tự khoảng trắng (\s).
+            const textWithoutSpaces = text.replace(/\s/g, '');
+            charCountNoSpacesEl.textContent = textWithoutSpaces.length;
+
+            // 4. Đếm câu
+            // Tách dựa trên các dấu chấm câu. Lọc ra các kết quả rỗng.
+            const sentences = text.match(/[^.!?]+[.!?]+/g) || [];
+            sentenceCountEl.textContent = sentences.length;
+
+            // 5. Đếm đoạn văn
+            // Tách dựa trên các dòng mới. Lọc ra các đoạn rỗng hoặc chỉ chứa khoảng trắng.
+            const paragraphs = text.split(/\n+/).filter(p => p.trim() !== '');
+            paragraphCountEl.textContent = paragraphs.length;
+        }
+
+        // --- Hàm xử lý sự kiện ---
+
+        // Sự kiện khi người dùng gõ vào textarea
+        textInput.addEventListener('input', updateCounts);
+
+        // Sự kiện khi nhấn nút "Xóa hết"
+        clearBtn.addEventListener('click', () => {
+            textInput.value = '';
+            // Sau khi xóa, gọi lại hàm updateCounts để reset các số về 0
+            updateCounts();
+        });
+
+        // --- Logic chuyển đổi chủ đề (Sáng/Tối) ---
+        const sunIcon = '<i class="bi bi-sun-fill"></i>';
+        const moonIcon = '<i class="bi bi-moon-stars-fill"></i>';
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                themeToggle.innerHTML = moonIcon;
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                themeToggle.innerHTML = sunIcon;
+            }
+        });
+        
+        // Tùy chọn: Đặt chủ đề ban đầu dựa trên sở thích hệ thống của người dùng
+        window.addEventListener('DOMContentLoaded', () => {
+           if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+               document.documentElement.setAttribute('data-bs-theme', 'dark');
+               themeToggle.innerHTML = sunIcon;
+           }
+           // Cập nhật số liệu ban đầu khi tải trang (thường là 0)
+           updateCounts();
+        });
+
+    </script>
+</body>
+</html>

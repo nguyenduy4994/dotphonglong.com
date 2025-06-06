@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Previewer</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- highlight.js theme for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+    <style>
+        /* General styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Set a min-height for the main container to ensure vertical centering works well */
+        .main-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        /* Main app card styling */
+        .app-card {
+            width: 100%;
+            max-width: 1400px;
+            height: 85vh; /* Make card height responsive to viewport */
+            max-height: 900px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-body-flex {
+            flex-grow: 1;
+            overflow: hidden; /* Hide overflow from the card body */
+        }
+
+        /* Editor and Preview pane styling */
+        .editor-pane, .preview-pane {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Wrapper for textarea with line numbers */
+        .editor-wrapper {
+            flex-grow: 1;
+            position: relative;
+            border: 1px solid var(--bs-border-color);
+            border-radius: 0.375rem;
+            overflow: hidden; /* Important for positioning */
+        }
+        
+        /* Line numbers styling */
+        .line-numbers {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            padding: 0.75rem 0;
+            background-color: var(--bs-tertiary-bg);
+            color: var(--bs-secondary-color);
+            text-align: right;
+            font-size: 0.9em;
+            font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            line-height: 1.6;
+            user-select: none; /* Prevent selecting line numbers */
+            border-right: 1px solid var(--bs-border-color);
+            overflow: hidden; /* Hide overflowing numbers */
+        }
+
+        .line-numbers span {
+            display: block;
+            padding-right: 8px;
+        }
+
+        /* Textarea styling */
+        #markdown-input {
+            width: 100%;
+            height: 100%;
+            resize: none;
+            border: none;
+            outline: none;
+            padding: 0.75rem;
+            font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+            font-size: 0.9em;
+            line-height: 1.6;
+            background-color: transparent; /* Show wrapper's background */
+            position: absolute;
+            left: 40px; /* Offset for line numbers */
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: calc(100% - 40px);
+        }
+
+        /* Preview content area */
+        #preview-output {
+            flex-grow: 1;
+            height: 100%;
+            overflow-y: auto;
+            padding: 1.5rem;
+            border: 1px solid var(--bs-border-color);
+            border-radius: 0.375rem;
+            background-color: var(--bs-body-bg);
+        }
+        
+        /* Custom styling for rendered markdown elements */
+        #preview-output h1, #preview-output h2 {
+            border-bottom: 1px solid var(--bs-border-color-translucent);
+            padding-bottom: 0.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        #preview-output blockquote {
+            border-left: 5px solid var(--bs-primary-border-subtle);
+            padding-left: 1rem;
+            color: var(--bs-secondary-color);
+            margin-left: 0;
+        }
+        #preview-output code:not(pre > code) {
+            background-color: var(--bs-secondary-bg);
+            padding: 0.2em 0.4em;
+            border-radius: 6px;
+            font-size: 85%;
+        }
+        #preview-output pre {
+            padding: 1rem;
+            border-radius: 8px;
+        }
+        #preview-output pre code {
+            background-color: transparent !important;
+            padding: 0;
+        }
+        #preview-output table {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        #preview-output th, #preview-output td {
+             border: 1px solid var(--bs-border-color);
+             padding: 0.5rem 0.75rem;
+        }
+        #preview-output th {
+            background-color: var(--bs-secondary-bg);
+        }
+        #preview-output img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 767.98px) {
+            .app-card {
+                height: auto; /* Allow height to adjust to content on small screens */
+                max-height: none;
+            }
+            .editor-pane {
+                height: 50vh; /* Fixed height for editor on mobile */
+                margin-bottom: 1rem;
+            }
+            .preview-pane {
+                height: 70vh; /* More space for preview on mobile */
+            }
+        }
+    </style>
+</head>
+<body class="bg-body-tertiary">
+
+    <div class="container-fluid main-container">
+        <!-- App Header -->
+        <header class="text-center mb-3">
+            <h1 class="display-5 fw-bold">Markdown Preview</h1>
+        </header>
+
+        <!-- Main App Card -->
+        <div class="card shadow-sm app-card mx-auto">
+            <div class="card-body d-flex flex-column card-body-flex">
+                <div class="row h-100 gx-4">
+                    <!-- Column 1: Editor -->
+                    <div class="col-md-6 d-flex flex-column editor-pane">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">Markdown</h5>
+                            <div>
+                                <button id="theme-toggle" class="btn btn-outline-secondary border-0" title="Toggle Theme">
+                                    <i class="bi bi-sun-fill"></i>
+                                </button>
+                                <button id="clear-btn" class="btn btn-outline-danger" title="Clear All">
+                                    <i class="bi bi-trash"></i> Xóa hết
+                                </button>
+                            </div>
+                        </div>
+                        <div class="editor-wrapper">
+                            <div class="line-numbers"><span>1</span></div>
+                            <textarea id="markdown-input" class="form-control h-100 font-monospace" spellcheck="false"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Preview -->
+                    <div class="col-md-6 d-flex flex-column preview-pane">
+                         <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">Preview</h5>
+                            <button id="copy-html-btn" class="btn btn-outline-primary" title="Copy HTML">
+                                <i class="bi bi-clipboard"></i> Sao chép HTML
+                            </button>
+                        </div>
+                        <div id="preview-output"></div>
+                    </div>
+                </div>
+            </div>
+             <!-- App Footer -->
+            <footer class="card-footer text-center text-body-secondary py-2">
+                DOTPHONGLONG Mini App
+            </footer>
+        </div>
+    </div>
+
+    <!-- Toast container for notifications -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="copyToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                <strong class="me-auto">Thông báo</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Đã sao chép HTML vào clipboard!
+            </div>
+        </div>
+    </div>
+
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- DOMPurify for sanitizing HTML to prevent XSS attacks -->
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js"></script>
+    <!-- highlight.js for syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DOM ELEMENT REFERENCES ---
+            const markdownInput = document.getElementById('markdown-input');
+            const previewOutput = document.getElementById('preview-output');
+            const lineNumbers = document.querySelector('.line-numbers');
+            const clearBtn = document.getElementById('clear-btn');
+            const copyHtmlBtn = document.getElementById('copy-html-btn');
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const htmlElement = document.documentElement;
+            const copyToastEl = document.getElementById('copyToast');
+            const copyToast = new bootstrap.Toast(copyToastEl);
+
+            // --- INITIAL CONTENT ---
+            const initialMarkdown = `# Chào mừng đến với Markdown Previewer!
+## Đây là một trình xem trước Markdown thời gian thực.
+### Được xây dựng với Bootstrap & marked.js
+
+Hãy thử gõ कुछ markdown ở đây.
+
+---
+
+**Các tính năng nổi bật:**
+
+* **In đậm**, _in nghiêng_, và \`code inline\`.
+* Danh sách không có thứ tự:
+    * Mục 1
+    * Mục 2
+        * Mục con
+* Danh sách có thứ tự:
+    1.  Bước một
+    2.  Bước hai
+
+> Đây là một khối trích dẫn. Rất tuyệt phải không?
+
+Một liên kết đến [Google](https://google.com).
+![Một hình ảnh ngẫu nhiên](https://placehold.co/600x200/007bff/white?text=Ảnh+minh+họa)
+
+\`\`\`javascript
+// Khối mã với syntax highlighting
+function greet(name) {
+  // Sử dụng DOMPurify để bảo vệ khỏi XSS
+  const cleanName = DOMPurify.sanitize(name);
+  console.log(\`Hello, \${cleanName}!\`);
+}
+greet('World');
+\`\`\`
+
+Bảng biểu cũng được hỗ trợ:
+
+| Tên | Vai trò | Tuổi |
+| :--- | :---: | ---: |
+| Phong Long | Developer | 25 |
+| Gemini | AI Assistant | N/A |
+
+Và cả chữ ~~gạch ngang~~ nữa.
+`;
+
+            // --- MARKED.JS & HIGHLIGHT.JS CONFIGURATION ---
+            // Set options for marked to use highlight.js for code blocks
+            marked.setOptions({
+                breaks: true, // Add <br> on a single line break
+                gfm: true, // Enable GitHub Flavored Markdown
+                highlight: function (code, lang) {
+                    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                    return hljs.highlight(code, { language }).value;
+                },
+            });
+            
+            // --- CORE FUNCTIONS ---
+            /**
+             * Updates the preview pane with rendered and sanitized HTML.
+             * Also updates the line numbers.
+             */
+            function updatePreview() {
+                const rawMarkdown = markdownInput.value;
+                // 1. Parse Markdown to HTML using marked.js
+                const rawHtml = marked.parse(rawMarkdown);
+                // 2. Sanitize the HTML to prevent XSS attacks
+                const sanitizedHtml = DOMPurify.sanitize(rawHtml);
+                // 3. Render the sanitized HTML
+                previewOutput.innerHTML = sanitizedHtml;
+
+                // Update line numbers
+                updateLineNumbers();
+            }
+            
+            /**
+             * Updates the line number display based on the textarea content.
+             */
+            function updateLineNumbers() {
+                // Get the number of lines by splitting the content by newline characters
+                const lineCount = markdownInput.value.split('\n').length;
+                // Get the current number of line number elements
+                const currentLines = lineNumbers.children.length;
+
+                // Only update if the number of lines has changed to avoid unnecessary DOM manipulation
+                if (lineCount !== currentLines) {
+                    lineNumbers.innerHTML = Array.from({ length: lineCount }, (_, i) => `<span>${i + 1}</span>`).join('');
+                }
+            }
+            
+            /**
+             * Syncs the scrolling of the line number div with the textarea.
+             */
+            function syncScroll() {
+                lineNumbers.scrollTop = markdownInput.scrollTop;
+            }
+
+            // --- EVENT LISTENERS ---
+            // Update preview on input
+            markdownInput.addEventListener('input', updatePreview);
+            
+            // Sync scroll between textarea and line numbers
+            markdownInput.addEventListener('scroll', syncScroll);
+
+            // Clear button functionality
+            clearBtn.addEventListener('click', () => {
+                markdownInput.value = '';
+                // Manually trigger the update functions after clearing
+                updatePreview();
+                markdownInput.focus();
+            });
+
+            // Copy HTML button functionality
+            copyHtmlBtn.addEventListener('click', () => {
+                const htmlToCopy = previewOutput.innerHTML;
+                navigator.clipboard.writeText(htmlToCopy).then(() => {
+                    copyToast.show();
+                }).catch(err => {
+                    console.error('Không thể sao chép HTML: ', err);
+                    // Fallback for older browsers
+                    try {
+                        const tempTextarea = document.createElement('textarea');
+                        tempTextarea.value = htmlToCopy;
+                        document.body.appendChild(tempTextarea);
+                        tempTextarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempTextarea);
+                        copyToast.show();
+                    } catch (fallbackErr) {
+                         alert('Rất tiếc, không thể sao chép vào clipboard.');
+                    }
+                });
+            });
+
+            // Theme toggle button functionality
+            themeToggleBtn.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                if (currentTheme === 'dark') {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    themeToggleBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    themeToggleBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
+                }
+            });
+
+            // --- INITIALIZATION ---
+            markdownInput.value = initialMarkdown;
+            updatePreview(); // Initial render on page load
+            
+            // Set initial theme icon
+             if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                themeToggleBtn.innerHTML = '<i class="bi bi-sun-fill"></i>';
+             } else {
+                themeToggleBtn.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+             }
+        });
+    </script>
+
+</body>
+</html>
