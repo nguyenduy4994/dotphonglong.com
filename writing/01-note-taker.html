@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghi chú đơn giản</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .card {
+            border-radius: 0.75rem;
+            border: 1px solid var(--bs-border-color-translucent);
+        }
+        
+        #note-input {
+            resize: vertical;
+        }
+
+        .note-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        .note-content {
+            white-space: pre-wrap; /* Giữ lại định dạng xuống dòng và khoảng trắng */
+            word-wrap: break-word; /* Tự động ngắt từ dài */
+            flex-grow: 1;
+        }
+        
+        .note-actions {
+            margin-top: 1rem;
+            flex-shrink: 0;
+        }
+
+        .btn-toggle-theme {
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+
+<body class="d-flex flex-column min-vh-100 bg-body-tertiary">
+    <!-- Header -->
+    <header class="text-center my-4">
+        <h1 class="fw-bold">Ghi chú đơn giản</h1>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container flex-grow-1">
+        <div class="card shadow-sm p-3 p-md-4 mx-auto" style="max-width: 800px;">
+            
+            <!-- Theme Toggle Button -->
+            <div class="d-flex justify-content-end mb-3">
+                <button id="theme-toggle" class="btn btn-outline-secondary border-0 btn-toggle-theme" title="Chuyển chế độ sáng/tối">
+                    <i class="bi bi-sun-fill"></i>
+                </button>
+            </div>
+
+            <!-- Note Form -->
+            <form id="note-form">
+                <input type="hidden" id="note-id">
+                <div class="mb-3">
+                    <label for="note-input" class="form-label visually-hidden">Nội dung ghi chú</label>
+                    <textarea id="note-input" class="form-control" rows="4" placeholder="Viết ghi chú của bạn ở đây..." required></textarea>
+                </div>
+                <button type="submit" id="add-btn" class="btn btn-primary w-100 fw-semibold">Thêm</button>
+            </form>
+
+            <hr class="my-4">
+
+            <!-- Saved Notes Section -->
+            <div>
+                <h2 class="h5 mb-3 fw-bold">Ghi chú đã lưu</h2>
+                <div id="notes-list" class="row g-3">
+                    <!-- Các ghi chú sẽ được chèn vào đây bằng JavaScript -->
+                </div>
+                 <p id="no-notes-message" class="text-center text-muted d-none">Chưa có ghi chú nào.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-body-secondary py-3 mt-4">
+        <small>DOTPHONGLONG Mini App</small>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Lấy các phần tử DOM
+            const noteForm = document.getElementById('note-form');
+            const noteInput = document.getElementById('note-input');
+            const noteIdInput = document.getElementById('note-id');
+            const addButton = document.getElementById('add-btn');
+            const notesList = document.getElementById('notes-list');
+            const noNotesMessage = document.getElementById('no-notes-message');
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = themeToggle.querySelector('i');
+            const htmlElement = document.documentElement;
+
+            // --- Quản lý Chế độ Sáng/Tối ---
+
+            // Hàm áp dụng theme đã lưu
+            const applyStoredTheme = () => {
+                const storedTheme = localStorage.getItem('theme') || 'light';
+                htmlElement.setAttribute('data-bs-theme', storedTheme);
+                if (storedTheme === 'dark') {
+                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-fill');
+                } else {
+                    themeIcon.classList.replace('bi-moon-fill', 'bi-sun-fill');
+                }
+            };
+
+            // Sự kiện click cho nút đổi theme
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                htmlElement.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                themeIcon.classList.toggle('bi-sun-fill');
+                themeIcon.classList.toggle('bi-moon-fill');
+            });
+
+            // --- Quản lý Ghi chú ---
+
+            // Hàm lấy ghi chú từ Local Storage
+            const getNotes = () => {
+                const notes = localStorage.getItem('notes');
+                return notes ? JSON.parse(notes) : [];
+            };
+
+            // Hàm lưu ghi chú vào Local Storage
+            const saveNotes = (notes) => {
+                localStorage.setItem('notes', JSON.stringify(notes));
+            };
+
+            // Hàm hiển thị các ghi chú
+            const renderNotes = () => {
+                const notes = getNotes();
+                notesList.innerHTML = ''; // Xóa danh sách cũ
+
+                if (notes.length === 0) {
+                    noNotesMessage.classList.remove('d-none');
+                } else {
+                    noNotesMessage.classList.add('d-none');
+                    notes.forEach(note => {
+                        const noteCol = document.createElement('div');
+                        noteCol.className = 'col-12 col-md-6 col-lg-4';
+                        
+                        noteCol.innerHTML = `
+                            <div class="card note-card bg-body-secondary h-100">
+                                <div class="card-body">
+                                    <p class="card-text note-content">${escapeHTML(note.content)}</p>
+                                </div>
+                                <div class="card-footer bg-transparent border-0 note-actions text-end">
+                                    <button class="btn btn-sm btn-outline-secondary me-2" onclick="startEditNote('${note.id}')">Sửa</button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteNote('${note.id}')">Xóa</button>
+                                </div>
+                            </div>
+                        `;
+                        notesList.appendChild(noteCol);
+                    });
+                }
+            };
+            
+            // Hàm chống XSS bằng cách chuyển đổi ký tự HTML
+            const escapeHTML = (str) => {
+                const p = document.createElement('p');
+                p.appendChild(document.createTextNode(str));
+                return p.innerHTML;
+            };
+
+            // Hàm xử lý việc thêm hoặc cập nhật ghi chú
+            noteForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const content = noteInput.value.trim();
+                const id = noteIdInput.value;
+
+                if (!content) return;
+
+                let notes = getNotes();
+                if (id) {
+                    // Cập nhật ghi chú cũ
+                    const noteIndex = notes.findIndex(note => note.id == id);
+                    if (noteIndex > -1) {
+                        notes[noteIndex].content = content;
+                    }
+                } else {
+                    // Thêm ghi chú mới
+                    const newNote = {
+                        id: Date.now().toString(),
+                        content: content
+                    };
+                    notes.unshift(newNote); // Thêm vào đầu mảng để hiển thị mới nhất lên trên
+                }
+
+                saveNotes(notes);
+                resetForm();
+                renderNotes();
+            });
+            
+            // Hàm reset form về trạng thái ban đầu
+            const resetForm = () => {
+                noteForm.reset();
+                noteIdInput.value = '';
+                addButton.textContent = 'Thêm';
+                addButton.classList.replace('btn-success', 'btn-primary');
+            };
+
+            // Hàm bắt đầu chỉnh sửa ghi chú
+            window.startEditNote = (id) => {
+                const notes = getNotes();
+                const noteToEdit = notes.find(note => note.id === id);
+                if (noteToEdit) {
+                    noteInput.value = noteToEdit.content;
+                    noteIdInput.value = noteToEdit.id;
+                    addButton.textContent = 'Cập nhật ghi chú';
+                    addButton.classList.replace('btn-primary', 'btn-success');
+                    noteInput.focus();
+                    window.scrollTo({ top: 0, behavior: 'smooth' }); // Cuộn lên đầu trang
+                }
+            };
+            
+            // Hàm xóa ghi chú
+            window.deleteNote = (id) => {
+                if (confirm('Bạn có chắc chắn muốn xóa ghi chú này không?')) {
+                    let notes = getNotes();
+                    notes = notes.filter(note => note.id !== id);
+                    saveNotes(notes);
+                    renderNotes();
+                    // Nếu đang ở chế độ sửa ghi chú vừa bị xóa, reset form
+                    if (noteIdInput.value === id) {
+                        resetForm();
+                    }
+                }
+            };
+
+            // Khởi tạo ứng dụng
+            applyStoredTheme();
+            renderNotes();
+        });
+    </script>
+</body>
+</html>

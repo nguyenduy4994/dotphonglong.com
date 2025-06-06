@@ -15,7 +15,7 @@
 
 ## ✍️ Ghi chú & Viết
 
-1.  📝 Ghi chú đơn giản
+1.  📝 [Ghi chú đơn giản](https://dotphonglong.com/writing/01-note-taker.html)
 2.  ✅ To-do list
 3.  📄 Markdown preview
 4.  🔢 Bộ đếm từ/ký tự
