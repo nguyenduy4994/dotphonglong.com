@@ -28,7 +28,7 @@
 
 ## 🎨 Thiết kế & Hình ảnh
 
-1.  🎨 Color Picker
+1.  🎨 [Color Picker](https://dotphonglong.com/design/01-color-picker.html) ✅
 2.  🌈 Gradient Generator
 3.  🧊 Tạo màu ngẫu nhiên
 4.  🎨 Bảng màu đẹp
