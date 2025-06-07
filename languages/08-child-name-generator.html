@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng Dụng Tạo Tên Bé Ngẫu Nhiên</title>
+    <!-- Tải Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Tải Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Tải Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--bs-body-bg); /* Đảm bảo màu nền thay đổi với dark mode */
+            color: var(--bs-body-color); /* Đảm bảo màu chữ thay đổi với dark mode */
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .app-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            background-color: var(--bs-secondary-bg); /* Nền khung ứng dụng */
+            border: 1px solid var(--bs-border-color); /* Viền khung ứng dụng */
+            flex-grow: 1; /* Cho phép khung co giãn */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        @media (max-width: 768px) {
+            .app-container {
+                margin: 20px auto;
+                padding: 20px;
+            }
+        }
+        .name-display {
+            min-height: 100px;
+            font-size: 3.5rem; /* Kích thước font lớn */
+            font-weight: 700;
+            color: var(--bs-primary); /* Màu sắc nổi bật cho tên */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 10px;
+            background-color: var(--bs-tertiary-bg); /* Nền hiển thị tên */
+            margin-bottom: 25px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+            transition: font-size 0.2s ease;
+        }
+        @media (max-width: 768px) {
+            .name-display {
+                font-size: 2.5rem;
+            }
+        }
+        .btn-group-gender .btn {
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .btn-generate {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 15px 30px;
+            border-radius: 15px;
+            background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+            border: none;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-generate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            color: white; /* Đảm bảo màu chữ không đổi khi hover */
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            color: var(--bs-secondary-color);
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+        }
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background-color: var(--bs-tertiary-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--bs-body-color);
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .dark-mode-toggle:hover {
+            background-color: var(--bs-primary-bg-subtle);
+            color: var(--bs-primary);
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nút Dark Mode Toggle -->
+    <button id="darkModeToggle" class="dark-mode-toggle">
+        <i class="bi bi-moon-fill"></i>
+    </button>
+
+    <div class="container-fluid text-center py-4">
+        <h1 class="display-4 fw-bold text-primary">Ứng Dụng Tạo Tên Bé</h1>
+    </div>
+
+    <div class="container app-container">
+        <h2 class="text-center mb-4 fw-bold">Chọn giới tính và tạo tên</h2>
+
+        <div class="btn-group-gender d-flex justify-content-center mb-4" role="group" aria-label="Chọn giới tính">
+            <button type="button" class="btn btn-outline-info active" id="btnBoy">
+                <i class="bi bi-gender-male me-2"></i>Bé trai
+            </button>
+            <button type="button" class="btn btn-outline-danger ms-2" id="btnGirl">
+                <i class="bi bi-gender-female me-2"></i>Bé gái
+            </button>
+        </div>
+
+        <div id="nameDisplay" class="name-display mb-4 p-3">
+            Tên của bé
+        </div>
+
+        <div class="d-grid gap-2">
+            <button class="btn btn-generate" id="generateNameBtn">
+                <i class="bi bi-shuffle me-2"></i>Tạo Tên Ngẫu Nhiên
+            </button>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Tải Bootstrap JS (Popper.js đi kèm) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Danh sách tên bé trai và bé gái
+        const boyNames = [
+            "An", "Bảo", "Cường", "Đức", "Hải", "Khánh", "Long", "Minh", "Nam", "Phúc",
+            "Quang", "Sơn", "Thắng", "Thiên", "Tùng", "Việt", "Vinh", "Duy", "Hiếu", "Hùng",
+            "Kiệt", "Lộc", "Nghĩa", "Nhân", "Phong", "Thịnh", "Trí", "Vỹ", "Tâm", "Tuấn",
+            "Đăng", "Khang", "Tài", "Hoàng", "Quân", "Đạt", "Lâm", "Phú", "Trung", "Bách"
+        ];
+
+        const girlNames = [
+            "Anh", "Bình", "Chi", "Diệu", "Hà", "Hương", "Lan", "Mai", "Ngọc", "Oanh",
+            "Phương", "Quỳnh", "Thảo", "Trang", "Uyên", "Vân", "Yến", "Dung", "Hạnh", "Hiền",
+            "Kim", "Linh", "Nhung", "Nga", "Phượng", "Thư", "Thu", "Trà", "Tuyết", "Xuân",
+            "Ánh", "Bích", "Cúc", "Huệ", "Lệ", "Mỹ", "Trúc", "Vy", "Ngân", "Giang"
+        ];
+
+        let selectedGender = 'boy'; // Mặc định là bé trai
+
+        // Lấy các phần tử DOM
+        const btnBoy = document.getElementById('btnBoy');
+        const btnGirl = document.getElementById('btnGirl');
+        const nameDisplay = document.getElementById('nameDisplay');
+        const generateNameBtn = document.getElementById('generateNameBtn');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const htmlElement = document.documentElement;
+
+        // Hàm chọn tên ngẫu nhiên
+        function getRandomName(names) {
+            const randomIndex = Math.floor(Math.random() * names.length);
+            return names[randomIndex];
+        }
+
+        // Hàm cập nhật trạng thái giới tính và giao diện nút
+        function updateGenderSelection(gender) {
+            selectedGender = gender;
+            if (gender === 'boy') {
+                btnBoy.classList.add('active');
+                btnBoy.classList.remove('btn-outline-info');
+                btnBoy.classList.add('btn-info');
+                btnGirl.classList.remove('active');
+                btnGirl.classList.remove('btn-danger');
+                btnGirl.classList.add('btn-outline-danger');
+            } else {
+                btnGirl.classList.add('active');
+                btnGirl.classList.remove('btn-outline-danger');
+                btnGirl.classList.add('btn-danger');
+                btnBoy.classList.remove('active');
+                btnBoy.classList.remove('btn-info');
+                btnBoy.classList.add('btn-outline-info');
+            }
+        }
+
+        // Xử lý sự kiện khi nhấn nút giới tính
+        btnBoy.addEventListener('click', () => updateGenderSelection('boy'));
+        btnGirl.addEventListener('click', () => updateGenderSelection('girl'));
+
+        // Xử lý sự kiện khi nhấn nút "Tạo Tên"
+        generateNameBtn.addEventListener('click', () => {
+            let name;
+            if (selectedGender === 'boy') {
+                name = getRandomName(boyNames);
+            } else {
+                name = getRandomName(girlNames);
+            }
+            nameDisplay.textContent = name;
+        });
+
+        // Xử lý sự kiện Dark Mode Toggle
+        darkModeToggle.addEventListener('click', () => {
+            if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                darkModeToggle.innerHTML = '<i class="bi bi-moon-fill"></i>'; // Icon trăng cho light mode
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Icon mặt trời cho dark mode
+            }
+        });
+
+        // Khởi tạo trạng thái ban đầu khi tải trang
+        document.addEventListener('DOMContentLoaded', () => {
+            updateGenderSelection('boy'); // Đặt mặc định là bé trai khi tải trang
+            // Cập nhật icon dark mode dựa trên trạng thái ban đầu
+            if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+            } else {
+                darkModeToggle.innerHTML = '<i class="bi bi-moon-fill"></i>';
+            }
+        });
+    </script>
+</body>
+</html>

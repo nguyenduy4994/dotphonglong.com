@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Tên Tiếng Anh Ngẫu Nhiên</title>
+    <!-- Bootstrap CSS (phiên bản mới nhất) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts - Inter để có phông chữ dễ đọc -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Đặt phông chữ Inter và các thuộc tính cơ bản cho body */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bs-body-bg); /* Sử dụng biến màu nền của Bootstrap */
+            color: var(--bs-body-color); /* Sử dụng biến màu chữ của Bootstrap */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Đảm bảo chiều cao tối thiểu bằng chiều cao viewport */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Chuyển đổi mượt mà khi đổi chế độ tối */
+        }
+        /* Container chính của ứng dụng để căn giữa nội dung */
+        .app-container {
+            flex-grow: 1; /* Cho phép container giãn nở để đẩy footer xuống */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        /* Thẻ hiển thị tên ngẫu nhiên */
+        .name-card {
+            border-radius: 15px; /* Bo tròn các góc */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Thêm bóng nhẹ */
+            background-color: var(--bs-body-bg); /* Sử dụng biến màu nền của Bootstrap */
+            color: var(--bs-body-color); /* Sử dụng biến màu chữ của Bootstrap */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Chuyển đổi mượt mà khi đổi chế độ tối */
+        }
+        /* Định dạng cho tên được tạo ra */
+        .generated-name {
+            font-size: 2.5rem; /* Phông chữ lớn hơn */
+            font-weight: 700; /* In đậm */
+            margin-bottom: 25px;
+            color: var(--bs-primary); /* Sử dụng màu chính của Bootstrap để nhấn mạnh */
+            word-wrap: break-word; /* Đảm bảo tên dài không tràn ra ngoài */
+        }
+        /* Định dạng cho nút Tạo Tên */
+        .btn-generate {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            transition: all 0.3s ease; /* Hiệu ứng chuyển động mượt mà */
+        }
+        /* Hiệu ứng khi di chuột qua nút Tạo Tên */
+        .btn-generate:hover {
+            transform: translateY(-2px); /* Nút hơi nhô lên */
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Thêm bóng sâu hơn */
+        }
+        /* Nút chuyển đổi Dark Mode */
+        .dark-mode-toggle {
+            position: fixed; /* Đặt vị trí cố định */
+            top: 20px;
+            right: 20px;
+            z-index: 1000; /* Đảm bảo nút luôn ở trên cùng */
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--bs-secondary); /* Màu mặc định cho biểu tượng */
+            transition: color 0.3s ease;
+        }
+        /* Hiệu ứng khi di chuột qua nút Dark Mode */
+        .dark-mode-toggle:hover {
+            color: var(--bs-primary); /* Đổi màu khi di chuột qua */
+        }
+
+        /* Điều chỉnh responsive cho các thiết bị nhỏ hơn */
+        @media (max-width: 768px) {
+            .generated-name {
+                font-size: 1.8rem; /* Giảm kích thước phông chữ trên mobile */
+            }
+            .btn-generate {
+                font-size: 1rem;
+                padding: 10px 25px;
+            }
+            .dark-mode-toggle {
+                font-size: 1.5rem;
+                top: 15px;
+                right: 15px;
+            }
+            .name-card {
+                padding: 30px; /* Giảm padding trên mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Nút chuyển đổi Dark Mode, nằm cố định ở góc trên bên phải -->
+    <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
+        <i class="bi bi-moon-fill"></i> <!-- Biểu tượng mặt trăng (mặc định là light mode) -->
+    </button>
+
+    <!-- Tiêu đề ứng dụng -->
+    <div class="container text-center py-4">
+        <h1 class="display-4 fw-bold text-primary">Tạo Tên Tiếng Anh Ngẫu Nhiên</h1>
+    </div>
+
+    <!-- Container chính của ứng dụng, chứa khung tạo tên -->
+    <div class="app-container">
+        <div class="card name-card p-5 mx-auto" style="max-width: 600px;">
+            <div class="card-body">
+                <p class="text-muted mb-4">Nhấn nút bên dưới để tạo một tên tiếng Anh ngẫu nhiên!</p>
+                <!-- Nơi hiển thị tên được tạo ra -->
+                <h2 class="generated-name" id="generatedName">Tên của bạn sẽ xuất hiện ở đây</h2>
+                <!-- Nút để tạo tên -->
+                <button class="btn btn-primary btn-lg btn-generate" id="generateButton">Tạo Tên</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chân trang -->
+    <footer class="mt-auto py-3 bg-light text-center text-muted">
+        <div class="container">
+            DOTPHONGLONG Mini App
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle (bao gồm Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Danh sách các tên đệm tiếng Anh phổ biến
+        const firstNames = [
+            "Alice", "Bob", "Charlie", "David", "Eve", "Frank", "Grace", "Heidi",
+            "Ivan", "Judy", "Kevin", "Liam", "Mia", "Noah", "Olivia", "Peter",
+            "Quinn", "Rachel", "Sam", "Tina", "Uma", "Victor", "Wendy", "Xavier",
+            "Yara", "Zoe", "Daniel", "Emily", "Michael", "Sophia", "James", "Emma"
+        ];
+
+        // Danh sách các tên cuối tiếng Anh phổ biến
+        const lastNames = [
+            "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller",
+            "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez",
+            "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin",
+            "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Lewis", "Hall", "Young"
+        ];
+
+        // Lấy tham chiếu đến các phần tử HTML
+        const generatedNameElement = document.getElementById('generatedName');
+        const generateButton = document.getElementById('generateButton');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const htmlElement = document.documentElement; // Lấy thẻ html để thay đổi thuộc tính data-bs-theme
+
+        // Hàm tạo tên ngẫu nhiên
+        function generateRandomName() {
+            // Chọn ngẫu nhiên một tên đệm
+            const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            // Chọn ngẫu nhiên một tên cuối
+            const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            // Ghép và hiển thị tên
+            generatedNameElement.textContent = `${randomFirstName} ${randomLastName}`;
+        }
+
+        // Lắng nghe sự kiện click trên nút Tạo Tên
+        generateButton.addEventListener('click', generateRandomName);
+
+        // Hàm chuyển đổi chế độ tối/sáng
+        function toggleDarkMode() {
+            if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                // Nếu đang ở chế độ tối, chuyển về sáng
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                darkModeToggle.querySelector('i').classList.replace('bi-sun-fill', 'bi-moon-fill'); // Đổi biểu tượng sang mặt trăng
+            } else {
+                // Nếu đang ở chế độ sáng, chuyển về tối
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                darkModeToggle.querySelector('i').classList.replace('bi-moon-fill', 'bi-sun-fill'); // Đổi biểu tượng sang mặt trời
+            }
+        }
+
+        // Lắng nghe sự kiện click trên nút chuyển đổi Dark Mode
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+
+        // Tạo một tên ngẫu nhiên ngay khi trang tải xong lần đầu
+        document.addEventListener('DOMContentLoaded', generateRandomName);
+    </script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chuyển Đổi Tiếng Việt</title>
+    <!-- Bootstrap CSS CDN (phiên bản 5.3.3) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN (phiên bản 1.11.3) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* Định nghĩa các biến CSS cho chủ đề sáng/tối */
+        :root {
+            --bs-body-bg: #f8f9fa; /* Màu nền sáng */
+            --bs-body-color: #212529; /* Màu chữ sáng */
+            --bs-card-bg: #ffffff; /* Màu nền thẻ sáng */
+            --bs-border-color: #dee2e6; /* Màu viền sáng */
+            --bs-dark-mode-icon-color: #000; /* Màu icon chế độ sáng */
+        }
+
+        /* Chủ đề tối */
+        body.dark-mode {
+            --bs-body-bg: #212529; /* Màu nền tối */
+            --bs-body-color: #f8f9fa; /* Màu chữ tối */
+            --bs-card-bg: #343a40; /* Màu nền thẻ tối */
+            --bs-border-color: #495057; /* Màu viền tối */
+            --bs-dark-mode-icon-color: #fff; /* Màu icon chế độ tối */
+        }
+
+        /* Các kiểu cơ bản cho body */
+        body {
+            transition: background-color 0.3s ease, color 0.3s ease; /* Hiệu ứng chuyển đổi màu mượt mà */
+            font-family: 'Inter', sans-serif; /* Sử dụng font Inter để dễ nhìn */
+            background-color: var(--bs-body-bg); /* Áp dụng màu nền từ biến CSS */
+            color: var(--bs-body-color); /* Áp dụng màu chữ từ biến CSS */
+        }
+
+        /* Kiểu cho các thẻ (card) */
+        .card {
+            background-color: var(--bs-card-bg); /* Áp dụng màu nền thẻ từ biến CSS */
+            border-color: var(--bs-border-color); /* Áp dụng màu viền thẻ từ biến CSS */
+            transition: background-color 0.3s ease, border-color 0.3s ease; /* Hiệu ứng chuyển đổi màu mượt mà */
+        }
+
+        /* Kiểu cho ô nhập liệu (textarea) */
+        .form-control {
+            background-color: var(--bs-card-bg); /* Áp dụng màu nền từ biến CSS */
+            color: var(--bs-body-color); /* Áp dụng màu chữ từ biến CSS */
+            border-color: var(--bs-border-color); /* Áp dụng màu viền từ biến CSS */
+        }
+
+        /* Kiểu cho ô nhập liệu khi focus */
+        .form-control:focus {
+            background-color: var(--bs-card-bg);
+            color: var(--bs-body-color);
+            border-color: var(--bs-primary); /* Màu viền khi focus */
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25); /* Hiệu ứng đổ bóng khi focus */
+        }
+
+        /* Kiểu cho nút chuyển đổi chế độ sáng/tối (float) */
+        .dark-mode-toggle {
+            position: fixed; /* Giữ vị trí cố định trên màn hình */
+            top: 20px; /* Cách mép trên 20px */
+            right: 20px; /* Cách mép phải 20px */
+            z-index: 1000; /* Đảm bảo nút hiển thị trên các phần tử khác */
+            cursor: pointer; /* Thay đổi con trỏ chuột thành dạng bàn tay */
+            font-size: 1.8rem; /* Kích thước icon lớn hơn */
+            /* Màu của icon sẽ được điều khiển bởi class btn-light/btn-dark */
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; /* Hiệu ứng chuyển đổi màu mượt mà */
+        }
+
+        /* Kiểu cho các textarea để chúng có chiều cao linh hoạt trên các kích thước màn hình */
+        .textarea-container {
+            min-height: 200px; /* Chiều cao tối thiểu trên mobile */
+        }
+        @media (min-width: 768px) {
+            .textarea-container {
+                min-height: 300px; /* Chiều cao lớn hơn trên desktop */
+            }
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Nút chuyển đổi chế độ sáng/tối -->
+    <button class="dark-mode-toggle p-2 border" id="darkModeToggle">
+        <i class="bi bi-moon-fill" id="darkModeIcon"></i>
+    </button>
+
+    <header class="container text-center my-4">
+        <!-- Tên ứng dụng căn giữa -->
+        <h1 class="display-4 fw-bold">Ứng dụng Chuyển đổi Tiếng Việt</h1>
+    </header>
+
+    <main class="flex-grow-1 d-flex align-items-center justify-content-center px-3 pb-5">
+        <div class="container">
+            <!-- Khung chính của ứng dụng với đổ bóng và bo tròn -->
+            <div class="card shadow-lg rounded-4 p-4 p-md-5">
+                <div class="card-body">
+                    <div class="row g-4">
+                        <!-- Ô nhập văn bản tiếng Việt có dấu -->
+                        <div class="col-md-6 d-flex flex-column">
+                            <label for="accentedText" class="form-label h5 mb-3">Tiếng Việt có dấu:</label>
+                            <div class="position-relative flex-grow-1">
+                                <textarea class="form-control form-control-lg textarea-container rounded-3 p-3 w-100" id="accentedText" rows="10" placeholder="Nhập văn bản tiếng Việt có dấu ở đây..."></textarea>
+                                <!-- Nút sao chép nội dung ô có dấu -->
+                                <button class="btn btn-sm btn-outline-secondary position-absolute bottom-2 end-2 me-2 mb-2 rounded-2" onclick="copyToClipboard('accentedText')" title="Sao chép văn bản"><i class="bi bi-clipboard"></i></button>
+                            </div>
+                        </div>
+                        <!-- Ô hiển thị/nhập văn bản tiếng Việt không dấu -->
+                        <div class="col-md-6 d-flex flex-column">
+                            <label for="unaccentedText" class="form-label h5 mb-3">Tiếng Việt không dấu:</label>
+                            <div class="position-relative flex-grow-1">
+                                <textarea class="form-control form-control-lg textarea-container rounded-3 p-3 w-100" id="unaccentedText" rows="10" placeholder="Văn bản tiếng Việt không dấu sẽ hiển thị ở đây..."></textarea>
+                                <!-- Nút sao chép nội dung ô không dấu -->
+                                <button class="btn btn-sm btn-outline-secondary position-absolute bottom-2 end-2 me-2 mb-2 rounded-2" onclick="copyToClipboard('unaccentedText')" title="Sao chép văn bản"><i class="bi bi-clipboard"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Các nút chức năng -->
+                    <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                        <button type="button" class="btn btn-primary btn-lg rounded-pill px-4" id="convertToUnaccentedBtn">
+                            <i class="bi bi-arrow-right-circle me-2"></i>Chuyển sang không dấu
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg rounded-pill px-4" id="clearBtn">
+                            <i class="bi bi-trash me-2"></i>Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-3 text-center text-muted">
+        <p class="mb-0">DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS CDN (phiên bản 5.3.3) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const accentedTextarea = document.getElementById('accentedText');
+            const unaccentedTextarea = document.getElementById('unaccentedText');
+            const convertToUnaccentedBtn = document.getElementById('convertToUnaccentedBtn');
+            const clearBtn = document.getElementById('clearBtn'); // Đã loại bỏ convertToAccentedBtn
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeIcon = document.getElementById('darkModeIcon');
+
+            // Hàm áp dụng chủ đề
+            const applyTheme = (theme) => {
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    darkModeToggle.classList.remove('btn-light');
+                    darkModeToggle.classList.add('btn-dark');
+                    darkModeIcon.classList.remove('bi-moon-fill');
+                    darkModeIcon.classList.add('bi-sun-fill');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    darkModeToggle.classList.remove('btn-dark');
+                    darkModeToggle.classList.add('btn-light');
+                    darkModeIcon.classList.remove('bi-sun-fill');
+                    darkModeIcon.classList.add('bi-moon-fill');
+                }
+                localStorage.setItem('theme', theme);
+            };
+
+            // --- Chức năng Chế độ tối ---
+            // Kiểm tra tùy chọn chủ đề đã lưu trong localStorage hoặc mặc định theo hệ thống
+            const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const savedTheme = localStorage.getItem('theme');
+
+            // Áp dụng chủ đề khi tải trang
+            if (savedTheme === 'dark' || (savedTheme === null && prefersDarkMode)) {
+                applyTheme('dark');
+            } else {
+                applyTheme('light');
+            }
+
+            // Xử lý sự kiện khi nhấn nút chuyển đổi chế độ tối
+            darkModeToggle.addEventListener('click', () => {
+                if (document.body.classList.contains('dark-mode')) {
+                    applyTheme('light');
+                } else {
+                    applyTheme('dark');
+                }
+            });
+
+            // --- Logic Chuyển đổi ---
+
+            // Hàm chuyển đổi văn bản tiếng Việt có dấu sang không dấu
+            const convertAccentedToUnaccented = (text) => {
+                if (!text) return ''; // Trả về chuỗi rỗng nếu không có văn bản
+                let result = text;
+                // Định nghĩa các ký tự có dấu và không dấu tương ứng
+                const accentedMap = {
+                    'á': 'a', 'à': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a', 'Á': 'A', 'À': 'A', 'Ả': 'A', 'Ã': 'A', 'Ạ': 'A',
+                    'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a', 'Ă': 'A', 'Ằ': 'A', 'Ắ': 'A', 'Ẳ': 'A', 'Ẵ': 'A', 'Ặ': 'A',
+                    'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a', 'Â': 'A', 'Ầ': 'A', 'Ấ': 'A', 'Ẩ': 'A', 'Ẫ': 'A', 'Ậ': 'A',
+                    'é': 'e', 'è': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e', 'É': 'E', 'È': 'E', 'Ẻ': 'E', 'Ẽ': 'E', 'Ẹ': 'E',
+                    'ê': 'e', 'ề': 'e', 'ế': 'e', 'ể': 'e', 'ễ': 'e', 'ệ': 'e', 'Ê': 'E', 'Ề': 'E', 'Ế': 'E', 'Ể': 'E', 'Ễ': 'E', 'Ệ': 'E',
+                    'í': 'i', 'ì': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i', 'Í': 'I', 'Ì': 'I', 'Ỉ': 'I', 'Ĩ': 'I', 'Ị': 'I',
+                    'ó': 'o', 'ò': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o', 'Ó': 'O', 'Ò': 'O', 'Ỏ': 'O', 'Õ': 'O', 'Ọ': 'O',
+                    'ô': 'o', 'ồ': 'o', 'ố': 'o', 'ổ': 'o', 'ỗ': 'o', 'ộ': 'o', 'Ô': 'O', 'Ồ': 'O', 'Ố': 'O', 'Ổ': 'O', 'Ỗ': 'O', 'Ộ': 'O',
+                    'ơ': 'o', 'ờ': 'o', 'ớ': 'o', 'ở': 'o', 'ỡ': 'o', 'ợ': 'o', 'Ơ': 'O', 'Ờ': 'O', 'Ớ': 'O', 'Ở': 'O', 'Ỡ': 'O', 'Ợ': 'O',
+                    'ú': 'u', 'ù': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u', 'Ú': 'U', 'Ù': 'U', 'Ủ': 'U', 'Ũ': 'U', 'Ụ': 'U',
+                    'ư': 'u', 'ừ': 'u', 'ứ': 'u', 'ử': 'u', 'ữ': 'u', 'ự': 'u', 'Ư': 'U', 'Ừ': 'U', 'Ứ': 'U', 'Ử': 'U', 'Ữ': 'U', 'Ự': 'U',
+                    'ý': 'y', 'ỳ': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y', 'Ý': 'Y', 'Ỳ': 'Y', 'Ỷ': 'Y', 'Ỹ': 'Y', 'Ỵ': 'Y',
+                    'đ': 'd', 'Đ': 'D'
+                };
+                // Thay thế tất cả các ký tự có dấu bằng ký tự không dấu tương ứng
+                for (const char in accentedMap) {
+                    result = result.replace(new RegExp(char, 'g'), accentedMap[char]);
+                }
+                return result;
+            };
+
+            // Hàm chuyển đổi văn bản tiếng Việt không dấu sang có dấu đã bị loại bỏ theo yêu cầu.
+
+            // --- Xử lý sự kiện cho các nút ---
+            // Nút "Chuyển sang không dấu"
+            convertToUnaccentedBtn.addEventListener('click', () => {
+                const accentedText = accentedTextarea.value;
+                unaccentedTextarea.value = convertAccentedToUnaccented(accentedText);
+            });
+
+            // Nút "Xóa"
+            clearBtn.addEventListener('click', () => {
+                accentedTextarea.value = '';
+                unaccentedTextarea.value = '';
+            });
+
+            // --- Hàm sao chép nội dung vào clipboard ---
+            window.copyToClipboard = (elementId) => {
+                const element = document.getElementById(elementId);
+                element.select(); // Chọn toàn bộ văn bản trong textarea
+                element.setSelectionRange(0, 99999); // Dành cho thiết bị di động
+
+                try {
+                    // Cố gắng sao chép văn bản
+                    const successful = document.execCommand('copy');
+                    const msg = successful ? 'Đã sao chép!' : 'Không thể sao chép.';
+                    // Chỉ hiển thị thông báo trong console, không dùng alert()
+                    console.log(msg);
+                } catch (err) {
+                    console.error('Lỗi khi sao chép:', err);
+                }
+            };
+        });
+    </script>
+</body>
+</html>
