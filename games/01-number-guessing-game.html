@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Đoán Số</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Nunito -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* General Styling & Light Mode */
+        :root {
+            --bg-color: #f0f4f8;
+            --text-color: #333;
+            --card-bg-color: #ffffff;
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --primary-color: #0d6efd;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --bs-body-font-family: 'Nunito', sans-serif;
+            --bs-body-bg: var(--bg-color);
+            --bs-body-color: var(--text-color);
+        }
+
+        /* Dark Mode Styling */
+        html.dark-mode {
+            --bg-color: #1a1a2e;
+            --text-color: #e0e0e0;
+            --card-bg-color: #16213e;
+            --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        body {
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .game-container {
+            max-width: 500px;
+            margin-top: 5vh;
+            background-color: var(--card-bg-color);
+            border-radius: 20px;
+            padding: 2rem 2.5rem;
+            box-shadow: var(--card-shadow);
+            transition: background-color 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        html.dark-mode .game-container {
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .main-title {
+            font-weight: 900;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+        
+        html.dark-mode .main-title {
+            color: #4da6ff;
+        }
+
+        #guessInput {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            height: auto;
+            border-width: 2px;
+        }
+        
+        #guessInput:focus {
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.4);
+        }
+
+        .btn-guess {
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+        }
+
+        .message {
+            min-height: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* Message colors */
+        .message.text-success { color: var(--success-color) !important; }
+        .message.text-danger { color: var(--danger-color) !important; }
+        .message.text-warning { color: var(--warning-color) !important; }
+        html.dark-mode .message.text-success { color: #28a745 !important; }
+        html.dark-mode .message.text-danger { color: #e57373 !important; }
+        html.dark-mode .message.text-warning { color: #ffd54f !important; }
+
+
+        #playAgainButton {
+            display: none; /* Hidden by default */
+        }
+        
+        /* Dark Mode Toggle Switch */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            background-color: var(--card-bg-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .dark-mode-toggle:hover {
+            transform: scale(1.1);
+        }
+        .dark-mode-toggle i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        html.dark-mode .dark-mode-toggle i {
+            color: #ffd54f;
+        }
+
+        footer {
+            margin-top: 4rem;
+        }
+        
+        /* Animation for the message box */
+        @keyframes pop-in {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .message-animate {
+            animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" id="darkModeToggle">
+        <i class="bi bi-moon-stars-fill"></i>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container text-center py-4">
+        
+        <h1 class="main-title mb-3">Game Đoán Số</h1>
+
+        <div class="game-container mx-auto">
+            <p class="lead" id="instructionText">Tôi đã chọn một số bí mật từ 1 đến 100. <br>Bạn có thể đoán ra nó không?</p>
+            
+            <div id="game-area">
+                <div class="my-4">
+                    <input type="number" class="form-control" id="guessInput" placeholder="?" min="1" max="100" autofocus>
+                </div>
+    
+                <button class="btn btn-primary w-100 btn-guess" id="guessButton">Đoán</button>
+                <button class="btn btn-success w-100 btn-guess" id="playAgainButton">Chơi lại</button>
+            </div>
+
+            <div class="message mt-4" id="message">
+                <!-- Feedback messages will appear here -->
+            </div>
+            
+            <div class="guesses mt-2">
+                <p class="text-muted" id="guessesLeft">Số lượt đoán còn lại: 10</p>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="text-center text-muted">
+        <p>DOTPHONGLONG Mini App</p>
+    </footer>
+
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // DOM Elements
+        const guessInput = document.getElementById('guessInput');
+        const guessButton = document.getElementById('guessButton');
+        const playAgainButton = document.getElementById('playAgainButton');
+        const messageEl = document.getElementById('message');
+        const guessesLeftEl = document.getElementById('guessesLeft');
+        const instructionText = document.getElementById('instructionText');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const themeIcon = darkModeToggle.querySelector('i');
+        const htmlEl = document.documentElement;
+
+        // Game variables
+        const MAX_GUESSES = 10;
+        let secretNumber;
+        let guessesLeft;
+
+        // --- Game Logic ---
+
+        function startGame() {
+            // 1. Generate a new secret number
+            secretNumber = Math.floor(Math.random() * 100) + 1;
+            
+            // 2. Reset guesses
+            guessesLeft = MAX_GUESSES;
+            
+            // 3. Reset UI
+            instructionText.textContent = "Tôi đã chọn một số bí mật từ 1 đến 100. Bạn có thể đoán ra nó không?";
+            messageEl.textContent = '';
+            messageEl.className = 'message mt-4'; // Reset message classes
+            guessesLeftEl.textContent = `Số lượt đoán còn lại: ${guessesLeft}`;
+            guessesLeftEl.style.display = 'block';
+            
+            guessInput.value = '';
+            guessInput.disabled = false;
+            guessInput.focus();
+            
+            guessButton.style.display = 'block';
+            playAgainButton.style.display = 'none';
+        }
+
+        function checkGuess() {
+            const userGuess = parseInt(guessInput.value);
+            
+            // --- Input Validation ---
+            if (isNaN(userGuess) || userGuess < 1 || userGuess > 100) {
+                displayMessage('Vui lòng nhập một số hợp lệ từ 1 đến 100.', 'text-danger');
+                return;
+            }
+
+            // --- Process the guess ---
+            guessesLeft--;
+            guessesLeftEl.textContent = `Số lượt đoán còn lại: ${guessesLeft}`;
+
+            if (userGuess === secretNumber) {
+                // --- Win Condition ---
+                displayMessage(`🎉 CHÍNH XÁC! Con số bí mật là ${secretNumber}. Bạn thật tuyệt vời!`, 'text-success');
+                instructionText.textContent = 'Bạn đã chiến thắng!';
+                endGame();
+            } else if (guessesLeft === 0) {
+                // --- Lose Condition ---
+                displayMessage(`Rất tiếc, bạn đã hết lượt. Con số bí mật là ${secretNumber}.`, 'text-danger');
+                instructionText.textContent = 'Trò chơi kết thúc!';
+                endGame();
+            } else {
+                // --- Provide Hint ---
+                const hint = userGuess < secretNumber ? 'Số của bạn NHỎ HƠN số bí mật.' : 'Số của bạn LỚN HƠN số bí mật.';
+                displayMessage(hint, 'text-warning');
+            }
+            
+            // Clear input for next guess
+            guessInput.value = '';
+            guessInput.focus();
+        }
+        
+        function endGame() {
+            guessInput.disabled = true;
+            guessButton.style.display = 'none';
+            playAgainButton.style.display = 'block';
+            guessesLeftEl.style.display = 'none';
+        }
+
+        function displayMessage(text, className) {
+            messageEl.textContent = text;
+            messageEl.className = 'message mt-4 message-animate'; // Add animation class
+            messageEl.classList.add(className);
+
+            // Remove animation class after it finishes to allow re-triggering
+            setTimeout(() => {
+                messageEl.classList.remove('message-animate');
+            }, 400);
+        }
+
+        // --- Event Listeners ---
+        guessButton.addEventListener('click', checkGuess);
+        playAgainButton.addEventListener('click', startGame);
+        
+        // Allow pressing Enter to submit guess
+        guessInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent form submission if it's in a form
+                guessButton.click();
+            }
+        });
+
+        // --- Dark Mode Logic ---
+
+        function toggleDarkMode() {
+            htmlEl.classList.toggle('dark-mode');
+            const isDarkMode = htmlEl.classList.contains('dark-mode');
+            
+            // Update icon
+            if (isDarkMode) {
+                themeIcon.classList.remove('bi-moon-stars-fill');
+                themeIcon.classList.add('bi-sun-fill');
+            } else {
+                themeIcon.classList.remove('bi-sun-fill');
+                themeIcon.classList.add('bi-moon-stars-fill');
+            }
+            
+            // Save preference to localStorage
+            localStorage.setItem('darkMode', isDarkMode);
+        }
+
+        // Check for saved dark mode preference on load
+        function applyInitialTheme() {
+            const isDarkModeSaved = localStorage.getItem('darkMode') === 'true';
+            if (isDarkModeSaved) {
+                htmlEl.classList.add('dark-mode');
+                themeIcon.classList.remove('bi-moon-stars-fill');
+                themeIcon.classList.add('bi-sun-fill');
+            }
+        }
+        
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+
+        // Initialize the app
+        applyInitialTheme();
+        startGame();
+
+    </script>
+</body>
+</html>

@@ -54,7 +54,7 @@
 
 ## 🧠 Trí tuệ & Vui chơi
 
-1.  🔢 [Game đoán số](https://dotphonglong.com/games/01-number-guessing-game.html)
+1.  🔢 [Game đoán số](https://dotphonglong.com/games/01-number-guessing-game.html) ✅
 2.  ❌⭕ [Tic-Tac-Toe](https://dotphonglong.com/games/02-tic-tac-toe.html)
 3.  ❌⭕ [Cờ caro](https://dotphonglong.com/games/03-tic-tac-toe.html)
 4.  🔠 [Sudoku mini](https://dotphonglong.com/games/04-sudoku.html)
