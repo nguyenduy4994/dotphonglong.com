@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máy Tính BMI - DOTPHONGLONG</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark Mode Toggle Button */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1.5rem;
+            z-index: 1050;
+        }
+
+        /* Main container for the app */
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+        }
+
+        /* The main calculator card */
+        .bmi-card {
+            width: 100%;
+            max-width: 500px;
+            border: none;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Styles for dark mode card */
+        [data-bs-theme="dark"] .bmi-card {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background-color: #343a40;
+        }
+        
+        /* Input styling */
+        .form-control-lg {
+            border-radius: 0.5rem;
+        }
+
+        /* Result display area */
+        #result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Footer styling */
+        .footer-credit {
+            position: absolute;
+            bottom: 1rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+
+<body class="bg-body-tertiary">
+
+    <!-- Dark Mode Toggle Button -->
+    <button id="darkModeToggle" class="btn btn-outline-secondary dark-mode-toggle">
+        <i class="bi bi-moon-stars-fill"></i>
+    </button>
+
+    <div class="app-container">
+        <!-- Main Application Card -->
+        <div class="bmi-card card">
+            <div class="card-body p-4 p-md-5">
+
+                <!-- Title -->
+                <h1 class="text-center mb-4 fw-bold">Máy Tính BMI</h1>
+
+                <!-- Input Form -->
+                <form id="bmiForm">
+                    <!-- Weight Input -->
+                    <div class="mb-3">
+                        <label for="weight" class="form-label fs-5">Cân nặng (kg)</label>
+                        <input type="number" class="form-control form-control-lg" id="weight" placeholder="Ví dụ: 70" required>
+                    </div>
+
+                    <!-- Height Input -->
+                    <div class="mb-4">
+                        <label for="height" class="form-label fs-5">Chiều cao (cm)</label>
+                        <input type="number" class="form-control form-control-lg" id="height" placeholder="Ví dụ: 175" required>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-4 gap-3">
+                            <i class="bi bi-calculator-fill"></i> Tính toán
+                        </button>
+                        <button type="button" id="clearBtn" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="bi bi-x-circle"></i> Xóa
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Result Display -->
+                <div id="result" class="bg-body-secondary">
+                    <p class="m-0 text-muted">Vui lòng nhập thông tin để xem kết quả.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-credit mt-4">
+            DOTPHONGLONG Mini App
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            const bmiForm = document.getElementById('bmiForm');
+            const weightInput = document.getElementById('weight');
+            const heightInput = document.getElementById('height');
+            const clearBtn = document.getElementById('clearBtn');
+            const resultDiv = document.getElementById('result');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const toggleIcon = darkModeToggle.querySelector('i');
+            const htmlElement = document.documentElement;
+
+            // --- Dark Mode Functionality ---
+            darkModeToggle.addEventListener('click', () => {
+                if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    toggleIcon.classList.remove('bi-sun-fill');
+                    toggleIcon.classList.add('bi-moon-stars-fill');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    toggleIcon.classList.remove('bi-moon-stars-fill');
+                    toggleIcon.classList.add('bi-sun-fill');
+                }
+            });
+
+            // --- BMI Calculation Functionality ---
+            bmiForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent form from submitting the traditional way
+
+                const weight = parseFloat(weightInput.value);
+                const height = parseFloat(heightInput.value);
+
+                // Input validation
+                if (isNaN(weight) || isNaN(height) || weight <= 0 || height <= 0) {
+                    resultDiv.innerHTML = `<p class="m-0 text-danger fw-bold">Vui lòng nhập giá trị hợp lệ cho chiều cao và cân nặng!</p>`;
+                    resultDiv.className = 'bg-danger-subtle';
+                    return;
+                }
+
+                // Convert height from cm to meters
+                const heightInMeters = height / 100;
+
+                // Calculate BMI
+                const bmi = weight / (heightInMeters * heightInMeters);
+                const bmiRounded = bmi.toFixed(2); // Round to 2 decimal places
+
+                // Get BMI status and corresponding class
+                const { status, className } = getBmiStatus(bmi);
+
+                // Display the result
+                resultDiv.innerHTML = `
+                    <div class="text-center">
+                        <p class="fs-5 mb-1">Chỉ số BMI của bạn là</p>
+                        <p class="fs-1 fw-bold mb-2">${bmiRounded}</p>
+                        <p class="fs-4 m-0">${status}</p>
+                    </div>
+                `;
+                resultDiv.className = className;
+            });
+
+            // --- Clear Button Functionality ---
+            clearBtn.addEventListener('click', function() {
+                weightInput.value = '';
+                heightInput.value = '';
+                resultDiv.innerHTML = `<p class="m-0 text-muted">Vui lòng nhập thông tin để xem kết quả.</p>`;
+                resultDiv.className = 'bg-body-secondary';
+                weightInput.focus();
+            });
+
+            /**
+             * Determines the BMI status and appropriate Bootstrap class based on the BMI value.
+             * @param {number} bmi - The calculated BMI value.
+             * @returns {object} An object containing the status string and the class name.
+             */
+            function getBmiStatus(bmi) {
+                if (bmi < 18.5) {
+                    return {
+                        status: 'Gầy (Underweight)',
+                        className: 'bg-warning-subtle text-warning-emphasis'
+                    };
+                } else if (bmi >= 18.5 && bmi <= 24.9) {
+                    return {
+                        status: 'Bình thường (Normal)',
+                        className: 'bg-success-subtle text-success-emphasis'
+                    };
+                } else if (bmi >= 25 && bmi <= 29.9) {
+                    return {
+                        status: 'Thừa cân (Overweight)',
+                        className: 'bg-warning-subtle text-warning-emphasis'
+                    };
+                } else { // bmi >= 30
+                    return {
+                        status: 'Béo phì (Obesity)',
+                        className: 'bg-danger-subtle text-danger-emphasis'
+                    };
+                }
+            }
+        });
+    </script>
+</body>
+</html>
