@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tính Ngày Dự Sinh</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap Icons for Dark Mode Toggle -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        /* Custom Styles */
+        :root {
+            --bs-body-font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            /* Tông màu nền nhẹ nhàng cho chế độ sáng */
+            background-color: #f8f9fa;
+            transition: background-color 0.3s ease;
+        }
+        
+        /* Thêm hiệu ứng chuyển động mượt mà cho các thành phần */
+        .card, .btn, .form-control {
+            transition: all 0.3s ease;
+        }
+
+        .main-container {
+            min-height: 100vh;
+        }
+
+        .calculator-card {
+            /* Khung viền và đổ bóng hài hòa */
+            border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.07);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .result-display {
+            /* Làm nổi bật khu vực kết quả */
+            background-color: var(--bs-primary-bg-subtle);
+            border-left: 5px solid var(--bs-primary);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+        }
+
+        .result-display h3 {
+            font-weight: 500;
+            color: var(--bs-secondary-color);
+        }
+
+        .result-display .due-date {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--bs-primary);
+        }
+        
+        .footer-text {
+            color: var(--bs-secondary-color);
+        }
+
+        /* Nút chuyển đổi Dark Mode */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1030;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column">
+    <!-- Nút chuyển đổi Dark Mode -->
+    <button id="darkModeToggle" class="btn btn-outline-secondary dark-mode-toggle">
+        <i class="bi bi-moon-stars-fill"></i>
+    </button>
+
+    <!-- Main Content -->
+    <div class="container d-flex flex-column justify-content-center align-items-center main-container flex-grow-1 p-3">
+        
+        <header class="text-center mb-4">
+            <h1 class="fw-bold display-5">Tính Ngày Dự Sinh</h1>
+            <p class="text-muted fs-5">Ước tính ngày bé yêu chào đời</p>
+        </header>
+
+        <main class="card calculator-card p-4 p-md-5">
+            <form id="dueDateForm">
+                <div class="mb-3">
+                    <label for="lmpDate" class="form-label fs-5 fw-medium">Ngày đầu tiên của kỳ kinh cuối (LMP):</label>
+                    <input type="date" class="form-control form-control-lg" id="lmpDate" required>
+                </div>
+
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg flex-sm-fill">
+                        <i class="bi bi-calculator-fill me-2"></i>Xem ngày dự sinh
+                    </button>
+                    <button type="button" id="resetButton" class="btn btn-outline-secondary btn-lg flex-sm-fill mt-2 mt-sm-0">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Nhập lại
+                    </button>
+                </div>
+            </form>
+
+            <!-- Result Display Area (initially hidden) -->
+            <div id="result" class="mt-4 d-none">
+                <!-- Nội dung kết quả sẽ được chèn vào đây bởi JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center p-4">
+        <p class="footer-text mb-0">DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy các element cần thiết
+            const dueDateForm = document.getElementById('dueDateForm');
+            const lmpDateInput = document.getElementById('lmpDate');
+            const resultDiv = document.getElementById('result');
+            const resetButton = document.getElementById('resetButton');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const htmlElement = document.documentElement;
+
+            // --- Chức năng tính ngày dự sinh ---
+            dueDateForm.addEventListener('submit', function(event) {
+                event.preventDefault(); // Ngăn form submit mặc định
+
+                const lmpDateValue = lmpDateInput.value;
+                if (!lmpDateValue) {
+                    // Yêu cầu người dùng nhập ngày nếu bỏ trống
+                    alert('Vui lòng chọn ngày đầu của kỳ kinh cuối.');
+                    return;
+                }
+
+                // Chuyển đổi chuỗi ngày sang đối tượng Date
+                const lmpDate = new Date(lmpDateValue);
+                
+                // Quy tắc Naegele: Cộng 280 ngày (40 tuần)
+                const dueDate = new Date(lmpDate.getTime());
+                dueDate.setDate(dueDate.getDate() + 280);
+
+                // Định dạng ngày theo chuẩn Việt Nam (VD: Thứ Hai, ngày 7 tháng 4 năm 2025)
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDueDate = dueDate.toLocaleDateString('vi-VN', options);
+
+                // Hiển thị kết quả
+                resultDiv.innerHTML = `
+                    <div class="result-display">
+                        <h3>Ngày dự sinh ước tính của bạn là:</h3>
+                        <p class="due-date mt-2 mb-0">${formattedDueDate}</p>
+                    </div>
+                `;
+                resultDiv.classList.remove('d-none'); // Hiện vùng kết quả
+            });
+
+            // --- Chức năng nút Nhập lại ---
+            resetButton.addEventListener('click', function() {
+                lmpDateInput.value = ''; // Xóa ngày đã chọn
+                resultDiv.innerHTML = ''; // Xóa kết quả
+                resultDiv.classList.add('d-none'); // Ẩn vùng kết quả
+                lmpDateInput.focus(); // Đưa con trỏ về ô nhập ngày
+            });
+            
+            // --- Chức năng Dark Mode ---
+            darkModeToggle.addEventListener('click', function() {
+                // Lấy theme hiện tại
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                
+                // Chuyển đổi theme
+                if (currentTheme === 'dark') {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    darkModeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i>'; // Icon cho light mode
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Icon cho dark mode
+                }
+            });
+        });
+    </script>
+</body>
+</html>
