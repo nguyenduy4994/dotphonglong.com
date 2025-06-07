@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máy Tính Tiền Tip</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bs-light);
+            transition: background-color 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex-grow: 1;
+        }
+
+        h1 {
+            font-weight: 700;
+            color: var(--bs-primary);
+        }
+
+        /* Dark Mode Theme */
+        [data-bs-theme="dark"] body {
+            background-color: #121212;
+        }
+        [data-bs-theme="dark"] .card {
+            background-color: #1e1e1e;
+            border-color: #333;
+        }
+        [data-bs-theme="dark"] .form-control {
+            background-color: #2a2a2a;
+            color: #f8f9fa;
+            border-color: #444;
+        }
+        [data-bs-theme="dark"] .form-control::placeholder {
+            color: #888;
+        }
+        [data-bs-theme="dark"] .input-group-text {
+            background-color: #333;
+            border-color: #444;
+            color: #f8f9fa;
+        }
+        [data-bs-theme="dark"] .btn-outline-primary {
+             color: #6ea8fe;
+             border-color: #6ea8fe;
+        }
+        [data-bs-theme="dark"] .btn-outline-primary:hover,
+        [data-bs-theme="dark"] .btn-outline-primary.active {
+             background-color: #6ea8fe;
+             color: #fff;
+        }
+
+        /* Calculator Card */
+        .calculator-card {
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+        [data-bs-theme="dark"] .calculator-card {
+             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Input and Button Styling */
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--bs-secondary-color);
+        }
+        .form-control, .input-group-text {
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            padding: 0.75rem 1rem;
+        }
+        .tip-buttons .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+        }
+        .tip-buttons .form-control {
+            text-align: right;
+        }
+
+        /* Results Section */
+        .result-section {
+            background-color: var(--bs-primary);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+        }
+        [data-bs-theme="dark"] .result-section {
+            background-color: #0d6efd;
+        }
+        .result-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        .result-amount {
+            font-size: 2.25rem;
+            font-weight: 700;
+        }
+
+        /* Dark Mode Toggle Button */
+        #darkModeToggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1050;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        #darkModeToggle svg {
+            width: 24px;
+            height: 24px;
+        }
+        .moon-icon { display: none; }
+        [data-bs-theme="dark"] .sun-icon { display: none; }
+        [data-bs-theme="dark"] .moon-icon { display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- Dark Mode Toggle Button -->
+    <button id="darkModeToggle" class="btn btn-light">
+        <svg xmlns="http://www.w3.org/2000/svg" class="sun-icon" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="moon-icon" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278zM4.858 1.311A7.269 7.269 0 0 0 1.025 7.71c0 4.021 3.278 7.277 7.318 7.277a7.316 7.316 0 0 0 5.205-2.162c-.337.042-.68.063-1.029.063-4.61 0-8.343-3.714-8.343-8.29 0-1.167.242-2.278.681-3.286z"/>
+        </svg>
+    </button>
+    
+    <div class="container main-content py-5">
+        <header class="text-center mb-5">
+            <h1>Máy Tính Tiền Tip</h1>
+        </header>
+        
+        <div class="card calculator-card p-lg-4">
+            <div class="card-body">
+                <!-- Bill Amount Input -->
+                <div class="mb-4">
+                    <label for="billAmount" class="form-label">Tổng hóa đơn</label>
+                    <div class="input-group">
+                        <span class="input-group-text">VNĐ</span>
+                        <input type="number" class="form-control" id="billAmount" placeholder="0" min="0">
+                    </div>
+                </div>
+
+                <!-- Tip Percentage Selection -->
+                <div class="mb-4">
+                    <label class="form-label">Chọn % Tip</label>
+                    <div class="row g-2 tip-buttons">
+                        <div class="col"><button class="btn btn-outline-primary w-100" data-tip="10">10%</button></div>
+                        <div class="col"><button class="btn btn-outline-primary w-100" data-tip="15">15%</button></div>
+                        <div class="col"><button class="btn btn-outline-primary w-100" data-tip="20">20%</button></div>
+                        <div class="col"><button class="btn btn-outline-primary w-100" data-tip="25">25%</button></div>
+                        <div class="col">
+                            <input type="number" class="form-control text-center fw-bold h-100" id="customTip" placeholder="Tùy chỉnh" min="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Number of People Input -->
+                <div class="mb-4">
+                    <label for="numberOfPeople" class="form-label">Số người chia</label>
+                     <div class="input-group">
+                        <span class="input-group-text">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                                <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                            </svg>
+                        </span>
+                        <input type="number" class="form-control" id="numberOfPeople" value="1" min="1">
+                    </div>
+                </div>
+
+                <!-- Results Display -->
+                <div class="result-section mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <div class="result-label">Tiền tip / người</div>
+                        </div>
+                        <div class="result-amount" id="tipPerPerson">0 VNĐ</div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="result-label">Tổng / người</div>
+                        </div>
+                        <div class="result-amount" id="totalPerPerson">0 VNĐ</div>
+                    </div>
+                </div>
+
+                <!-- Reset Button -->
+                <div class="mt-4">
+                    <button id="resetBtn" class="btn btn-success w-100 fw-bold py-3">TÍNH LẠI</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="text-center text-muted py-4">
+        DOTPHONGLONG Mini App
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get DOM elements
+            const billAmountInput = document.getElementById('billAmount');
+            const customTipInput = document.getElementById('customTip');
+            const numberOfPeopleInput = document.getElementById('numberOfPeople');
+            const tipButtons = document.querySelectorAll('.tip-buttons .btn');
+            const tipPerPersonDisplay = document.getElementById('tipPerPerson');
+            const totalPerPersonDisplay = document.getElementById('totalPerPerson');
+            const resetBtn = document.getElementById('resetBtn');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const htmlElement = document.documentElement;
+
+            let tipPercentage = 0;
+
+            // --- Calculation Logic ---
+            function calculate() {
+                const billAmount = parseFloat(billAmountInput.value) || 0;
+                const numberOfPeople = parseInt(numberOfPeopleInput.value) || 1;
+                
+                // Validate inputs
+                if (billAmount < 0 || numberOfPeople < 1) {
+                    resetApp();
+                    return;
+                }
+
+                // Calculate amounts
+                const totalTip = billAmount * (tipPercentage / 100);
+                const totalAmount = billAmount + totalTip;
+                const tipPerPerson = totalTip / numberOfPeople;
+                const totalPerPerson = totalAmount / numberOfPeople;
+
+                // Update UI
+                tipPerPersonDisplay.textContent = formatCurrency(tipPerPerson);
+                totalPerPersonDisplay.textContent = formatCurrency(totalPerPerson);
+            }
+
+            function formatCurrency(value) {
+                // Use Intl.NumberFormat for better currency formatting
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+            }
+
+
+            // --- Event Listeners ---
+            
+            // Listen for input changes
+            [billAmountInput, customTipInput, numberOfPeopleInput].forEach(input => {
+                input.addEventListener('input', calculate);
+            });
+
+            // Handle tip button clicks
+            tipButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    // Remove active state from all buttons
+                    tipButtons.forEach(btn => btn.classList.remove('active'));
+                    // Add active state to clicked button
+                    e.currentTarget.classList.add('active');
+                    
+                    // Set tip percentage from data attribute
+                    tipPercentage = parseFloat(e.currentTarget.dataset.tip);
+                    // Clear custom tip input
+                    customTipInput.value = '';
+                    
+                    calculate();
+                });
+            });
+
+            // Handle custom tip input
+            customTipInput.addEventListener('input', function() {
+                // Remove active state from all preset buttons
+                tipButtons.forEach(btn => btn.classList.remove('active'));
+                
+                tipPercentage = parseFloat(customTipInput.value) || 0;
+                calculate();
+            });
+
+            // Handle Reset button
+            resetBtn.addEventListener('click', resetApp);
+
+            function resetApp() {
+                billAmountInput.value = '';
+                customTipInput.value = '';
+                numberOfPeopleInput.value = '1';
+                tipPercentage = 0;
+                tipButtons.forEach(btn => btn.classList.remove('active'));
+                calculate(); // Recalculate to show zeros
+            }
+
+            // --- Dark Mode Logic ---
+            darkModeToggle.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                if (currentTheme === 'dark') {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+
+            // Check for saved theme in localStorage on page load
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                htmlElement.setAttribute('data-bs-theme', savedTheme);
+            }
+
+            // Initial calculation on load
+            calculate();
+        });
+    </script>
+</body>
+</html>
