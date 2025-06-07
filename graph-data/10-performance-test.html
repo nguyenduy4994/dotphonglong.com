@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đo Thời Gian Phản Hồi</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* Tùy chỉnh CSS */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Màu nền sáng mặc định */
+            color: #343a40; /* Màu chữ mặc định */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dark-mode {
+            background-color: #343a40; /* Màu nền tối */
+            color: #f8f9fa; /* Màu chữ sáng */
+        }
+
+        .app-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .app-frame {
+            background-color: #ffffff; /* Nền khung sáng */
+            padding: 2.5rem;
+            border-radius: 1.5rem; /* Bo tròn các góc */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Đổ bóng nhẹ */
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            border: 2px solid #007bff; /* Viền màu xanh Bootstrap */
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dark-mode .app-frame {
+            background-color: #212529; /* Nền khung tối */
+            border-color: #6610f2; /* Viền màu tím Bootstrap */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #007bff; /* Màu tiêu đề mặc định */
+            font-size: 2.5rem; /* Kích thước chữ lớn */
+        }
+
+        .dark-mode h1 {
+            color: #6610f2; /* Màu tiêu đề tối */
+        }
+
+        #startButton {
+            padding: 1.5rem 3rem;
+            font-size: 1.8rem;
+            border-radius: 0.75rem;
+            transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #startButton:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .dark-mode #startButton {
+            background-color: #6610f2;
+            border-color: #6610f2;
+        }
+
+        .dark-mode #startButton:hover {
+            box-shadow: 0 5px 15px rgba(102, 16, 242, 0.3);
+        }
+
+        #signalArea {
+            width: 250px;
+            height: 250px;
+            background-color: #28a745; /* Màu xanh lá mặc định */
+            border-radius: 1.5rem;
+            margin: 2rem auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+
+        .dark-mode #signalArea {
+            background-color: #dc3545; /* Màu đỏ trong Dark Mode */
+        }
+
+        #signalArea:active {
+            transform: scale(0.98);
+        }
+
+        #resultArea {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            color: #007bff;
+        }
+
+        .dark-mode #resultArea {
+            color: #6610f2;
+        }
+
+        #resetButton {
+            margin-top: 1.5rem;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 0.5rem;
+        }
+
+        .dark-mode #resetButton {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+
+        .dark-mode-toggle .btn {
+            background-color: rgba(0, 0, 0, 0.05);
+            border: none;
+            color: #6c757d;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .dark-mode-toggle .btn:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode .dark-mode-toggle .btn {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #adb5bd;
+        }
+
+        .dark-mode .dark-mode-toggle .btn:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .footer-text {
+            padding: 1.5rem;
+            text-align: center;
+            font-size: 1rem;
+            color: #6c757d;
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+            width: 100%;
+        }
+
+        .dark-mode .footer-text {
+            color: #adb5bd;
+        }
+    </style>
+</head>
+<body>
+    <!-- Nút Dark Mode Toggle -->
+    <div class="dark-mode-toggle">
+        <button id="darkModeToggle" class="btn">
+            <i class="bi bi-moon-fill d-none"></i> <!-- Icon cho dark mode -->
+            <i class="bi bi-sun-fill"></i> <!-- Icon cho light mode -->
+        </button>
+    </div>
+
+    <div class="app-container">
+        <div class="app-frame">
+            <h1 class="mb-5">ĐO THỜI GIAN PHẢN HỒI</h1>
+
+            <!-- Nút Bắt Đầu -->
+            <button id="startButton" class="btn btn-primary d-block mx-auto mb-4">Bắt Đầu</button>
+
+            <!-- Khu vực tín hiệu -->
+            <div id="signalArea" class="d-none">
+                <span id="signalText">Click ngay!</span>
+            </div>
+
+            <!-- Khu vực kết quả -->
+            <div id="resultArea" class="d-none"></div>
+
+            <!-- Nút Chơi Lại/Reset -->
+            <button id="resetButton" class="btn btn-secondary mt-4 d-none">Chơi Lại</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-text">
+        DOTPHONGLONG Mini App
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eG7Kj7f2Q" crossorigin="anonymous"></script>
+
+    <script>
+        // Lấy các phần tử DOM
+        const startButton = document.getElementById('startButton');
+        const signalArea = document.getElementById('signalArea');
+        const signalText = document.getElementById('signalText');
+        const resultArea = document.getElementById('resultArea');
+        const resetButton = document.getElementById('resetButton');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const moonIcon = darkModeToggle.querySelector('.bi-moon-fill');
+        const sunIcon = darkModeToggle.querySelector('.bi-sun-fill');
+
+        let startTime; // Thời điểm tín hiệu xuất hiện
+        let timeoutId; // ID của setTimeout để có thể hủy bỏ
+        let isWaitingForClick = false; // Trạng thái chờ người dùng click
+
+        // Hàm khởi động trò chơi
+        function startGame() {
+            // Ẩn nút bắt đầu, kết quả và nút reset
+            startButton.classList.add('d-none');
+            resultArea.classList.add('d-none');
+            resetButton.classList.add('d-none');
+            signalArea.classList.add('d-none'); // Đảm bảo tín hiệu ẩn
+
+            // Đặt lại màu tín hiệu về mặc định nếu cần
+            signalArea.style.backgroundColor = ''; // Xóa style inline để dùng lại CSS
+
+            isWaitingForClick = false; // Đặt lại trạng thái
+
+            // Khoảng thời gian chờ ngẫu nhiên từ 1 đến 4 giây (1000ms đến 4000ms)
+            const randomDelay = Math.floor(Math.random() * 3000) + 1000;
+
+            // Thiết lập timeout để hiển thị tín hiệu
+            timeoutId = setTimeout(() => {
+                showSignal();
+            }, randomDelay);
+
+            // Cho người dùng biết chuẩn bị
+            resultArea.textContent = 'Hãy chuẩn bị...';
+            resultArea.classList.remove('d-none');
+        }
+
+        // Hàm hiển thị tín hiệu
+        function showSignal() {
+            signalArea.classList.remove('d-none'); // Hiển thị khu vực tín hiệu
+            // Nếu là dark mode, tín hiệu màu đỏ, ngược lại là xanh lá
+            if (document.body.classList.contains('dark-mode')) {
+                signalArea.style.backgroundColor = '#dc3545'; // Màu đỏ
+            } else {
+                signalArea.style.backgroundColor = '#28a745'; // Màu xanh lá
+            }
+            signalText.textContent = 'CLICK NGAY!';
+            startTime = new Date().getTime(); // Ghi lại thời điểm tín hiệu xuất hiện
+            isWaitingForClick = true; // Đặt trạng thái chờ click
+            resultArea.classList.add('d-none'); // Ẩn "Chuẩn bị..."
+        }
+
+        // Hàm xử lý click vào tín hiệu
+        function handleSignalClick() {
+            if (!isWaitingForClick) {
+                // Nếu người dùng click quá sớm (trước khi tín hiệu xuất hiện)
+                clearTimeout(timeoutId); // Hủy bỏ timeout đang chờ
+                resultArea.textContent = 'Bạn đã click quá sớm! Nhấn "Chơi Lại" để thử lại.';
+                resultArea.classList.remove('d-none');
+                signalArea.classList.add('d-none'); // Ẩn tín hiệu
+                resetButton.classList.remove('d-none'); // Hiện nút reset
+                return; // Kết thúc hàm
+            }
+
+            // Nếu người dùng click đúng lúc
+            const endTime = new Date().getTime(); // Ghi lại thời điểm click
+            const reactionTime = endTime - startTime; // Tính thời gian phản hồi
+
+            resultArea.textContent = `Thời gian phản hồi của bạn: ${reactionTime} ms`;
+            resultArea.classList.remove('d-none'); // Hiển thị kết quả
+            signalArea.classList.add('d-none'); // Ẩn khu vực tín hiệu
+            resetButton.classList.remove('d-none'); // Hiển thị nút chơi lại
+
+            isWaitingForClick = false; // Đặt lại trạng thái
+        }
+
+        // Hàm reset trò chơi
+        function resetGame() {
+            clearTimeout(timeoutId); // Hủy bỏ bất kỳ timeout đang chờ nào
+            signalArea.classList.add('d-none'); // Ẩn tín hiệu
+            resultArea.classList.add('d-none'); // Ẩn kết quả
+            resetButton.classList.add('d-none'); // Ẩn nút reset
+            startButton.classList.remove('d-none'); // Hiển thị nút bắt đầu
+            isWaitingForClick = false; // Đặt lại trạng thái
+        }
+
+        // Hàm chuyển đổi chế độ tối/sáng
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            // Cập nhật icon dựa trên trạng thái hiện tại
+            if (document.body.classList.contains('dark-mode')) {
+                moonIcon.classList.remove('d-none');
+                sunIcon.classList.add('d-none');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                moonIcon.classList.add('d-none');
+                sunIcon.classList.remove('d-none');
+                localStorage.setItem('theme', 'light');
+            }
+            // Cập nhật màu tín hiệu ngay lập tức nếu đang hiển thị
+            if (!signalArea.classList.contains('d-none')) {
+                 if (document.body.classList.contains('dark-mode')) {
+                    signalArea.style.backgroundColor = '#dc3545'; // Màu đỏ
+                } else {
+                    signalArea.style.backgroundColor = '#28a745'; // Màu xanh lá
+                }
+            }
+        }
+
+        // Kiểm tra chế độ đã lưu trong localStorage khi tải trang
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                moonIcon.classList.remove('d-none');
+                sunIcon.classList.add('d-none');
+            } else {
+                // Mặc định là light mode
+                moonIcon.classList.add('d-none');
+                sunIcon.classList.remove('d-none');
+            }
+        }
+
+        // Gán sự kiện cho các nút
+        startButton.addEventListener('click', startGame);
+        signalArea.addEventListener('click', handleSignalClick);
+        resetButton.addEventListener('click', resetGame);
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+
+        // Tải chủ đề khi trang được tải
+        document.addEventListener('DOMContentLoaded', loadTheme);
+    </script>
+</body>
+</html>

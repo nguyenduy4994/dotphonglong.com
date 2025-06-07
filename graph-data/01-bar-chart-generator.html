@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biểu đồ Động</title>
+    <!-- Bootstrap CSS CDN (phiên bản mới nhất) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light mode background */
+            color: #343a40; /* Light mode text color */
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        body.dark-mode {
+            background-color: #212529; /* Dark mode background */
+            color: #f8f9fa; /* Dark mode text color */
+        }
+        .container-fluid {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .main-card {
+            background-color: #ffffff; /* Light mode card background */
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        body.dark-mode .main-card {
+            background-color: #343a40; /* Dark mode card background */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .form-control, .btn {
+            border-radius: 8px;
+            font-size: 1.1rem; /* Larger font for controls */
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+        }
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background-color: #f1f3f5; /* Light mode list item background */
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode .list-group-item {
+            background-color: #495057; /* Dark mode list item background */
+            color: #e9ecef;
+        }
+        .chart-container {
+            width: 100%;
+            height: 400px; /* Fixed height for the chart */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .footer {
+            padding: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #6c757d;
+            background-color: #e9ecef; /* Light mode footer background */
+            border-top: 1px solid #dee2e6;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode .footer {
+            background-color: #343a40; /* Dark mode footer background */
+            color: #adb5bd;
+            border-top-color: #495057;
+        }
+        .form-check-input:checked {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .form-check-label {
+            font-size: 1.1rem;
+            margin-right: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark Mode Toggle Button -->
+    <button class="btn btn-outline-secondary dark-mode-toggle rounded-circle" id="darkModeToggle">
+        <i class="bi bi-moon-fill d-none" id="moonIcon"></i>
+        <i class="bi bi-sun-fill" id="sunIcon"></i>
+    </button>
+
+    <div class="container-fluid d-flex flex-column">
+        <!-- Header -->
+        <h1 class="text-center my-4 display-4 fw-bold">Biểu đồ Động</h1>
+
+        <!-- Main Application Frame -->
+        <div class="main-card mx-auto" style="max-width: 900px; width: 100%;">
+            <div class="row g-4">
+                <!-- Input and Data List Section -->
+                <div class="col-lg-6">
+                    <h3 class="mb-3 text-primary">Nhập Dữ liệu</h3>
+                    <div class="mb-3">
+                        <label for="itemName" class="form-label">Tên mục:</label>
+                        <input type="text" class="form-control" id="itemName" placeholder="Ví dụ: Sản phẩm A">
+                    </div>
+                    <div class="mb-3">
+                        <label for="itemValue" class="form-label">Giá trị:</label>
+                        <input type="number" class="form-control" id="itemValue" placeholder="Ví dụ: 100">
+                    </div>
+                    <button class="btn btn-primary w-100 mb-3" id="addDataBtn">
+                        <i class="bi bi-plus-circle-fill me-2"></i>Thêm Dữ liệu
+                    </button>
+
+                    <h4 class="mt-4 text-secondary">Danh sách Dữ liệu</h4>
+                    <div id="messageBox" class="alert alert-info d-none" role="alert"></div>
+                    <ul class="list-group" id="dataList">
+                        <!-- Data items will be added here by JavaScript -->
+                        <li class="list-group-item text-center text-muted">Chưa có dữ liệu nào.</li>
+                    </ul>
+                </div>
+
+                <!-- Chart Display Section -->
+                <div class="col-lg-6">
+                    <h3 class="mb-3 text-primary">Biểu đồ</h3>
+                    <div class="mb-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="chartType" id="barChart" value="bar" checked>
+                            <label class="form-check-label" for="barChart">Biểu đồ Cột</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="chartType" id="pieChart" value="pie">
+                            <label class="form-check-label" for="pieChart">Biểu đồ Tròn</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-success w-100 mb-3" id="drawChartBtn">
+                        <i class="bi bi-bar-chart-fill me-2"></i>Vẽ Biểu đồ
+                    </button>
+
+                    <div class="chart-container border rounded p-3 bg-light d-flex align-items-center justify-content-center">
+                        <canvas id="myChart"></canvas>
+                        <p id="chartPlaceholder" class="text-muted text-center fs-5">Hãy nhập dữ liệu và vẽ biểu đồ!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto">
+        <p>&copy; DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXcWksVj+QoU43z/mMkwnio6m8Z+RAhlP8yLzJ+3A" crossorigin="anonymous"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Array để lưu trữ dữ liệu biểu đồ
+        let chartData = [];
+        let myChartInstance = null; // Biến để lưu trữ thể hiện của Chart.js
+
+        // Lấy các phần tử DOM
+        const itemNameInput = document.getElementById('itemName');
+        const itemValueInput = document.getElementById('itemValue');
+        const addDataBtn = document.getElementById('addDataBtn');
+        const dataList = document.getElementById('dataList');
+        const barChartRadio = document.getElementById('barChart');
+        const pieChartRadio = document.getElementById('pieChart');
+        const drawChartBtn = document.getElementById('drawChartBtn');
+        const myChartCanvas = document.getElementById('myChart');
+        const chartPlaceholder = document.getElementById('chartPlaceholder');
+        const messageBox = document.getElementById('messageBox');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const moonIcon = document.getElementById('moonIcon');
+        const sunIcon = document.getElementById('sunIcon');
+
+        // Hàm hiển thị thông báo
+        function showMessage(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = `alert alert-${type} d-block mt-3`;
+            setTimeout(() => {
+                messageBox.classList.add('d-none');
+            }, 3000); // Ẩn sau 3 giây
+        }
+
+        // Hàm tạo màu ngẫu nhiên cho biểu đồ tròn
+        function getRandomColor(alpha = 1) {
+            const r = Math.floor(Math.random() * 255);
+            const g = Math.floor(Math.random() * 255);
+            const b = Math.floor(Math.random() * 255);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // Hàm render danh sách dữ liệu
+        function renderDataList() {
+            dataList.innerHTML = ''; // Xóa danh sách cũ
+            if (chartData.length === 0) {
+                dataList.innerHTML = '<li class="list-group-item text-center text-muted">Chưa có dữ liệu nào.</li>';
+                chartPlaceholder.classList.remove('d-none'); // Hiển thị placeholder
+                if (myChartInstance) {
+                    myChartInstance.destroy(); // Hủy biểu đồ nếu không có dữ liệu
+                    myChartInstance = null;
+                }
+                return;
+            }
+
+            chartPlaceholder.classList.add('d-none'); // Ẩn placeholder khi có dữ liệu
+
+            chartData.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                li.innerHTML = `
+                    <span><strong>${item.name}</strong>: ${item.value}</span>
+                    <button class="btn btn-sm btn-danger delete-btn" data-index="${index}">
+                        <i class="bi bi-x-circle-fill"></i> Xóa
+                    </button>
+                `;
+                dataList.appendChild(li);
+            });
+
+            // Gắn sự kiện cho các nút xóa
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const indexToDelete = parseInt(event.currentTarget.dataset.index);
+                    deleteData(indexToDelete);
+                });
+            });
+        }
+
+        // Hàm thêm dữ liệu
+        function addData() {
+            const name = itemNameInput.value.trim();
+            const value = parseFloat(itemValueInput.value);
+
+            if (!name || isNaN(value)) {
+                showMessage('Vui lòng nhập tên mục và giá trị hợp lệ.', 'warning');
+                return;
+            }
+            if (value <= 0) {
+                showMessage('Giá trị phải lớn hơn 0.', 'warning');
+                return;
+            }
+
+            chartData.push({ name: name, value: value });
+            itemNameInput.value = ''; // Xóa input
+            itemValueInput.value = '';
+            renderDataList(); // Cập nhật danh sách
+            drawChart(); // Vẽ lại biểu đồ
+            showMessage('Dữ liệu đã được thêm thành công!', 'success');
+        }
+
+        // Hàm xóa dữ liệu
+        function deleteData(index) {
+            if (confirm('Bạn có chắc muốn xóa mục này không?')) { // Sử dụng confirm tạm thời
+                chartData.splice(index, 1);
+                renderDataList(); // Cập nhật danh sách
+                drawChart(); // Vẽ lại biểu đồ
+                showMessage('Dữ liệu đã được xóa.', 'info');
+            }
+        }
+
+        // Hàm vẽ biểu đồ
+        function drawChart() {
+            if (myChartInstance) {
+                myChartInstance.destroy(); // Hủy biểu đồ hiện có để vẽ lại
+            }
+
+            if (chartData.length === 0) {
+                chartPlaceholder.classList.remove('d-none'); // Hiển thị placeholder
+                return;
+            }
+
+            chartPlaceholder.classList.add('d-none'); // Ẩn placeholder
+
+            const labels = chartData.map(item => item.name);
+            const values = chartData.map(item => item.value);
+            const chartType = document.querySelector('input[name="chartType"]:checked').value;
+
+            // Thiết lập màu sắc dựa trên chế độ tối/sáng
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            const textColor = isDarkMode ? '#f8f9fa' : '#343a40';
+            const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const tooltipBgColor = isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.7)';
+            const tooltipBorderColor = isDarkMode ? '#f8f9fa' : '#343a40';
+
+            let datasets = [];
+            let backgroundColor = [];
+            let borderColor = [];
+
+            if (chartType === 'pie') {
+                backgroundColor = chartData.map(() => getRandomColor(0.7)); // Màu sắc ngẫu nhiên với độ trong suốt
+                borderColor = chartData.map(() => getRandomColor(1)); // Màu sắc đường viền
+                datasets.push({
+                    data: values,
+                    backgroundColor: backgroundColor,
+                    borderColor: borderColor,
+                    borderWidth: 1
+                });
+            } else { // 'bar' chart
+                backgroundColor = getRandomColor(0.8); // Một màu cho tất cả các cột
+                borderColor = getRandomColor(1);
+                datasets.push({
+                    label: 'Giá trị',
+                    data: values,
+                    backgroundColor: backgroundColor,
+                    borderColor: borderColor,
+                    borderWidth: 1
+                });
+            }
+
+            myChartInstance = new Chart(myChartCanvas, {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor, // Màu chữ cho legend
+                                font: {
+                                    size: 14 // Kích thước chữ legend
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: tooltipBgColor,
+                            borderColor: tooltipBorderColor,
+                            borderWidth: 1,
+                            titleColor: textColor,
+                            bodyColor: textColor,
+                            padding: 10,
+                            displayColors: true // Hiển thị màu sắc trong tooltip
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: textColor, // Màu chữ cho trục X
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: gridColor // Màu lưới trục X
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: textColor, // Màu chữ cho trục Y
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: gridColor // Màu lưới trục Y
+                            },
+                            beginAtZero: true // Bắt đầu từ 0 cho biểu đồ cột
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Chức năng Dark Mode ---
+        function applyDarkMode(isDark) {
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                moonIcon.classList.remove('d-none');
+                sunIcon.classList.add('d-none');
+            } else {
+                document.body.classList.remove('dark-mode');
+                moonIcon.classList.add('d-none');
+                sunIcon.classList.remove('d-none');
+            }
+            localStorage.setItem('darkMode', isDark); // Lưu trạng thái vào Local Storage
+            // Cập nhật biểu đồ để màu sắc phù hợp với chế độ
+            if (chartData.length > 0) {
+                drawChart();
+            }
+        }
+
+        // Khởi tạo chế độ tối/sáng khi tải trang
+        const savedDarkMode = localStorage.getItem('darkMode');
+        if (savedDarkMode === 'true') {
+            applyDarkMode(true);
+        } else {
+            applyDarkMode(false);
+        }
+
+        // Sự kiện chuyển đổi Dark Mode
+        darkModeToggle.addEventListener('click', () => {
+            const isDark = document.body.classList.contains('dark-mode');
+            applyDarkMode(!isDark);
+        });
+
+        // --- Gắn các sự kiện ---
+        addDataBtn.addEventListener('click', addData);
+        drawChartBtn.addEventListener('click', drawChart);
+
+        // Sự kiện thay đổi loại biểu đồ (radio buttons)
+        document.querySelectorAll('input[name="chartType"]').forEach(radio => {
+            radio.addEventListener('change', drawChart);
+        });
+
+        // Xử lý khi nhấn Enter trong trường input để thêm dữ liệu
+        itemNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Ngăn chặn form submit mặc định
+                itemValueInput.focus();
+            }
+        });
+        itemValueInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addData();
+            }
+        });
+
+        // Khởi tạo hiển thị danh sách dữ liệu và biểu đồ khi tải trang
+        renderDataList();
+        drawChart(); // Vẽ biểu đồ ban đầu (nếu có dữ liệu mặc định)
+    </script>
+</body>
+</html>

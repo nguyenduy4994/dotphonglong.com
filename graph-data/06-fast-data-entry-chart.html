@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biểu đồ nhập liệu nhanh</title>
+    <!-- Bootstrap CSS CDN (phiên bản 5.3.3) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <style>
+        /* Thiết lập phông chữ Inter mặc định cho toàn bộ trang */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Hiệu ứng chuyển đổi mượt mà */
+            background-color: #f8f9fa; /* Nền sáng mặc định */
+            color: #212529; /* Chữ tối mặc định */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Chế độ tối */
+        body.dark-mode {
+            background-color: #212529; /* Nền tối */
+            color: #f8f9fa; /* Chữ sáng */
+        }
+
+        /* Nút Dark Mode Toggle nổi */
+        #darkModeToggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050; /* Đảm bảo nút nằm trên cùng */
+            transition: transform 0.2s ease-in-out;
+            border-radius: 50%; /* Nút tròn */
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #darkModeToggle:hover {
+            transform: scale(1.05);
+        }
+
+        /* Thiết lập khung app hài hòa */
+        .app-container {
+            flex-grow: 1; /* Cho phép container giãn nở */
+            background-color: #ffffff;
+            border-radius: 1rem; /* Góc bo tròn */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Đổ bóng nhẹ nhàng */
+            padding: 2rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        body.dark-mode .app-container {
+            background-color: #343a40; /* Nền tối cho khung app */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+        }
+
+        /* Tiêu đề app */
+        .app-title {
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: #0d6efd; /* Màu xanh Bootstrap */
+        }
+
+        body.dark-mode .app-title {
+            color: #6daffc; /* Màu xanh nhạt hơn cho Dark Mode */
+        }
+
+        /* Input fields và nút */
+        .form-control, .btn {
+            border-radius: 0.5rem; /* Góc bo tròn */
+            font-size: 1.1rem; /* Phông chữ lớn hơn */
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-outline-secondary {
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        body.dark-mode .btn-outline-secondary {
+            border-color: #adb5bd;
+            color: #adb5bd;
+        }
+
+        /* Bảng dữ liệu */
+        .table {
+            --bs-table-bg: #ffffff; /* Nền bảng sáng */
+            --bs-table-color: #212529; /* Chữ bảng tối */
+            border-radius: 0.5rem;
+            overflow: hidden; /* Đảm bảo góc bo tròn */
+        }
+        body.dark-mode .table {
+            --bs-table-bg: #495057; /* Nền bảng tối */
+            --bs-table-color: #f8f9fa; /* Chữ bảng sáng */
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+            font-size: 1rem;
+        }
+
+        /* Biểu đồ */
+        canvas {
+            background-color: transparent; /* Nền biểu đồ trong suốt */
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+            padding: 1rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        body.dark-mode .footer {
+            color: #adb5bd;
+        }
+
+        /* Tăng kích thước phông chữ cho nhãn và giá trị */
+        .form-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Nút Dark Mode Toggle -->
+    <button id="darkModeToggle" class="btn btn-outline-secondary">
+        <i class="bi bi-moon-fill"></i>
+    </button>
+
+    <div class="container-fluid py-4 flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+        <h1 class="text-center app-title mb-4">Biểu đồ nhập liệu nhanh</h1>
+
+        <div class="col-12 col-md-10 col-lg-8 app-container">
+            <!-- Phần nhập liệu -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6">
+                    <label for="itemLabel" class="form-label">Tên mục</label>
+                    <input type="text" class="form-control" id="itemLabel" placeholder="Ví dụ: Doanh số Q1">
+                </div>
+                <div class="col-sm-4">
+                    <label for="itemValue" class="form-label">Giá trị số</label>
+                    <input type="number" class="form-control" id="itemValue" placeholder="Ví dụ: 1500">
+                </div>
+                <div class="col-sm-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-primary w-100" id="addItemBtn">Thêm</button>
+                </div>
+            </div>
+
+            <!-- Bảng dữ liệu đã nhập -->
+            <h2 class="h4 mb-3">Dữ liệu đã nhập</h2>
+            <div class="table-responsive mb-4">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Tên mục</th>
+                            <th scope="col">Giá trị</th>
+                            <th scope="col" class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <!-- Dữ liệu sẽ được thêm vào đây bằng JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Nút Xóa tất cả -->
+            <div class="text-center mb-4">
+                <button type="button" class="btn btn-danger" id="clearAllBtn">Xóa tất cả</button>
+            </div>
+
+            <!-- Khu vực biểu đồ -->
+            <h2 class="h4 mb-3">Biểu đồ trực quan</h2>
+            <div class="chart-container" style="position: relative; height: 40vh; width: 100%;">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer text-center">
+        DOTPHONGLONG Mini App
+    </footer>
+
+    <!-- Bootstrap JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Lấy các phần tử DOM cần thiết
+        const itemLabelInput = document.getElementById('itemLabel');
+        const itemValueInput = document.getElementById('itemValue');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const dataTableBody = document.getElementById('dataTableBody');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const chartCanvas = document.getElementById('myChart');
+
+        // Mảng để lưu trữ dữ liệu
+        let chartData = [];
+        let myChart; // Biến để lưu trữ đối tượng Chart.js
+
+        /**
+         * @function generateColors
+         * @description Tạo mảng màu sắc ngẫu nhiên và màu viền tương ứng dựa trên số lượng mục dữ liệu.
+         * @param {number} numColors - Số lượng màu cần tạo.
+         * @returns {object} - Đối tượng chứa mảng backgroundColors và borderColors.
+         */
+        function generateColors(numColors) {
+            const backgroundColors = [];
+            const borderColors = [];
+            for (let i = 0; i < numColors; i++) {
+                const r = Math.floor(Math.random() * 255);
+                const g = Math.floor(Math.random() * 255);
+                const b = Math.floor(Math.random() * 255);
+                backgroundColors.push(`rgba(${r}, ${g}, ${b}, 0.6)`);
+                borderColors.push(`rgba(${r}, ${g}, ${b}, 1)`);
+            }
+            return { backgroundColors, borderColors };
+        }
+
+        /**
+         * @function getChartTextColor
+         * @description Lấy màu chữ phù hợp cho biểu đồ dựa trên chế độ sáng/tối.
+         * @returns {string} - Màu chữ (ví dụ: 'black' hoặc 'white').
+         */
+        function getChartTextColor() {
+            return document.body.classList.contains('dark-mode') ? 'white' : 'black';
+        }
+
+        /**
+         * @function initChart
+         * @description Khởi tạo biểu đồ Chart.js ban đầu.
+         */
+        function initChart() {
+            const textColor = getChartTextColor();
+            myChart = new Chart(chartCanvas, {
+                type: 'bar', // Loại biểu đồ cột
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Giá trị',
+                        data: [],
+                        backgroundColor: [],
+                        borderColor: [],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: textColor // Màu chữ cho trục Y
+                            },
+                            grid: {
+                                color: document.body.classList.contains('dark-mode') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: textColor // Màu chữ cho trục X
+                            },
+                            grid: {
+                                color: document.body.classList.contains('dark-mode') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor // Màu chữ cho chú giải
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        /**
+         * @function updateChart
+         * @description Cập nhật dữ liệu và hiển thị biểu đồ.
+         */
+        function updateChart() {
+            const labels = chartData.map(item => item.label);
+            const values = chartData.map(item => item.value);
+            const { backgroundColors, borderColors } = generateColors(chartData.length);
+
+            myChart.data.labels = labels;
+            myChart.data.datasets[0].data = values;
+            myChart.data.datasets[0].backgroundColor = backgroundColors;
+            myChart.data.datasets[0].borderColor = borderColors;
+
+            // Cập nhật màu chữ cho biểu đồ trong trường hợp Dark Mode thay đổi
+            const textColor = getChartTextColor();
+            myChart.options.scales.y.ticks.color = textColor;
+            myChart.options.scales.x.ticks.color = textColor;
+            myChart.options.plugins.legend.labels.color = textColor;
+            myChart.options.scales.y.grid.color = document.body.classList.contains('dark-mode') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            myChart.options.scales.x.grid.color = document.body.classList.contains('dark-mode') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+
+
+            myChart.update();
+        }
+
+        /**
+         * @function renderDataTable
+         * @description Hiển thị dữ liệu trong bảng.
+         */
+        function renderDataTable() {
+            dataTableBody.innerHTML = ''; // Xóa dữ liệu cũ
+            chartData.forEach((item, index) => {
+                const row = dataTableBody.insertRow();
+                row.innerHTML = `
+                    <th scope="row">${index + 1}</th>
+                    <td><input type="text" class="form-control form-control-sm item-label-edit" data-index="${index}" value="${item.label}"></td>
+                    <td><input type="number" class="form-control form-control-sm item-value-edit" data-index="${index}" value="${item.value}"></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-sm delete-item-btn" data-index="${index}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+            });
+
+            // Gắn sự kiện cho các nút xóa và trường nhập liệu chỉnh sửa
+            document.querySelectorAll('.delete-item-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const index = parseInt(event.currentTarget.dataset.index);
+                    deleteItem(index);
+                });
+            });
+
+            document.querySelectorAll('.item-label-edit').forEach(input => {
+                input.addEventListener('change', (event) => {
+                    const index = parseInt(event.currentTarget.dataset.index);
+                    chartData[index].label = event.currentTarget.value;
+                    updateChart(); // Cập nhật biểu đồ khi nhãn thay đổi
+                });
+            });
+
+            document.querySelectorAll('.item-value-edit').forEach(input => {
+                input.addEventListener('change', (event) => {
+                    const index = parseInt(event.currentTarget.dataset.index);
+                    const newValue = parseFloat(event.currentTarget.value);
+                    if (!isNaN(newValue)) {
+                        chartData[index].value = newValue;
+                        updateChart(); // Cập nhật biểu đồ khi giá trị thay đổi
+                    } else {
+                        // Nếu giá trị không hợp lệ, trả về giá trị cũ và thông báo
+                        event.currentTarget.value = chartData[index].value;
+                        console.error('Giá trị nhập vào không hợp lệ. Vui lòng nhập một số.');
+                    }
+                });
+            });
+        }
+
+        /**
+         * @function addItem
+         * @description Thêm một mục dữ liệu mới vào biểu đồ và bảng.
+         */
+        function addItem() {
+            const label = itemLabelInput.value.trim();
+            const value = parseFloat(itemValueInput.value);
+
+            if (label === '' || isNaN(value)) {
+                // Sử dụng alert của Bootstrap hoặc modal nếu muốn đẹp hơn
+                alert('Vui lòng nhập tên mục và giá trị số hợp lệ.');
+                return;
+            }
+
+            chartData.push({ label, value });
+            renderDataTable();
+            updateChart();
+
+            // Xóa dữ liệu trên ô nhập liệu
+            itemLabelInput.value = '';
+            itemValueInput.value = '';
+            itemLabelInput.focus();
+        }
+
+        /**
+         * @function deleteItem
+         * @description Xóa một mục dữ liệu khỏi biểu đồ và bảng.
+         * @param {number} index - Chỉ mục của mục cần xóa.
+         */
+        function deleteItem(index) {
+            chartData.splice(index, 1); // Xóa 1 phần tử tại vị trí index
+            renderDataTable();
+            updateChart();
+        }
+
+        /**
+         * @function clearAllData
+         * @description Xóa tất cả dữ liệu khỏi biểu đồ và bảng.
+         */
+        function clearAllData() {
+            if (confirm('Bạn có chắc chắn muốn xóa tất cả dữ liệu và biểu đồ?')) {
+                chartData = []; // Xóa sạch mảng dữ liệu
+                renderDataTable();
+                updateChart();
+            }
+        }
+
+        /**
+         * @function toggleDarkMode
+         * @description Chuyển đổi chế độ sáng/tối.
+         */
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode); // Lưu trạng thái vào Local Storage
+
+            // Cập nhật icon của nút Dark Mode
+            const icon = darkModeToggle.querySelector('i');
+            if (isDarkMode) {
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun-fill');
+            } else {
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-fill');
+            }
+
+            // Cập nhật màu chữ cho biểu đồ khi chế độ thay đổi
+            updateChart();
+        }
+
+        // --- Gắn sự kiện ---
+        addItemBtn.addEventListener('click', addItem);
+        clearAllBtn.addEventListener('click', clearAllData);
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+
+        // Cho phép thêm mục bằng phím Enter trong ô nhập liệu
+        itemLabelInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                itemValueInput.focus();
+            }
+        });
+        itemValueInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                addItem();
+            }
+        });
+
+        // --- Khởi tạo ứng dụng khi trang tải xong ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // Khôi phục trạng thái Dark Mode từ Local Storage
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'true') {
+                document.body.classList.add('dark-mode');
+                const icon = darkModeToggle.querySelector('i');
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun-fill');
+            }
+
+            initChart(); // Khởi tạo biểu đồ trước
+            renderDataTable(); // Hiển thị bảng dữ liệu (ban đầu có thể trống)
+            updateChart(); // Cập nhật biểu đồ (ban đầu có thể trống)
+        });
+    </script>
+</body>
+</html>

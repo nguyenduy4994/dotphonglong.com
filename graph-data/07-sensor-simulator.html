@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô Phỏng Cảm Biến</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bs-body-bg); /* Bootstrap background color */
+            color: var(--bs-body-color); /* Bootstrap text color */
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .app-container {
+            max-width: 1200px;
+            margin-top: 50px;
+            margin-bottom: 50px;
+            padding: 2rem;
+            border-radius: 1rem;
+            background-color: var(--bs-tertiary-bg); /* Using a Bootstrap color for harmony */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        .card {
+            border-radius: 0.75rem;
+            border: none;
+            overflow: hidden;
+            background-color: var(--bs-body-bg); /* Cards have body background */
+            transition: background-color 0.3s, box-shadow 0.3s;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.075);
+        }
+        .card-header {
+            background-color: var(--bs-secondary-bg); /* Card header background */
+            border-bottom: 1px solid var(--bs-border-color);
+            padding: 1rem;
+            font-weight: bold;
+            color: var(--bs-body-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .sensor-value {
+            font-size: 3.5rem; /* Large font for values */
+            font-weight: 700;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s;
+        }
+        .slider-label {
+            font-size: 0.9rem;
+            color: var(--bs-secondary-color);
+        }
+        /* Dark Mode Toggle Button */
+        #darkModeToggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1050; /* Ensure it's above other content */
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+        }
+        #darkModeToggle .bi {
+            font-size: 1.5rem;
+        }
+
+        /* Responsive adjustments for sensor values */
+        @media (max-width: 767.98px) {
+            .sensor-value {
+                font-size: 2.5rem;
+            }
+            .app-container {
+                margin-top: 20px;
+                margin-bottom: 20px;
+                padding: 1rem;
+            }
+            #darkModeToggle {
+                top: 0.75rem;
+                right: 0.75rem;
+                width: 40px;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dark Mode Toggle Button -->
+    <button id="darkModeToggle" class="btn btn-primary">
+        <i class="bi bi-sun-fill"></i>
+    </button>
+
+    <div class="container text-center">
+        <h1 class="display-4 fw-bold my-5">Mô Phỏng Cảm Biến</h1>
+
+        <div class="app-container mx-auto">
+            <div class="row g-4 justify-content-center">
+                <!-- Sensor Card Template -->
+                <!-- Nhiệt độ -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        <div class="card-header text-center fs-5">Nhiệt độ</div>
+                        <div class="card-body d-flex flex-column align-items-center justify-content-between">
+                            <p class="sensor-value" id="temperatureValue">-- °C</p>
+                            <div class="w-100 mt-auto">
+                                <label for="temperatureRange" class="form-label slider-label">Dải mô phỏng (°C): <span id="temperatureRangeDisplay">20 - 30</span></label>
+                                <input type="range" class="form-range" id="temperatureRange" min="0" max="100" value="20" step="1" oninput="updateRangeDisplay('temperature', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Độ ẩm -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        <div class="card-header text-center fs-5">Độ ẩm</div>
+                        <div class="card-body d-flex flex-column align-items-center justify-content-between">
+                            <p class="sensor-value" id="humidityValue">-- %</p>
+                            <div class="w-100 mt-auto">
+                                <label for="humidityRange" class="form-label slider-label">Dải mô phỏng (%): <span id="humidityRangeDisplay">40 - 60</span></label>
+                                <input type="range" class="form-range" id="humidityRange" min="0" max="100" value="40" step="1" oninput="updateRangeDisplay('humidity', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Áp suất -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        <div class="card-header text-center fs-5">Áp suất</div>
+                        <div class="card-body d-flex flex-column align-items-center justify-content-between">
+                            <p class="sensor-value" id="pressureValue">-- hPa</p>
+                            <div class="w-100 mt-auto">
+                                <label for="pressureRange" class="form-label slider-label">Dải mô phỏng (hPa): <span id="pressureRangeDisplay">900 - 1100</span></label>
+                                <input type="range" class="form-range" id="pressureRange" min="800" max="1200" value="900" step="10" oninput="updateRangeDisplay('pressure', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ánh sáng -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="card h-100">
+                        <div class="card-header text-center fs-5">Ánh sáng</div>
+                        <div class="card-body d-flex flex-column align-items-center justify-content-between">
+                            <p class="sensor-value" id="lightValue">-- lux</p>
+                            <div class="w-100 mt-auto">
+                                <label for="lightRange" class="form-label slider-label">Dải mô phỏng (lux): <span id="lightRangeDisplay">1000 - 5000</span></label>
+                                <input type="range" class="form-range" id="lightRange" min="0" max="10000" value="1000" step="100" oninput="updateRangeDisplay('light', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-4 mt-5">
+        <p class="text-muted mb-0">DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS (Popper.js and Bootstrap JS) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Mảng chứa thông tin của các cảm biến
+        const sensors = [
+            {
+                id: 'temperature',
+                name: 'Nhiệt độ',
+                unit: '°C',
+                minRange: 0,
+                maxRange: 100, // Max value for slider
+                currentMin: 20, // Initial simulated min
+                currentMax: 30, // Initial simulated max
+                value: 0,
+                interval: null,
+                statusThresholds: {
+                    normal: { min: 18, max: 28, color: 'text-success' },
+                    warning: { min: 10, max: 35, color: 'text-warning' }, // Outside normal, but not critical
+                    danger: { min: 0, max: 10, color: 'text-danger' } // Values below 10 or above 35
+                }
+            },
+            {
+                id: 'humidity',
+                name: 'Độ ẩm',
+                unit: '%',
+                minRange: 0,
+                maxRange: 100,
+                currentMin: 40,
+                currentMax: 60,
+                value: 0,
+                interval: null,
+                statusThresholds: {
+                    normal: { min: 45, max: 55, color: 'text-success' },
+                    warning: { min: 30, max: 70, color: 'text-warning' },
+                    danger: { min: 0, max: 30, color: 'text-danger' } // Values below 30 or above 70
+                }
+            },
+            {
+                id: 'pressure',
+                name: 'Áp suất',
+                unit: 'hPa',
+                minRange: 800,
+                maxRange: 1200,
+                currentMin: 900,
+                currentMax: 1100,
+                value: 0,
+                interval: null,
+                statusThresholds: {
+                    normal: { min: 980, max: 1020, color: 'text-success' },
+                    warning: { min: 950, max: 1050, color: 'text-warning' },
+                    danger: { min: 800, max: 950, color: 'text-danger' } // Values below 950 or above 1050
+                }
+            },
+            {
+                id: 'light',
+                name: 'Ánh sáng',
+                unit: 'lux',
+                minRange: 0,
+                maxRange: 10000,
+                currentMin: 1000,
+                currentMax: 5000,
+                value: 0,
+                interval: null,
+                statusThresholds: {
+                    normal: { min: 2000, max: 4000, color: 'text-success' },
+                    warning: { min: 500, max: 7000, color: 'text-warning' },
+                    danger: { min: 0, max: 500, color: 'text-danger' } // Values below 500 or above 7000
+                }
+            }
+        ];
+
+        // Hàm tạo giá trị ngẫu nhiên trong một dải
+        function getRandomValue(min, max, decimalPlaces = 0) {
+            const factor = Math.pow(10, decimalPlaces);
+            return (Math.random() * (max - min) + min).toFixed(decimalPlaces);
+        }
+
+        // Hàm cập nhật giá trị cảm biến
+        function updateSensorValue(sensor) {
+            let decimalPlaces = 0;
+            if (sensor.id === 'temperature') {
+                decimalPlaces = 1; // Nhiệt độ có thể có 1 chữ số thập phân
+            } else if (sensor.id === 'pressure') {
+                decimalPlaces = 0;
+            }
+
+            sensor.value = parseFloat(getRandomValue(sensor.currentMin, sensor.currentMax, decimalPlaces));
+            const valueElement = document.getElementById(`${sensor.id}Value`);
+            valueElement.textContent = `${sensor.value} ${sensor.unit}`;
+
+            // Xóa tất cả các lớp màu trạng thái trước khi thêm mới
+            valueElement.classList.remove('text-success', 'text-warning', 'text-danger');
+
+            // Cập nhật màu sắc dựa trên ngưỡng
+            if (sensor.id === 'temperature') {
+                // Nhiệt độ: Ngưỡng cảnh báo và nguy hiểm riêng biệt cho dưới và trên
+                if (sensor.value < sensor.statusThresholds.danger.min || sensor.value > sensor.statusThresholds.danger.max) {
+                    valueElement.classList.add(sensor.statusThresholds.danger.color);
+                } else if (sensor.value < sensor.statusThresholds.warning.min || sensor.value > sensor.statusThresholds.warning.max) {
+                    valueElement.classList.add(sensor.statusThresholds.warning.color);
+                } else {
+                    valueElement.classList.add(sensor.statusThresholds.normal.color);
+                }
+            } else if (sensor.id === 'humidity') {
+                 if (sensor.value < sensor.statusThresholds.danger.min || sensor.value > sensor.statusThresholds.danger.max) {
+                    valueElement.classList.add(sensor.statusThresholds.danger.color);
+                } else if (sensor.value < sensor.statusThresholds.warning.min || sensor.value > sensor.statusThresholds.warning.max) {
+                    valueElement.classList.add(sensor.statusThresholds.warning.color);
+                } else {
+                    valueElement.classList.add(sensor.statusThresholds.normal.color);
+                }
+            } else if (sensor.id === 'pressure') {
+                 if (sensor.value < sensor.statusThresholds.danger.min || sensor.value > sensor.statusThresholds.danger.max) {
+                    valueElement.classList.add(sensor.statusThresholds.danger.color);
+                } else if (sensor.value < sensor.statusThresholds.warning.min || sensor.value > sensor.statusThresholds.warning.max) {
+                    valueElement.classList.add(sensor.statusThresholds.warning.color);
+                } else {
+                    valueElement.classList.add(sensor.statusThresholds.normal.color);
+                }
+            } else if (sensor.id === 'light') {
+                 if (sensor.value < sensor.statusThresholds.danger.min || sensor.value > sensor.statusThresholds.danger.max) {
+                    valueElement.classList.add(sensor.statusThresholds.danger.color);
+                } else if (sensor.value < sensor.statusThresholds.warning.min || sensor.value > sensor.statusThresholds.warning.max) {
+                    valueElement.classList.add(sensor.statusThresholds.warning.color);
+                } else {
+                    valueElement.classList.add(sensor.statusThresholds.normal.color);
+                }
+            }
+        }
+
+        // Hàm khởi tạo và bắt đầu mô phỏng cho tất cả các cảm biến
+        function startSensorSimulation() {
+            sensors.forEach(sensor => {
+                // Đặt giá trị min/max của thanh trượt
+                const rangeSlider = document.getElementById(`${sensor.id}Range`);
+                if (rangeSlider) {
+                    rangeSlider.min = sensor.minRange;
+                    rangeSlider.max = sensor.maxRange;
+                    // Cập nhật giá trị thanh trượt ban đầu để khớp với currentMin
+                    rangeSlider.value = sensor.currentMin; // Sử dụng currentMin làm gốc
+                }
+
+                // Cập nhật hiển thị dải ban đầu
+                updateRangeDisplay(sensor.id, sensor.currentMin);
+
+                // Cập nhật giá trị ban đầu và bắt đầu interval
+                updateSensorValue(sensor); // Cập nhật lần đầu ngay lập tức
+                sensor.interval = setInterval(() => {
+                    updateSensorValue(sensor);
+                }, getRandomValue(1000, 3000)); // Cập nhật mỗi 1-3 giây
+            });
+        }
+
+        // Hàm cập nhật dải mô phỏng khi thanh trượt thay đổi
+        function updateRangeDisplay(sensorId, sliderValue) {
+            const sensor = sensors.find(s => s.id === sensorId);
+            if (sensor) {
+                // Xác định dải dựa trên giá trị thanh trượt
+                // Giả sử thanh trượt điều khiển giá trị tối thiểu của dải mô phỏng
+                // và giá trị tối đa được cố định một khoảng cách nào đó hoặc điều chỉnh theo một quy tắc
+                let newMin = parseInt(sliderValue);
+                let newMax;
+
+                // Tùy chỉnh logic dải cho từng cảm biến
+                switch (sensor.id) {
+                    case 'temperature':
+                        newMax = newMin + 10; // Ví dụ: dải 10 độ C
+                        if (newMax > sensor.maxRange) {
+                            newMax = sensor.maxRange;
+                            newMin = newMax - 10; // Điều chỉnh min nếu max vượt ngưỡng
+                        }
+                        break;
+                    case 'humidity':
+                        newMax = newMin + 20; // Ví dụ: dải 20%
+                        if (newMax > sensor.maxRange) {
+                            newMax = sensor.maxRange;
+                            newMin = newMax - 20;
+                        }
+                        break;
+                    case 'pressure':
+                        newMax = newMin + 200; // Ví dụ: dải 200 hPa
+                        if (newMax > sensor.maxRange) {
+                            newMax = sensor.maxRange;
+                            newMin = newMax - 200;
+                        }
+                        break;
+                    case 'light':
+                        newMax = newMin + 4000; // Ví dụ: dải 4000 lux
+                        if (newMax > sensor.maxRange) {
+                            newMax = sensor.maxRange;
+                            newMin = newMax - 4000;
+                        }
+                        break;
+                    default:
+                        newMax = newMin + (sensor.maxRange / 10); // Dải mặc định
+                }
+
+                // Đảm bảo min không nhỏ hơn minRange tổng thể
+                if (newMin < sensor.minRange) newMin = sensor.minRange;
+
+
+                sensor.currentMin = newMin;
+                sensor.currentMax = newMax;
+
+                document.getElementById(`${sensor.id}RangeDisplay`).textContent = `${newMin} - ${newMax}`;
+
+                // Reset interval để bắt đầu mô phỏng với dải mới
+                clearInterval(sensor.interval);
+                sensor.interval = setInterval(() => {
+                    updateSensorValue(sensor);
+                }, getRandomValue(1000, 3000));
+            }
+        }
+
+        // Dark Mode Toggle Logic
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const htmlElement = document.documentElement; // <html> tag
+        const darkModeIcon = darkModeToggle.querySelector('i');
+
+        darkModeToggle.addEventListener('click', () => {
+            if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                darkModeIcon.classList.remove('bi-moon-fill');
+                darkModeIcon.classList.add('bi-sun-fill');
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                darkModeIcon.classList.remove('bi-sun-fill');
+                darkModeIcon.classList.add('bi-moon-fill');
+            }
+        });
+
+        // Khởi động mô phỏng khi tài liệu đã tải xong
+        window.onload = startSensorSimulation;
+    </script>
+</body>
+</html>

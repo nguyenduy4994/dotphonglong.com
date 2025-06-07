@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Hiển thị Dữ liệu Thời gian thực (Giả lập)</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Thiết lập font Inter cho toàn bộ trang */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bs-body-bg); /* Sử dụng biến Bootstrap cho màu nền */
+            color: var(--bs-body-color); /* Sử dụng biến Bootstrap cho màu chữ */
+            transition: background-color 0.3s, color 0.3s; /* Chuyển động mượt mà khi đổi theme */
+            min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao màn hình */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Vùng chứa chính của ứng dụng */
+        .app-container {
+            border-radius: 1.5rem; /* Bo tròn góc nhiều hơn */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Bóng đổ mạnh hơn */
+            padding: 2.5rem; /* Tăng padding */
+            background-color: var(--bs-body-bg); /* Nền của khung app */
+            color: var(--bs-body-color); /* Màu chữ của khung app */
+            transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+            max-width: 900px; /* Chiều rộng tối đa */
+            width: 100%;
+        }
+
+        /* Kiểu cho các mục dữ liệu */
+        .data-card {
+            background-color: var(--bs-tertiary-bg); /* Màu nền nhẹ hơn cho từng mục */
+            border-radius: 1rem; /* Bo tròn góc */
+            margin-bottom: 1rem; /* Khoảng cách giữa các mục */
+            transition: background-color 0.3s;
+            border: none; /* Bỏ border mặc định của Bootstrap card */
+        }
+
+        .data-card .card-header {
+            background-color: var(--bs-tertiary-bg); /* Giữ màu nền header giống card */
+            border-bottom: 1px solid var(--bs-border-color); /* Đường kẻ dưới header */
+            border-top-left-radius: 1rem; /* Đảm bảo bo tròn góc trên */
+            border-top-right-radius: 1rem;
+            padding: 1.25rem 1.5rem; /* Padding cho header */
+            font-size: 1.5rem; /* Kích thước font của tiêu đề */
+            font-weight: 500;
+            color: var(--bs-secondary); /* Màu chữ phụ */
+        }
+
+        .data-card .card-header i {
+            font-size: 2rem; /* Kích thước icon trong header */
+            margin-right: 0.75rem;
+        }
+
+        .data-card .card-body {
+            padding: 1.5rem; /* Padding cho body */
+        }
+
+        .data-card .value {
+            font-size: 3.5rem; /* Kích thước giá trị lớn hơn */
+            font-weight: 700; /* Đậm hơn */
+            color: var(--bs-body-color); /* Màu chữ chính */
+            line-height: 1; /* Điều chỉnh line height */
+        }
+
+        /* Kiểu cho thời gian cập nhật */
+        .last-updated {
+            font-size: 1.2rem;
+            color: var(--bs-secondary);
+            margin-top: 1.5rem;
+        }
+
+        /* Nút Dark Mode toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1050; /* Đảm bảo nút nằm trên cùng */
+            font-size: 1.8rem; /* Kích thước icon lớn hơn */
+            padding: 0.75rem;
+            border-radius: 50%;
+            background-color: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color);
+            color: var(--bs-body-color);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .dark-mode-toggle:hover {
+            opacity: 0.8;
+            cursor: pointer;
+        }
+
+        /* CSS cho Dark Mode */
+        html[data-bs-theme="dark"] body {
+            background-color: #212529; /* Màu nền tối hơn */
+            color: #f8f9fa; /* Màu chữ sáng hơn */
+        }
+
+        html[data-bs-theme="dark"] .app-container {
+            background-color: #2c3034; /* Nền của khung app trong dark mode */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); /* Bóng đổ đậm hơn */
+        }
+
+        html[data-bs-theme="dark"] .data-card {
+            background-color: #343a40; /* Nền từng mục trong dark mode */
+        }
+
+        html[data-bs-theme="dark"] .data-card .card-header {
+            background-color: #343a40; /* Nền header trong dark mode */
+            border-color: #495057; /* Màu border trong dark mode */
+        }
+
+        html[data-bs-theme="dark"] .dark-mode-toggle {
+            background-color: #2c3034;
+            border-color: #495057;
+            color: #f8f9fa;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+            padding: 1.5rem 0;
+            font-size: 1rem;
+            color: var(--bs-secondary);
+        }
+
+        @media (max-width: 767.98px) {
+            .app-container {
+                padding: 1.5rem;
+            }
+            .data-card .card-header {
+                padding: 1rem 1.25rem;
+                font-size: 1.2rem;
+            }
+            .data-card .card-header i {
+                font-size: 1.5rem;
+            }
+            .data-card .card-body {
+                padding: 1.25rem;
+            }
+            .data-card .value {
+                font-size: 2.5rem;
+            }
+            .dark-mode-toggle {
+                top: 1rem;
+                right: 1rem;
+                font-size: 1.5rem;
+                padding: 0.5rem;
+            }
+            .last-updated {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="d-flex flex-column align-items-center justify-content-center p-3">
+    <!-- Nút Dark Mode Toggle -->
+    <button class="dark-mode-toggle btn btn-link" id="darkModeToggle">
+        <i class="bi bi-moon-fill" id="darkModeIcon"></i>
+    </button>
+
+    <!-- Header Ứng dụng -->
+    <header class="text-center my-4">
+        <h1 class="display-4 fw-bold text-primary">Dữ liệu Thời gian thực (Giả lập)</h1>
+        <p class="lead text-secondary">Minh họa hiển thị thông tin động</p>
+    </header>
+
+    <!-- Khung Ứng dụng -->
+    <main class="app-container my-4">
+        <div class="row g-3">
+            <!-- Nhiệt độ -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card data-card">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="bi bi-thermometer-half text-danger"></i>
+                        <span class="label">Nhiệt độ</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="value" id="temperature">25.5°C</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Độ ẩm -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card data-card">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="bi bi-droplet-half text-info"></i>
+                        <span class="label">Độ ẩm</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="value" id="humidity">60%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lượt truy cập -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card data-card">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="bi bi-person-fill-up text-success"></i>
+                        <span class="label">Lượt truy cập</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="value" id="visits">12345</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tốc độ mạng -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card data-card">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="bi bi-speedometer2 text-warning"></i>
+                        <span class="label">Tốc độ mạng</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="value" id="networkSpeed">100 Mbps</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tải CPU -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card data-card">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="bi bi-cpu text-primary"></i>
+                        <span class="label">Tải CPU</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="value" id="cpuLoad">35%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trạng thái Server -->
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card data-card">
+                    <div class="card-header d-flex align-items-center">
+                        <i class="bi bi-hdd-fill text-muted"></i>
+                        <span class="label">Trạng thái Server</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="value" id="serverStatus">Hoạt động</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thời gian cập nhật cuối cùng -->
+        <p class="text-center last-updated" id="lastUpdated">Cập nhật lần cuối: Đang tải...</p>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <p class="m-0">&copy; 2025 DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const temperatureElement = document.getElementById('temperature');
+            const humidityElement = document.getElementById('humidity');
+            const visitsElement = document.getElementById('visits');
+            const networkSpeedElement = document.getElementById('networkSpeed');
+            const cpuLoadElement = document.getElementById('cpuLoad');
+            const serverStatusElement = document.getElementById('serverStatus');
+            const lastUpdatedElement = document.getElementById('lastUpdated');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeIcon = document.getElementById('darkModeIcon');
+            const htmlElement = document.documentElement;
+
+            let visits = 12345; // Khởi tạo số lượt truy cập
+
+            // Hàm tạo số ngẫu nhiên trong một khoảng
+            function getRandomArbitrary(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            // Hàm tạo số nguyên ngẫu nhiên
+            function getRandomInt(min, max) {
+                min = Math.ceil(min);
+                max = Math.floor(max);
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
+
+            // Hàm cập nhật dữ liệu giả lập
+            function updateData() {
+                // Nhiệt độ: 20.0 - 30.0°C
+                const newTemperature = getRandomArbitrary(20, 30).toFixed(1);
+                temperatureElement.textContent = `${newTemperature}°C`;
+
+                // Độ ẩm: 40 - 80%
+                const newHumidity = getRandomInt(40, 80);
+                humidityElement.textContent = `${newHumidity}%`;
+
+                // Lượt truy cập: tăng dần
+                visits += getRandomInt(1, 5); // Tăng ngẫu nhiên từ 1 đến 5 lượt
+                visitsElement.textContent = visits.toLocaleString('en-US'); // Định dạng số cho dễ đọc
+
+                // Tốc độ mạng: 50 - 200 Mbps
+                const newNetworkSpeed = getRandomInt(50, 200);
+                networkSpeedElement.textContent = `${newNetworkSpeed} Mbps`;
+
+                // Tải CPU: 10 - 90%
+                const newCpuLoad = getRandomInt(10, 90);
+                cpuLoadElement.textContent = `${newCpuLoad}%`;
+
+                // Trạng thái Server: Ngẫu nhiên Hoạt động/Bảo trì
+                const serverStates = ['Hoạt động', 'Hoạt động', 'Hoạt động', 'Bảo trì'];
+                const newServerStatus = serverStates[getRandomInt(0, serverStates.length - 1)];
+                serverStatusElement.textContent = newServerStatus;
+                // Thay đổi màu sắc của trạng thái server
+                if (newServerStatus === 'Bảo trì') {
+                    serverStatusElement.classList.remove('text-success');
+                    serverStatusElement.classList.add('text-warning');
+                } else {
+                    serverStatusElement.classList.remove('text-warning');
+                    serverStatusElement.classList.add('text-success');
+                }
+
+
+                // Cập nhật thời gian cuối cùng
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('vi-VN'); // Định dạng thời gian theo tiếng Việt
+                lastUpdatedElement.textContent = `Cập nhật lần cuối: ${timeString}`;
+            }
+
+            // Cập nhật dữ liệu lần đầu khi tải trang
+            updateData();
+
+            // Thiết lập interval để cập nhật dữ liệu sau mỗi 3 giây
+            setInterval(updateData, 3000); // 3000 milliseconds = 3 giây
+
+            // Logic cho Dark Mode Toggle
+            darkModeToggle.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                if (currentTheme === 'dark') {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    darkModeIcon.classList.remove('bi-sun-fill');
+                    darkModeIcon.classList.add('bi-moon-fill');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    darkModeIcon.classList.remove('bi-moon-fill');
+                    darkModeIcon.classList.add('bi-sun-fill');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Heatmap Click</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container-fluid {
+            padding: 20px;
+        }
+
+        .app-frame {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 15px;
+            padding: 20px;
+            background-color: var(--bs-body-bg);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: border-color 0.3s, background-color 0.3s, box-shadow 0.3s;
+            max-width: 1200px; /* Giới hạn chiều rộng tối đa */
+            margin: auto; /* Căn giữa khung ứng dụng */
+        }
+
+        .heatmap-container {
+            position: relative;
+            width: 100%;
+            height: 600px; /* Chiều cao cố định cho khu vực mô phỏng trang web */
+            border: 1px dashed var(--bs-secondary-bg);
+            overflow: hidden; /* Quan trọng để heatmap không tràn ra ngoài */
+            background-color: var(--bs-secondary-bg);
+            border-radius: 10px;
+        }
+
+        #website-content-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            cursor: crosshair; /* Con trỏ đặc biệt khi di chuột qua */
+            z-index: 1; /* Nằm dưới canvas */
+            color: var(--bs-body-color);
+            overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+        }
+
+        #heatmap-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2; /* Nằm trên nội dung để hiển thị heatmap */
+            pointer-events: none; /* Không chặn sự kiện click vào nội dung bên dưới */
+            opacity: 0.7; /* Độ mờ ban đầu */
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .floating-darkmode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .btn-toggle-darkmode {
+            background-color: var(--bs-secondary);
+            border-color: var(--bs-secondary);
+            color: var(--bs-white);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s, transform 0.2s;
+        }
+
+        .btn-toggle-darkmode:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-toggle-darkmode i {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .btn-toggle-darkmode.dark i {
+            transform: rotate(360deg);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .app-frame {
+                padding: 15px;
+            }
+            .heatmap-container {
+                height: 400px;
+            }
+            .floating-darkmode-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .btn-toggle-darkmode {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-darkmode-toggle">
+        <button class="btn btn-toggle-darkmode" id="darkModeToggle" aria-label="Toggle dark mode">
+            <i class="bi bi-moon-fill"></i>
+        </button>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <h1 class="text-center mb-4 fw-bold display-5">Ứng dụng Heatmap Click Trang Web</h1>
+
+        <div class="app-frame mb-5">
+            <h2 class="mb-3 text-center h4">Mô phỏng Trang Web & Heatmap</h2>
+            <p class="text-muted text-center">Nhấp vào khu vực màu xanh nhạt bên dưới để tạo heatmap. Heatmap sẽ hiển thị các khu vực được nhấp nhiều nhất.</p>
+
+            <div class="heatmap-container mb-4">
+                <div id="website-content-area">
+                    <h3>Chào mừng đến với trang web mô phỏng!</h3>
+                    <p>Hãy nhấp chuột vào bất cứ đâu trong khu vực này để tạo dữ liệu heatmap.</p>
+                    <p>Đây là một đoạn văn bản dài hơn để bạn có thể thử cuộn và nhấp vào các phần khác nhau của trang.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <button class="btn btn-primary mt-3 me-2">Nhấp vào đây!</button>
+                    <button class="btn btn-secondary mt-3">Thêm nút</button>
+                    <div class="card mt-4 p-3 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Một khu vực khác để khám phá</h5>
+                            <p class="card-text">Bạn có thể nhấp vào khu vực này để xem cách heatmap phản ứng.</p>
+                            <a href="#" class="card-link">Liên kết</a>
+                        </div>
+                    </div>
+                    <img src="https://placehold.co/400x200/007bff/ffffff?text=Hình+ảnh+giả+lập" alt="Placeholder Image" class="img-fluid my-4 rounded">
+                    <p>Một số nội dung bổ sung ở cuối trang để đảm bảo tính năng cuộn hoạt động.</p>
+                    <p>Để có kết quả heatmap tốt nhất, hãy thử nhấp vào các điểm cụ thể nhiều lần hoặc phân tán các nhấp chuột của bạn.</p>
+                    <p>Heatmap sẽ tự động cập nhật khi bạn nhấp chuột.</p>
+                </div>
+                <canvas id="heatmap-canvas"></canvas>
+            </div>
+
+            <div class="d-flex flex-column flex-md-row justify-content-center align-items-center gap-3">
+                <button id="resetHeatmap" class="btn btn-danger btn-lg px-4 rounded-pill">
+                    <i class="bi bi-arrow-counterclockwise me-2"></i>Đặt lại Heatmap
+                </button>
+                <div class="d-flex align-items-center gap-2">
+                    <label for="opacityRange" class="form-label mb-0 fw-bold">Độ mờ Heatmap:</label>
+                    <input type="range" class="form-range w-auto" id="opacityRange" min="0" max="1" step="0.05" value="0.7">
+                    <span id="opacityValue" class="fw-bold">70%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center py-3 bg-body-tertiary mt-5 rounded-top-4">
+        <p class="mb-0 text-muted">DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcOdpgjh/v+o7/hJty5KVphtPhzWj9WO1clHTMGa3JDZ" crossorigin="anonymous"></script>
+
+    <script>
+        const contentArea = document.getElementById('website-content-area');
+        const canvas = document.getElementById('heatmap-canvas');
+        const ctx = canvas.getContext('2d');
+        const resetButton = document.getElementById('resetHeatmap');
+        const opacityRange = document.getElementById('opacityRange');
+        const opacityValueSpan = document.getElementById('opacityValue');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const htmlElement = document.documentElement;
+
+        let clickData = [];
+        const RADIUS = 25; // Bán kính của điểm nhiệt
+        const MAX_ALPHA = 0.6; // Độ trong suốt tối đa cho một điểm nhấp
+
+        // Hàm thay đổi kích thước canvas cho phù hợp với container
+        function resizeCanvas() {
+            canvas.width = contentArea.offsetWidth;
+            canvas.height = contentArea.offsetHeight;
+            drawHeatmap(); // Vẽ lại heatmap khi kích thước thay đổi
+        }
+
+        // Lắng nghe sự kiện resize của cửa sổ để thay đổi kích thước canvas
+        window.addEventListener('resize', resizeCanvas);
+        // Thay đổi kích thước canvas khi tải trang lần đầu
+        window.onload = () => {
+            resizeCanvas();
+            // Thiết lập chế độ dark mode ban đầu nếu đã được lưu
+            if (localStorage.getItem('theme') === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                darkModeToggle.querySelector('i').classList.remove('bi-moon-fill');
+                darkModeToggle.querySelector('i').classList.add('bi-sun-fill');
+            }
+        };
+
+        // Hàm vẽ heatmap
+        function drawHeatmap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Xóa canvas cũ
+
+            // Tạo một bản đồ mật độ điểm để làm mịn heatmap
+            const densityMap = new Map();
+
+            clickData.forEach(point => {
+                const key = `${Math.floor(point.x / RADIUS) * RADIUS},${Math.floor(point.y / RADIUS) * RADIUS}`;
+                if (!densityMap.has(key)) {
+                    densityMap.set(key, []);
+                }
+                densityMap.get(key).push(point);
+            });
+
+            densityMap.forEach(pointsInArea => {
+                // Tính toán trung bình tọa độ để làm tâm điểm
+                let avgX = 0;
+                let avgY = 0;
+                pointsInArea.forEach(p => {
+                    avgX += p.x;
+                    avgY += p.y;
+                });
+                avgX /= pointsInArea.length;
+                avgY /= pointsInArea.length;
+
+                // Số lượng click trong khu vực này càng nhiều, màu càng đỏ
+                const clickCount = pointsInArea.length;
+                let colorIntensity;
+
+                // Sử dụng hàm mũ để phân phối màu tốt hơn cho số lượng click ít
+                // Từ 1 click (blue) đến 50+ clicks (red)
+                const maxClickCountForRed = 50;
+                const normalizedCount = Math.min(clickCount, maxClickCountForRed) / maxClickCountForRed;
+
+                // Chuyển đổi từ xanh (0,0,255) sang đỏ (255,0,0)
+                // Linear interpolation for R, G, B
+                const r = Math.round(255 * normalizedCount);
+                const g = Math.round(255 * (1 - normalizedCount)); // Giảm xanh lá khi tăng đỏ
+                const b = Math.round(255 * (1 - normalizedCount)); // Giảm xanh dương khi tăng đỏ
+
+
+                ctx.beginPath();
+                ctx.arc(avgX, avgY, RADIUS * 1.5, 0, Math.PI * 2); // Kích thước điểm lớn hơn
+                // Độ trong suốt sẽ tăng nhẹ theo số lượng click, nhưng vẫn không quá MAX_ALPHA
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${MAX_ALPHA * (0.2 + 0.8 * normalizedCount)})`;
+                ctx.fill();
+            });
+        }
+
+
+        // Xử lý sự kiện click
+        contentArea.addEventListener('click', (event) => {
+            const rect = contentArea.getBoundingClientRect();
+            // Lấy tọa độ click tương đối so với khu vực nội dung
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            clickData.push({ x, y });
+            drawHeatmap(); // Cập nhật heatmap mỗi khi có click
+        });
+
+        // Xử lý nút Reset Heatmap
+        resetButton.addEventListener('click', () => {
+            clickData = []; // Xóa tất cả dữ liệu click
+            drawHeatmap(); // Xóa heatmap trên canvas
+            alertMessage("Heatmap đã được đặt lại!", "success");
+        });
+
+        // Xử lý thanh trượt độ mờ
+        opacityRange.addEventListener('input', (event) => {
+            const opacity = parseFloat(event.target.value);
+            canvas.style.opacity = opacity;
+            opacityValueSpan.textContent = `${Math.round(opacity * 100)}%`;
+        });
+
+        // Chức năng Dark Mode
+        darkModeToggle.addEventListener('click', () => {
+            if (htmlElement.getAttribute('data-bs-theme') === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                darkModeToggle.querySelector('i').classList.remove('bi-sun-fill');
+                darkModeToggle.querySelector('i').classList.add('bi-moon-fill');
+                localStorage.setItem('theme', 'light');
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                darkModeToggle.querySelector('i').classList.remove('bi-moon-fill');
+                darkModeToggle.querySelector('i').classList.add('bi-sun-fill');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
+        // Hàm hiển thị thông báo tùy chỉnh (thay cho alert())
+        function alertMessage(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.classList.add('alert', `alert-${type}`, 'position-fixed', 'top-0', 'start-50', 'translate-middle-x', 'mt-3', 'z-3', 'shadow-lg');
+            alertDiv.setAttribute('role', 'alert');
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+
+            // Tự động biến mất sau 3 giây
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+    </script>
+</body>
+</html>
