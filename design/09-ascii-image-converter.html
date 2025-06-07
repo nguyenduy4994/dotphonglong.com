@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình chuyển đổi Ảnh sang ASCII</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bs-body-font-family: 'Be Vietnam Pro', sans-serif;
+        }
+
+        body {
+            font-family: var(--bs-body-font-family);
+        }
+
+        /* Container chính để căn giữa nội dung */
+        .main-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        /* Vùng kéo thả file */
+        #drop-zone {
+            border: 3px dashed var(--bs-border-color);
+            border-radius: 0.5rem;
+            padding: 3rem;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+
+        #drop-zone:hover, #drop-zone.drag-over {
+            background-color: var(--bs-secondary-bg);
+            border-color: var(--bs-primary);
+        }
+
+        #drop-zone p {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        /* Ẩn input file mặc định */
+        #file-input {
+            display: none;
+        }
+
+        /* Vùng hiển thị kết quả */
+        #ascii-output {
+            width: 100%;
+            height: 400px;
+            font-size: 10px; /* Kích thước font nhỏ để hiển thị nhiều chi tiết hơn */
+            line-height: 1;
+            letter-spacing: 0;
+            white-space: pre;
+            overflow: auto;
+            background-color: var(--bs-tertiary-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 0.5rem;
+            resize: vertical;
+        }
+        
+        /* Nút chuyển chế độ sáng/tối */
+        #theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+        }
+
+        /* Canvas ẩn để xử lý ảnh */
+        #canvas {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-body-tertiary">
+
+    <!-- Nút chuyển chế độ sáng/tối -->
+    <button id="theme-toggle" class="btn btn-outline-secondary rounded-circle">
+        <i class="bi bi-moon-stars-fill"></i>
+    </button>
+
+    <!-- Canvas ẩn -->
+    <canvas id="canvas"></canvas>
+
+    <div class="main-container">
+        <div class="container-fluid" style="max-width: 900px;">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-body p-sm-5 p-4">
+
+                    <!-- Tiêu đề -->
+                    <header class="text-center mb-5">
+                        <h1 class="display-5 fw-bold">Trình chuyển đổi Ảnh sang ASCII</h1>
+                        <p class="text-muted">Tải ảnh lên, tùy chỉnh và nhận ngay phiên bản nghệ thuật ký tự!</p>
+                    </header>
+
+                    <!-- Bước 1: Tải ảnh -->
+                    <section id="upload-section" class="mb-4">
+                        <h3 class="fw-bold border-bottom pb-2 mb-3"><span class="badge bg-primary rounded-pill me-2">1</span> Tải ảnh của bạn</h3>
+                        <div id="drop-zone">
+                            <input type="file" id="file-input" accept="image/png, image/jpeg">
+                            <label for="file-input" class="w-100 h-100" style="cursor: pointer;">
+                                <i class="bi bi-cloud-arrow-up-fill fs-1 text-primary"></i>
+                                <p class="mt-2">Kéo và thả ảnh vào đây, hoặc nhấn để chọn file</p>
+                                <small class="text-muted">(Định dạng hỗ trợ: JPG, PNG)</small>
+                            </label>
+                        </div>
+                        <div id="image-preview-container" class="mt-3 text-center d-none">
+                            <p class="fw-bold">Ảnh đã tải lên:</p>
+                            <img id="image-preview" src="" alt="Image Preview" class="img-fluid rounded shadow-sm" style="max-height: 200px;">
+                        </div>
+                    </section>
+                    
+                    <!-- Các bước ẩn ban đầu -->
+                    <div id="controls-and-result" class="d-none">
+                        <!-- Bước 2: Tùy chỉnh -->
+                        <section id="options-section" class="mb-4">
+                            <h3 class="fw-bold border-bottom pb-2 mb-3"><span class="badge bg-primary rounded-pill me-2">2</span> Tùy chỉnh</h3>
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-6">
+                                    <label for="width-slider" class="form-label">Độ chi tiết (Chiều rộng): <span id="width-value" class="fw-bold text-primary">100</span>px</label>
+                                    <input type="range" class="form-range" id="width-slider" min="30" max="300" value="100" step="1">
+                                </div>
+                                <div class="col-md-6 d-flex align-items-center justify-content-center">
+                                    <div class="form-check form-switch fs-5">
+                                        <input class="form-check-input" type="checkbox" role="switch" id="invert-checkbox">
+                                        <label class="form-check-label" for="invert-checkbox">Đảo ngược màu</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Bước 3: Kết quả -->
+                        <section id="result-section">
+                             <h3 class="fw-bold border-bottom pb-2 mb-3"><span class="badge bg-primary rounded-pill me-2">3</span> Kết quả ASCII</h3>
+                            <textarea id="ascii-output" class="form-control font-monospace" readonly></textarea>
+                            <div class="d-grid mt-3">
+                                <button id="copy-button" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-clipboard-check-fill me-2"></i>Sao chép kết quả
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- Chân trang -->
+                    <footer class="text-center text-muted mt-5 small">
+                        <p>DOTPHONGLONG Mini App &copy; 2024</p>
+                    </footer>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // DOM Elements
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const controlsAndResult = document.getElementById('controls-and-result');
+        const widthSlider = document.getElementById('width-slider');
+        const widthValue = document.getElementById('width-value');
+        const invertCheckbox = document.getElementById('invert-checkbox');
+        const asciiOutput = document.getElementById('ascii-output');
+        const copyButton = document.getElementById('copy-button');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const themeToggleButton = document.getElementById('theme-toggle');
+
+        // ASCII character sets
+        const ASCII_CHARS = ['@', '%', '#', '*', '+', '=', '-', ':', '.', ' '];
+        const INVERTED_ASCII_CHARS = [' ', '.', ':', '-', '=', '+', '*', '#', '%', '@'];
+
+        let originalImage = null;
+
+        // --- Event Listeners ---
+
+        // File input change
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop listeners
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                fileInput.files = files;
+                handleFileSelect({ target: fileInput });
+            }
+        });
+
+        // Options change listeners
+        widthSlider.addEventListener('input', () => {
+            widthValue.textContent = widthSlider.value;
+            if (originalImage) {
+                generateAscii();
+            }
+        });
+        invertCheckbox.addEventListener('change', () => {
+             if (originalImage) {
+                generateAscii();
+            }
+        });
+
+        // Copy button listener
+        copyButton.addEventListener('click', copyToClipboard);
+        
+        // Theme toggle listener
+        themeToggleButton.addEventListener('click', toggleTheme);
+
+
+        // --- Functions ---
+
+        /**
+         * Handles the file selection from input or drag-drop.
+         * @param {Event} e The event object.
+         */
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    originalImage = new Image();
+                    originalImage.onload = () => {
+                        // Show preview
+                        imagePreview.src = event.target.result;
+                        imagePreviewContainer.classList.remove('d-none');
+                        // Show controls and result sections
+                        controlsAndResult.classList.remove('d-none');
+                        // Initial ASCII generation
+                        generateAscii();
+                    };
+                    originalImage.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Vui lòng chọn một file ảnh hợp lệ (JPG, PNG).');
+            }
+        }
+
+        /**
+         * Core function to generate ASCII art from the loaded image.
+         */
+        function generateAscii() {
+            if (!originalImage) return;
+
+            const width = parseInt(widthSlider.value);
+            const isInverted = invertCheckbox.checked;
+            
+            // Adjust height to maintain aspect ratio, correcting for character aspect ratio
+            const aspectRatio = originalImage.width / originalImage.height;
+            const height = Math.round((width / aspectRatio) * 0.5);
+
+            canvas.width = width;
+            canvas.height = height;
+
+            // Draw the image onto the resized canvas
+            ctx.drawImage(originalImage, 0, 0, width, height);
+            
+            const imageData = ctx.getImageData(0, 0, width, height).data;
+            let asciiString = '';
+            
+            const charSet = isInverted ? INVERTED_ASCII_CHARS : ASCII_CHARS;
+
+            for (let i = 0; i < imageData.length; i += 4) {
+                const r = imageData[i];
+                const g = imageData[i + 1];
+                const b = imageData[i + 2];
+                
+                // Calculate brightness using the luminosity method
+                const brightness = 0.21 * r + 0.72 * g + 0.07 * b;
+                
+                // Map brightness (0-255) to a character index
+                const charIndex = Math.floor((brightness / 255) * (charSet.length - 1));
+                
+                asciiString += charSet[charIndex];
+
+                // Add a newline character at the end of each row
+                if (((i / 4) + 1) % width === 0) {
+                    asciiString += '\n';
+                }
+            }
+
+            asciiOutput.value = asciiString;
+        }
+
+        /**
+         * Copies the generated ASCII art to the clipboard.
+         */
+        function copyToClipboard() {
+            if (!asciiOutput.value) return;
+
+            navigator.clipboard.writeText(asciiOutput.value).then(() => {
+                const originalText = copyButton.innerHTML;
+                copyButton.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>Đã sao chép!';
+                copyButton.classList.remove('btn-primary');
+                copyButton.classList.add('btn-success');
+
+                setTimeout(() => {
+                    copyButton.innerHTML = originalText;
+                    copyButton.classList.remove('btn-success');
+                    copyButton.classList.add('btn-primary');
+                }, 2000);
+            }).catch(err => {
+                console.error('Không thể sao chép: ', err);
+                alert('Sao chép thất bại. Vui lòng thử lại.');
+            });
+        }
+        
+        /**
+         * Toggles the theme between light and dark mode.
+         */
+        function toggleTheme() {
+            const htmlElement = document.documentElement;
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            const icon = themeToggleButton.querySelector('i');
+
+            if (currentTheme === 'dark') {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-stars-fill');
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                icon.classList.remove('bi-moon-stars-fill');
+                icon.classList.add('bi-sun-fill');
+            }
+        }
+    </script>
+
+</body>
+</html>
