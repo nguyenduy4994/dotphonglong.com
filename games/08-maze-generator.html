@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Tạo Mê Cung</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: var(--bs-tertiary-bg);
+            transition: background-color 0.3s ease;
+        }
+
+        .main-container {
+            max-width: 900px;
+        }
+        
+        h1 {
+            font-weight: 700;
+            color: var(--bs-primary);
+        }
+
+        #mazeCanvas {
+            width: 100%;
+            height: auto;
+            aspect-ratio: 1/1;
+            background-color: #f8f9fa;
+            border: 2px solid var(--bs-border-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        [data-bs-theme="dark"] #mazeCanvas {
+            background-color: #343a40;
+        }
+
+        .form-label {
+            font-weight: 700;
+        }
+
+        .footer {
+            font-size: 0.9rem;
+            color: var(--bs-secondary-color);
+        }
+
+        #winMessage {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 2rem 3rem;
+            background-color: rgba(25, 135, 84, 0.9);
+            color: white;
+            border-radius: 1rem;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dark Mode Toggle Button -->
+    <button class="btn btn-outline-secondary dark-mode-toggle" id="darkModeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div class="container-fluid main-container py-4 py-md-5">
+        <header class="text-center mb-4">
+            <h1>Game Tạo Mê Cung</h1>
+        </header>
+
+        <main>
+            <div class="card shadow-sm">
+                <div class="card-body p-lg-4">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8 order-lg-1">
+                            <div class="position-relative">
+                                <canvas id="mazeCanvas"></canvas>
+                                <div id="winMessage">
+                                    <p class="mb-2">🎉 CHIẾN THẮNG! 🎉</p>
+                                    <small>Bạn đã tìm thấy lối ra!</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 order-lg-0 mt-4 mt-lg-0">
+                            <h5 class="mb-3">Bảng điều khiển</h5>
+                            <div class="mb-3">
+                                <label for="mazeSize" class="form-label">Kích thước (5-50)</label>
+                                <input type="number" class="form-control" id="mazeSize" value="20" min="5" max="50">
+                            </div>
+                            <div class="d-grid gap-2 mb-3">
+                                <button class="btn btn-primary" id="generateBtn">Tạo mê cung mới</button>
+                                <button class="btn btn-success" id="solveBtn">Xem lời giải</button>
+                            </div>
+
+                            <hr class="d-lg-none">
+                            
+                            <div class="text-center mt-3">
+                                <h6 class="mb-2">Di chuyển</h6>
+                                <div class="d-inline-block">
+                                    <div>
+                                        <button class="btn btn-secondary control-btn" id="moveUp"><i class="fas fa-arrow-up"></i></button>
+                                    </div>
+                                    <div class="mt-1">
+                                        <button class="btn btn-secondary control-btn" id="moveLeft"><i class="fas fa-arrow-left"></i></button>
+                                        <button class="btn btn-secondary control-btn mx-1" id="moveDown"><i class="fas fa-arrow-down"></i></button>
+                                        <button class="btn btn-secondary control-btn" id="moveRight"><i class="fas fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                                <p class="form-text mt-2">Hoặc dùng phím mũi tên trên bàn phím.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-4 footer">
+            <p>DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM Elements ---
+        const canvas = document.getElementById('mazeCanvas');
+        const ctx = canvas.getContext('2d');
+        const sizeInput = document.getElementById('mazeSize');
+        const generateBtn = document.getElementById('generateBtn');
+        const solveBtn = document.getElementById('solveBtn');
+        const winMessage = document.getElementById('winMessage');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+
+        // --- Game State Variables ---
+        let size = 20;
+        let cellSize;
+        let grid;
+        let player;
+        let start, end;
+        let stack = [];
+        let solutionPath = [];
+        let isSolved = false;
+        
+        // --- Cell Class ---
+        // Represents a single cell in the maze grid
+        class Cell {
+            constructor(i, j) {
+                this.i = i; // Column index
+                this.j = j; // Row index
+                this.walls = { top: true, right: true, bottom: true, left: true };
+                this.visited = false;
+            }
+
+            // Method to draw the cell and its walls
+            draw(color = 'var(--bs-primary)') {
+                const x = this.i * cellSize;
+                const y = this.j * cellSize;
+                
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+
+                if (this.walls.top) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + cellSize, y);
+                    ctx.stroke();
+                }
+                if (this.walls.right) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + cellSize, y);
+                    ctx.lineTo(x + cellSize, y + cellSize);
+                    ctx.stroke();
+                }
+                if (this.walls.bottom) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + cellSize, y + cellSize);
+                    ctx.lineTo(x, y + cellSize);
+                    ctx.stroke();
+                }
+                if (this.walls.left) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, y + cellSize);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+            }
+
+            // Method to find unvisited neighbors
+            checkNeighbors() {
+                const neighbors = [];
+                const top = grid[this.i]?.[this.j - 1];
+                const right = grid[this.i + 1]?.[this.j];
+                const bottom = grid[this.i]?.[this.j + 1];
+                const left = grid[this.i - 1]?.[this.j];
+
+                if (top && !top.visited) neighbors.push(top);
+                if (right && !right.visited) neighbors.push(right);
+                if (bottom && !bottom.visited) neighbors.push(bottom);
+                if (left && !left.visited) neighbors.push(left);
+
+                if (neighbors.length > 0) {
+                    return neighbors[Math.floor(Math.random() * neighbors.length)];
+                } else {
+                    return undefined;
+                }
+            }
+        }
+
+        // --- Core Functions ---
+
+        // Setup initializes the grid of cells
+        function setup() {
+            size = parseInt(sizeInput.value);
+            if(isNaN(size) || size < 5 || size > 50) {
+                size = 20;
+                sizeInput.value = 20;
+            }
+
+            canvas.width = 500;
+            canvas.height = 500;
+            cellSize = canvas.width / size;
+            grid = [];
+            stack = [];
+            solutionPath = [];
+            isSolved = false;
+
+            for (let j = 0; j < size; j++) {
+                for (let i = 0; i < size; i++) {
+                    if(!grid[i]) grid[i] = [];
+                    grid[i][j] = new Cell(i, j);
+                }
+            }
+
+            start = { i: 0, j: 0 };
+            end = { i: size - 1, j: size - 1 };
+            player = { ...start };
+            
+            winMessage.style.display = 'none';
+        }
+
+        // Draws the entire maze, player, start and end points
+        function draw() {
+            const isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            ctx.fillStyle = isDark ? '#343a40' : '#f8f9fa';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const wallColor = isDark ? '#dee2e6' : '#495057';
+            
+            for (let j = 0; j < size; j++) {
+                for (let i = 0; i < size; i++) {
+                    grid[i][j].draw(wallColor);
+                }
+            }
+
+            // Draw Start and End
+            drawMarker(start.i, start.j, '#198754'); // Green
+            drawMarker(end.i, end.j, '#dc3545'); // Red
+            
+            // Draw Player
+            drawMarker(player.i, player.j, '#0d6efd', 0.6); // Blue
+
+            if (isSolved) {
+                drawSolution();
+            }
+        }
+
+        // Helper to draw markers (start, end, player)
+        function drawMarker(i, j, color, scale = 0.8) {
+            const offset = cellSize * (1 - scale) / 2;
+            ctx.fillStyle = color;
+            ctx.fillRect(i * cellSize + offset, j * cellSize + offset, cellSize * scale, cellSize * scale);
+        }
+
+        // Maze generation using Randomized Depth-First Search
+        function generateMaze() {
+            setup();
+            let current = grid[start.i][start.j];
+            current.visited = true;
+            stack.push(current);
+
+            function step() {
+                if (stack.length > 0) {
+                    current = stack[stack.length - 1];
+                    const next = current.checkNeighbors();
+
+                    if (next) {
+                        next.visited = true;
+                        stack.push(next);
+                        removeWalls(current, next);
+                    } else {
+                        stack.pop();
+                    }
+                    // Use requestAnimationFrame for smoother generation on complex mazes
+                    requestAnimationFrame(step);
+                } else {
+                    // Maze generation finished, draw the final state
+                    draw();
+                }
+            }
+            step();
+        }
+        
+        // Removes walls between two adjacent cells
+        function removeWalls(a, b) {
+            const x = a.i - b.i;
+            if (x === 1) { // b is left of a
+                a.walls.left = false;
+                b.walls.right = false;
+            } else if (x === -1) { // b is right of a
+                a.walls.right = false;
+                b.walls.left = false;
+            }
+            const y = a.j - b.j;
+            if (y === 1) { // b is top of a
+                a.walls.top = false;
+                b.walls.bottom = false;
+            } else if (y === -1) { // b is bottom of a
+                a.walls.bottom = false;
+                b.walls.top = false;
+            }
+        }
+
+        // --- Player Movement & Game Logic ---
+        function handleMove(direction) {
+            const currentCell = grid[player.i][player.j];
+            let moved = false;
+            switch(direction) {
+                case 'up':
+                    if (!currentCell.walls.top) { player.j--; moved = true; }
+                    break;
+                case 'down':
+                    if (!currentCell.walls.bottom) { player.j++; moved = true; }
+                    break;
+                case 'left':
+                    if (!currentCell.walls.left) { player.i--; moved = true; }
+                    break;
+                case 'right':
+                    if (!currentCell.walls.right) { player.i++; moved = true; }
+                    break;
+            }
+
+            if(moved) {
+                draw();
+                checkWinCondition();
+            }
+        }
+
+        function checkWinCondition() {
+            if (player.i === end.i && player.j === end.j) {
+                winMessage.style.display = 'block';
+                // Remove event listener to prevent further moves after winning
+                document.removeEventListener('keydown', handleKeyDown);
+            }
+        }
+
+        // --- Solution Logic ---
+        function findSolution() {
+            if(isSolved) {
+                isSolved = false;
+                draw();
+                solveBtn.textContent = "Xem lời giải";
+                solveBtn.classList.remove('btn-warning');
+                solveBtn.classList.add('btn-success');
+                return;
+            }
+
+            const visited = new Set();
+            const path = [];
+            
+            function solve(i, j) {
+                const cell = grid[i][j];
+                const key = `${i},${j}`;
+                if (visited.has(key)) return false;
+                
+                visited.add(key);
+                path.push({ i, j });
+
+                if (i === end.i && j === end.j) {
+                    solutionPath = [...path];
+                    return true;
+                }
+
+                // Explore neighbors
+                // Down
+                if (!cell.walls.bottom && solve(i, j + 1)) return true;
+                // Right
+                if (!cell.walls.right && solve(i + 1, j)) return true;
+                // Up
+                if (!cell.walls.top && solve(i, j - 1)) return true;
+                // Left
+                if (!cell.walls.left && solve(i - 1, j)) return true;
+
+                path.pop(); // Backtrack
+                return false;
+            }
+            
+            solve(start.i, start.j);
+            isSolved = true;
+            solveBtn.textContent = "Ẩn lời giải";
+            solveBtn.classList.add('btn-warning');
+            solveBtn.classList.remove('btn-success');
+            draw();
+        }
+
+        function drawSolution() {
+            if (solutionPath.length < 2) return;
+            
+            ctx.beginPath();
+            ctx.strokeStyle = '#fd7e14'; // Orange
+            ctx.lineWidth = cellSize * 0.2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            const offset = cellSize / 2;
+            ctx.moveTo(solutionPath[0].i * cellSize + offset, solutionPath[0].j * cellSize + offset);
+            for(let i = 1; i < solutionPath.length; i++) {
+                ctx.lineTo(solutionPath[i].i * cellSize + offset, solutionPath[i].j * cellSize + offset);
+            }
+            ctx.stroke();
+        }
+
+        // --- Event Listeners ---
+        function handleKeyDown(e) {
+            e.preventDefault();
+            switch (e.key) {
+                case 'ArrowUp': handleMove('up'); break;
+                case 'ArrowDown': handleMove('down'); break;
+                case 'ArrowLeft': handleMove('left'); break;
+                case 'ArrowRight': handleMove('right'); break;
+            }
+        }
+        
+        generateBtn.addEventListener('click', () => {
+             document.addEventListener('keydown', handleKeyDown, { once: false });
+             generateMaze();
+        });
+
+        solveBtn.addEventListener('click', findSolution);
+        
+        document.addEventListener('keydown', handleKeyDown);
+
+        // On-screen controls
+        document.getElementById('moveUp').addEventListener('click', () => handleMove('up'));
+        document.getElementById('moveDown').addEventListener('click', () => handleMove('down'));
+        document.getElementById('moveLeft').addEventListener('click', () => handleMove('left'));
+        document.getElementById('moveRight').addEventListener('click', () => handleMove('right'));
+
+
+        // Dark mode toggle
+        darkModeToggle.addEventListener('click', () => {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-bs-theme');
+            if (currentTheme === 'dark') {
+                html.setAttribute('data-bs-theme', 'light');
+                darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            } else {
+                html.setAttribute('data-bs-theme', 'dark');
+                darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            }
+            // Redraw maze to update colors
+            draw();
+        });
+
+
+        // --- Initial Load ---
+        generateMaze();
+    });
+    </script>
+</body>
+</html>

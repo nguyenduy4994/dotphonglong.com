@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Cờ Caro - Five in a Row</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons for Dark Mode Toggle -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        :root {
+            --board-size: 15;
+            --cell-size: 40px;
+            --cell-gap: 2px;
+            --x-color: #0d6efd;
+            --o-color: #dc3545;
+            --win-bg: rgba(255, 193, 7, 0.5);
+        }
+
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* Dark mode variable overrides */
+        [data-bs-theme="dark"] {
+            --x-color: #4dabf7;
+            --o-color: #ff6b6b;
+            --win-bg: rgba(255, 193, 7, 0.4);
+        }
+        
+        .main-container {
+            max-width: 800px;
+            margin: auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        #game-board-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto; /* Allow scrolling on small screens */
+            padding: 10px;
+        }
+        
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(var(--board-size), var(--cell-size));
+            grid-template-rows: repeat(var(--board-size), var(--cell-size));
+            gap: var(--cell-gap);
+            background-color: #ccc;
+            border: 2px solid #999;
+            flex-shrink: 0; /* Prevent the board from shrinking */
+        }
+        
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: calc(var(--cell-size) * 0.7);
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        [data-bs-theme="dark"] .cell {
+            background-color: #495057;
+            border-color: #6c757d;
+        }
+
+        [data-bs-theme="dark"] #game-board {
+             background-color: #343a40;
+             border-color: #495057;
+        }
+
+        .cell:hover:not(.occupied) {
+            background-color: #e9ecef;
+        }
+        
+        [data-bs-theme="dark"] .cell:hover:not(.occupied) {
+             background-color: #5a6268;
+        }
+
+        .cell.x {
+            color: var(--x-color);
+        }
+        
+        .cell.o {
+            color: var(--o-color);
+        }
+        
+        .cell.winning-cell {
+            background-color: var(--win-bg);
+            animation: pulse 0.8s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #status {
+            font-size: 1.5rem;
+            font-weight: 500;
+            min-height: 50px;
+        }
+
+        .footer-text {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+        }
+    </style>
+</head>
+<body class="bg-body-tertiary">
+
+    <!-- Dark Mode Toggle Button -->
+    <button class="btn btn-outline-secondary dark-mode-toggle" id="darkModeToggle">
+        <i class="bi bi-moon-stars-fill"></i>
+    </button>
+
+    <div class="container main-container bg-body-secondary border">
+        <header class="text-center my-4">
+            <h1 class="display-5 fw-bold">Game Cờ Caro</h1>
+            <p class="lead">Cùng chơi Five-in-a-Row!</p>
+        </header>
+
+        <main>
+            <div class="controls text-center mb-3">
+                <div class="btn-group" role="group" aria-label="Game Mode">
+                    <button type="button" class="btn btn-primary" id="pvpButton">Chơi với người</button>
+                    <button type="button" class="btn btn-outline-primary" id="pvaButton">Chơi với máy</button>
+                </div>
+            </div>
+            
+            <div id="status" class="text-center mb-4">Chọn chế độ chơi để bắt đầu</div>
+            
+            <div id="game-board-container">
+                 <div id="game-board"></div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button class="btn btn-success btn-lg" id="resetButton" style="display: none;">Chơi lại</button>
+            </div>
+        </main>
+        
+        <footer class="text-center footer-text">
+            <p>DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const boardElement = document.getElementById('game-board');
+            const statusElement = document.getElementById('status');
+            const resetButton = document.getElementById('resetButton');
+            const pvpButton = document.getElementById('pvpButton');
+            const pvaButton = document.getElementById('pvaButton');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const htmlElement = document.documentElement;
+
+            // Game Constants
+            const BOARD_SIZE = 15;
+            const WINNING_LENGTH = 5;
+
+            // Game State
+            let boardState;
+            let currentPlayer;
+            let gameOver;
+            let gameMode = 'pvp'; // 'pvp' or 'pva'
+            let isPlayerTurn; // For PvA mode
+
+            // --- Dark Mode Logic ---
+            const themeIcon = darkModeToggle.querySelector('i');
+            
+            const setInitialTheme = () => {
+                const savedTheme = localStorage.getItem('theme') || 'light';
+                htmlElement.setAttribute('data-bs-theme', savedTheme);
+                if (savedTheme === 'dark') {
+                    themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                } else {
+                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+                }
+            };
+
+            darkModeToggle.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                if (currentTheme === 'light') {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+                }
+            });
+
+            // --- Game Initialization ---
+            const initGame = () => {
+                boardState = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
+                currentPlayer = 'X';
+                gameOver = false;
+                isPlayerTurn = true;
+                
+                boardElement.innerHTML = '';
+                boardElement.style.setProperty('--board-size', BOARD_SIZE);
+
+                // Create the board cells dynamically
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('cell');
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        cell.addEventListener('click', handleCellClick);
+                        boardElement.appendChild(cell);
+                    }
+                }
+                
+                updateStatus();
+                resetButton.style.display = 'block';
+            };
+
+            // --- Event Handlers ---
+            pvpButton.addEventListener('click', () => {
+                gameMode = 'pvp';
+                pvpButton.classList.remove('btn-outline-primary');
+                pvpButton.classList.add('btn-primary');
+                pvaButton.classList.remove('btn-primary');
+                pvaButton.classList.add('btn-outline-primary');
+                initGame();
+            });
+
+            pvaButton.addEventListener('click', () => {
+                gameMode = 'pva';
+                pvaButton.classList.remove('btn-outline-primary');
+                pvaButton.classList.add('btn-primary');
+                pvpButton.classList.remove('btn-primary');
+                pvpButton.classList.add('btn-outline-primary');
+                initGame();
+            });
+
+            resetButton.addEventListener('click', initGame);
+
+            function handleCellClick(event) {
+                if (gameOver || (gameMode === 'pva' && !isPlayerTurn)) return;
+
+                const cell = event.target;
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+
+                if (boardState[row][col] !== null) return;
+
+                makeMove(row, col);
+            }
+            
+            // --- Game Logic ---
+            function makeMove(row, col) {
+                // Update state and UI
+                boardState[row][col] = currentPlayer;
+                const cell = document.querySelector(`.cell[data-row='${row}'][data-col='${col}']`);
+                cell.textContent = currentPlayer;
+                cell.classList.add(currentPlayer.toLowerCase(), 'occupied');
+
+                // Check for winner
+                const winningCells = checkWinner(row, col);
+                if (winningCells) {
+                    gameOver = true;
+                    statusElement.innerHTML = `Người chơi <span class="fw-bold text-${currentPlayer === 'X' ? 'primary' : 'danger'}">${currentPlayer}</span> thắng! Xin chúc mừng!`;
+                    highlightWinningCells(winningCells);
+                    return;
+                }
+
+                // Check for draw
+                if (isBoardFull()) {
+                    gameOver = true;
+                    statusElement.textContent = 'Hòa cờ!';
+                    return;
+                }
+                
+                // Switch player
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                isPlayerTurn = !isPlayerTurn;
+                updateStatus();
+
+                // If PvA mode, trigger AI move
+                if (gameMode === 'pva' && !isPlayerTurn && !gameOver) {
+                    // Small delay for better user experience
+                    setTimeout(aiMove, 500);
+                }
+            }
+            
+            function checkWinner(row, col) {
+                const directions = [
+                    { r: 0, c: 1 },  // Horizontal
+                    { r: 1, c: 0 },  // Vertical
+                    { r: 1, c: 1 },  // Diagonal (\)
+                    { r: 1, c: -1 }  // Anti-diagonal (/)
+                ];
+                
+                for (const dir of directions) {
+                    let count = 1;
+                    let winningLine = [{row, col}];
+                    
+                    // Check in the positive direction
+                    for (let i = 1; i < WINNING_LENGTH; i++) {
+                        const newRow = row + i * dir.r;
+                        const newCol = col + i * dir.c;
+                        if (isValid(newRow, newCol) && boardState[newRow][newCol] === currentPlayer) {
+                            count++;
+                            winningLine.push({row: newRow, col: newCol});
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    // Check in the negative direction
+                    for (let i = 1; i < WINNING_LENGTH; i++) {
+                        const newRow = row - i * dir.r;
+                        const newCol = col - i * dir.c;
+                        if (isValid(newRow, newCol) && boardState[newRow][newCol] === currentPlayer) {
+                            count++;
+                            winningLine.push({row: newRow, col: newCol});
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    if (count >= WINNING_LENGTH) {
+                        return winningLine;
+                    }
+                }
+                
+                return null;
+            }
+
+            function isBoardFull() {
+                return boardState.every(row => row.every(cell => cell !== null));
+            }
+
+            function updateStatus() {
+                if (gameOver) return;
+                if (gameMode === 'pva') {
+                    statusElement.innerHTML = isPlayerTurn ? `Lượt của bạn (X)` : `Máy đang suy nghĩ... (O)`;
+                } else {
+                    statusElement.innerHTML = `Lượt của người chơi <span class="fw-bold text-${currentPlayer === 'X' ? 'primary' : 'danger'}">${currentPlayer}</span>`;
+                }
+            }
+
+            function highlightWinningCells(cells) {
+                cells.forEach(cellPos => {
+                    const cell = document.querySelector(`.cell[data-row='${cellPos.row}'][data-col='${cellPos.col}']`);
+                    cell.classList.add('winning-cell');
+                });
+            }
+
+            function isValid(row, col) {
+                return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+            }
+
+            // --- AI Logic (Simple) ---
+            function aiMove() {
+                if (gameOver) return;
+
+                let bestMove = findBestMove();
+
+                // If no strategic move found, pick a random valid one
+                if (!bestMove) {
+                    const emptyCells = [];
+                    for (let r = 0; r < BOARD_SIZE; r++) {
+                        for (let c = 0; c < BOARD_SIZE; c++) {
+                            if (boardState[r][c] === null) {
+                                emptyCells.push({ r, c });
+                            }
+                        }
+                    }
+                    if (emptyCells.length > 0) {
+                        bestMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    }
+                }
+                
+                if (bestMove) {
+                    makeMove(bestMove.r, bestMove.c);
+                }
+            }
+            
+            function findBestMove() {
+                // 1. Check if AI can win
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        if (boardState[r][c] === null) {
+                            boardState[r][c] = 'O'; // Try move
+                            if (checkWinner(r, c)) {
+                                boardState[r][c] = null; // Revert
+                                return { r, c };
+                            }
+                            boardState[r][c] = null; // Revert
+                        }
+                    }
+                }
+                
+                // 2. Check if player is about to win and block
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        if (boardState[r][c] === null) {
+                            boardState[r][c] = 'X'; // Try player move
+                            if (checkWinner(r, c)) {
+                                boardState[r][c] = null; // Revert
+                                return { r, c }; // Block here
+                            }
+                            boardState[r][c] = null; // Revert
+                        }
+                    }
+                }
+                
+                // 3. (Simple) Find a good spot near existing pieces
+                // This could be improved, but for now, we return null
+                // and let the random picker handle it.
+                return null;
+            }
+
+
+            // --- Initial Setup ---
+            setInitialTheme(); // Set theme on load
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Sudoku Game</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Dark mode toggle button */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1.5rem;
+            z-index: 1030;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bs-secondary-bg);
+            border: 1px solid var(--bs-border-color);
+        }
+
+        /* Sudoku Board Styling */
+        #sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            max-width: 500px;
+            width: 100%;
+            border: 3px solid #343a40;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: var(--bs-body-bg);
+            margin-bottom: 1rem;
+        }
+
+        .sudoku-cell {
+            aspect-ratio: 1 / 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(1rem, 4vw, 1.8rem);
+            border: 1px solid var(--bs-border-color-translucent);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            user-select: none;
+        }
+        
+        /* Thick borders for 3x3 subgrids */
+        .sudoku-cell:nth-child(3n) { border-right-width: 3px; border-right-color: #343a40; }
+        .sudoku-cell:nth-child(9n) { border-right: none; }
+        .row-border { border-bottom: 3px solid #343a40; }
+        
+        /* Cell States Styling */
+        .sudoku-cell:not(.pre-filled):hover {
+            background-color: var(--bs-primary-bg-subtle);
+        }
+        
+        .sudoku-cell.selected {
+            background-color: var(--bs-info-bg-subtle) !important;
+            box-shadow: inset 0 0 0 2px var(--bs-info);
+        }
+
+        .sudoku-cell.pre-filled {
+            font-weight: bold;
+            color: var(--bs-primary-text-emphasis);
+            cursor: not-allowed;
+            background-color: var(--bs-tertiary-bg);
+        }
+
+        .sudoku-cell.user-filled {
+             color: var(--bs-info-text-emphasis);
+        }
+        
+        .sudoku-cell.error {
+            background-color: var(--bs-danger-bg-subtle);
+            color: var(--bs-danger-text-emphasis);
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+
+        /* Number Pad Styling */
+        .number-control {
+            font-size: 1.5rem;
+            width: 50px;
+            height: 50px;
+        }
+        
+        /* Message Box Styling */
+        #message-box {
+            min-height: 50px;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Dark Mode specific overrides */
+        [data-bs-theme="dark"] #sudoku-board,
+        [data-bs-theme="dark"] .sudoku-cell:nth-child(3n),
+        [data-bs-theme="dark"] .row-border {
+            border-color: #dee2e6;
+        }
+
+        [data-bs-theme="dark"] .sudoku-cell.pre-filled {
+            color: var(--bs-warning-text-emphasis);
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" id="darkModeToggle" title="Chuyển chế độ Sáng/Tối">
+        <svg id="theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-sun-fill" viewBox="0 0 16 16">
+            <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </svg>
+        <svg id="theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-moon-stars-fill d-none" viewBox="0 0 16 16">
+            <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+            <path d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162h1.234a.217.217 0 0 1 .148.404l-1 .73-.386 1.162a.217.217 0 0 1-.412 0l-.387-1.162-1-.73a.217.217 0 0 1 .148-.404h1.234l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z"/>
+        </svg>
+    </div>
+
+    <div class="container mt-4 mb-4">
+        <header class="text-center mb-4">
+            <h1 class="display-5 fw-bold">Sudoku Mini Game</h1>
+        </header>
+
+        <main class="card p-3 p-md-4 shadow-sm">
+            <div class="row">
+                <!-- Sudoku Board Column -->
+                <div class="col-12 col-lg-8 d-flex justify-content-center align-items-center mb-4 mb-lg-0">
+                    <div id="sudoku-board"></div>
+                </div>
+                
+                <!-- Controls Column -->
+                <div class="col-12 col-lg-4 d-flex flex-column justify-content-center">
+                    <!-- Message Box -->
+                    <div id="message-box" class="alert alert-info text-center" role="alert">
+                        Chọn một ô và điền số.
+                    </div>
+
+                    <!-- Number Pad -->
+                    <div class="d-grid gap-2 mb-3" style="grid-template-columns: repeat(5, 1fr);">
+                        <!-- Numbers will be generated by JS -->
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2">
+                        <button id="check-btn" class="btn btn-primary btn-lg">Kiểm tra</button>
+                        <button id="solve-btn" class="btn btn-success btn-lg">Giải đố</button>
+                        <button id="new-puzzle-btn" class="btn btn-secondary btn-lg">Câu đố mới</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center text-body-secondary small mt-4">
+            <p>DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Game Logic Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // --- DATA: PUZZLES AND SOLUTIONS ---
+        // 0 represents an empty cell
+        const puzzles = [
+            {
+                board: [
+                    5, 3, 0, 0, 7, 0, 0, 0, 0,
+                    6, 0, 0, 1, 9, 5, 0, 0, 0,
+                    0, 9, 8, 0, 0, 0, 0, 6, 0,
+                    8, 0, 0, 0, 6, 0, 0, 0, 3,
+                    4, 0, 0, 8, 0, 3, 0, 0, 1,
+                    7, 0, 0, 0, 2, 0, 0, 0, 6,
+                    0, 6, 0, 0, 0, 0, 2, 8, 0,
+                    0, 0, 0, 4, 1, 9, 0, 0, 5,
+                    0, 0, 0, 0, 8, 0, 0, 7, 9
+                ],
+                solution: [
+                    5, 3, 4, 6, 7, 8, 9, 1, 2,
+                    6, 7, 2, 1, 9, 5, 3, 4, 8,
+                    1, 9, 8, 3, 4, 2, 5, 6, 7,
+                    8, 5, 9, 7, 6, 1, 4, 2, 3,
+                    4, 2, 6, 8, 5, 3, 7, 9, 1,
+                    7, 1, 3, 9, 2, 4, 8, 5, 6,
+                    9, 6, 1, 5, 3, 7, 2, 8, 4,
+                    2, 8, 7, 4, 1, 9, 6, 3, 5,
+                    3, 4, 5, 2, 8, 6, 1, 7, 9
+                ]
+            },
+            {
+                board: [
+                    0, 0, 3, 0, 2, 0, 6, 0, 0,
+                    9, 0, 0, 3, 0, 5, 0, 0, 1,
+                    0, 0, 1, 8, 0, 6, 4, 0, 0,
+                    0, 0, 8, 1, 0, 2, 9, 0, 0,
+                    7, 0, 0, 0, 0, 0, 0, 0, 8,
+                    0, 0, 6, 7, 0, 8, 2, 0, 0,
+                    0, 0, 2, 6, 0, 9, 5, 0, 0,
+                    8, 0, 0, 2, 0, 3, 0, 0, 9,
+                    0, 0, 5, 0, 1, 0, 3, 0, 0
+                ],
+                solution: [
+                    4, 8, 3, 9, 2, 1, 6, 5, 7,
+                    9, 6, 7, 3, 4, 5, 8, 2, 1,
+                    2, 5, 1, 8, 7, 6, 4, 9, 3,
+                    5, 4, 8, 1, 3, 2, 9, 7, 6,
+                    7, 2, 9, 5, 6, 4, 1, 3, 8,
+                    1, 3, 6, 7, 9, 8, 2, 4, 5,
+                    3, 7, 2, 6, 8, 9, 5, 1, 4,
+                    8, 1, 4, 2, 5, 3, 7, 6, 9,
+                    6, 9, 5, 4, 1, 7, 3, 8, 2
+                ]
+            },
+            {
+                board: [
+                    1, 0, 0, 4, 8, 9, 0, 0, 6,
+                    7, 3, 0, 0, 0, 0, 0, 4, 0,
+                    0, 0, 0, 0, 0, 1, 2, 9, 5,
+                    0, 0, 7, 1, 2, 0, 6, 0, 0,
+                    5, 0, 0, 7, 0, 3, 0, 0, 8,
+                    0, 0, 6, 0, 9, 5, 7, 0, 0,
+                    9, 1, 4, 6, 0, 0, 0, 0, 0,
+                    0, 2, 0, 0, 0, 0, 0, 3, 7,
+                    8, 0, 0, 5, 1, 2, 0, 0, 4
+                ],
+                solution: [
+                    1, 5, 2, 4, 8, 9, 3, 7, 6,
+                    7, 3, 9, 2, 5, 6, 8, 4, 1,
+                    4, 6, 8, 3, 7, 1, 2, 9, 5,
+                    3, 8, 7, 1, 2, 4, 6, 5, 9,
+                    5, 9, 1, 7, 6, 3, 4, 2, 8,
+                    2, 4, 6, 8, 9, 5, 7, 1, 3,
+                    9, 1, 4, 6, 3, 7, 5, 8, 2,
+                    6, 2, 5, 9, 4, 8, 1, 3, 7,
+                    8, 7, 3, 5, 1, 2, 9, 6, 4
+                ]
+            }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const boardElement = document.getElementById('sudoku-board');
+        const numberPadContainer = document.querySelector('.d-grid[style="grid-template-columns: repeat(5, 1fr);"]');
+        const checkBtn = document.getElementById('check-btn');
+        const solveBtn = document.getElementById('solve-btn');
+        const newPuzzleBtn = document.getElementById('new-puzzle-btn');
+        const messageBox = document.getElementById('message-box');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const lightIcon = document.getElementById('theme-icon-light');
+        const darkIcon = document.getElementById('theme-icon-dark');
+        
+        // --- GAME STATE ---
+        let currentPuzzleIndex = -1;
+        let userBoard = [];
+        let solution = [];
+        let selectedCell = { element: null, index: -1 };
+
+        // --- FUNCTIONS ---
+
+        /**
+         * Creates and populates the number pad controls.
+         */
+        function createNumberPad() {
+            numberPadContainer.innerHTML = '';
+            for (let i = 1; i <= 9; i++) {
+                const button = document.createElement('button');
+                button.classList.add('btn', 'btn-outline-primary', 'number-control');
+                button.textContent = i;
+                button.addEventListener('click', () => fillNumber(i));
+                numberPadContainer.appendChild(button);
+            }
+            const clearButton = document.createElement('button');
+            clearButton.classList.add('btn', 'btn-outline-danger', 'number-control');
+            clearButton.innerHTML = '&times;';
+            clearButton.title = "Xóa số";
+            clearButton.addEventListener('click', clearCell);
+            numberPadContainer.appendChild(clearButton);
+        }
+
+        /**
+         * Loads a new puzzle onto the board.
+         */
+        function loadNewPuzzle() {
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * puzzles.length);
+            } while (newIndex === currentPuzzleIndex && puzzles.length > 1);
+            currentPuzzleIndex = newIndex;
+            
+            const puzzle = puzzles[currentPuzzleIndex];
+            userBoard = [...puzzle.board];
+            solution = puzzle.solution;
+
+            renderBoard();
+            updateMessage('Câu đố mới đã sẵn sàng!', 'info');
+        }
+
+        /**
+         * Renders the current state of the board to the DOM.
+         */
+        function renderBoard() {
+            boardElement.innerHTML = '';
+            selectedCell.element = null;
+            selectedCell.index = -1;
+
+            for (let i = 0; i < 81; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('sudoku-cell');
+                cell.dataset.index = i;
+
+                // Add thick borders for 3x3 subgrids
+                const row = Math.floor(i / 9);
+                if (row === 2 || row === 5) {
+                    cell.classList.add('row-border');
+                }
+
+                const value = userBoard[i];
+                if (puzzles[currentPuzzleIndex].board[i] !== 0) {
+                    // This is a pre-filled cell
+                    cell.textContent = value;
+                    cell.classList.add('pre-filled');
+                } else {
+                     // This is an empty/user-filled cell
+                    if (value !== 0) {
+                        cell.textContent = value;
+                        cell.classList.add('user-filled');
+                    }
+                    cell.addEventListener('click', () => selectCell(cell, i));
+                }
+                boardElement.appendChild(cell);
+            }
+        }
+        
+        /**
+         * Handles the selection of a cell.
+         */
+        function selectCell(cellElement, index) {
+            // Deselect previous cell
+            if (selectedCell.element) {
+                selectedCell.element.classList.remove('selected');
+            }
+            // Select new cell
+            selectedCell.element = cellElement;
+            selectedCell.index = index;
+            cellElement.classList.add('selected');
+        }
+        
+        /**
+         * Fills the selected cell with a number.
+         */
+        function fillNumber(number) {
+            if (!selectedCell.element) {
+                updateMessage('Vui lòng chọn một ô trước!', 'warning');
+                return;
+            }
+            
+            userBoard[selectedCell.index] = number;
+            selectedCell.element.textContent = number;
+            selectedCell.element.classList.add('user-filled');
+            clearHighlights();
+        }
+
+        /**
+         * Clears the number from the selected cell.
+         */
+        function clearCell() {
+            if (!selectedCell.element) {
+                updateMessage('Vui lòng chọn một ô trước!', 'warning');
+                return;
+            }
+            userBoard[selectedCell.index] = 0;
+            selectedCell.element.textContent = '';
+            selectedCell.element.classList.remove('user-filled');
+            clearHighlights();
+        }
+        
+        /**
+         * Checks the user's board against the solution.
+         */
+        function checkSolution() {
+            clearHighlights();
+            let errors = 0;
+            let filledCells = 0;
+            
+            for (let i = 0; i < 81; i++) {
+                if (userBoard[i] !== 0) {
+                    filledCells++;
+                    // Check only user-filled cells
+                    if (puzzles[currentPuzzleIndex].board[i] === 0 && userBoard[i] !== solution[i]) {
+                        boardElement.children[i].classList.add('error');
+                        errors++;
+                    }
+                }
+            }
+            
+            if (errors > 0) {
+                updateMessage(`Tìm thấy ${errors} lỗi. Hãy sửa lại!`, 'danger');
+            } else if (filledCells < 81) {
+                updateMessage('Chưa có lỗi nào! Tiếp tục nào!', 'success');
+            } else {
+                updateMessage('Xin chúc mừng! Bạn đã giải thành công!', 'success');
+                // Optional: add celebratory animation
+            }
+        }
+        
+        /**
+         * Fills the board with the correct solution.
+         */
+        function solvePuzzle() {
+            userBoard = [...solution];
+            renderBoard();
+            updateMessage('Đây là đáp án của câu đố.', 'info');
+        }
+        
+        /**
+         * Updates the message box with new text and status.
+         */
+        function updateMessage(text, type = 'info') {
+            messageBox.textContent = text;
+            messageBox.className = `alert alert-${type} text-center`;
+        }
+
+        /**
+         * Clears all error highlights from the board.
+         */
+        function clearHighlights() {
+            for (const cell of boardElement.children) {
+                cell.classList.remove('error');
+            }
+        }
+        
+        /**
+         * Toggles between light and dark mode.
+         */
+        function toggleDarkMode() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                lightIcon.classList.remove('d-none');
+                darkIcon.classList.add('d-none');
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                lightIcon.classList.add('d-none');
+                darkIcon.classList.remove('d-none');
+            }
+        }
+        
+        // --- EVENT LISTENERS ---
+        checkBtn.addEventListener('click', checkSolution);
+        solveBtn.addEventListener('click', solvePuzzle);
+        newPuzzleBtn.addEventListener('click', loadNewPuzzle);
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+        
+        // --- INITIALIZE GAME ---
+        createNumberPad();
+        loadNewPuzzle();
+    });
+    </script>
+</body>
+</html>
