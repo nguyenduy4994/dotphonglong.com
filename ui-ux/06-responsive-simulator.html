@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Simulator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Phông chữ dễ nhìn */
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        /* Dark mode styles */
+        body[data-bs-theme="dark"] {
+            background-color: #212529;
+            color: #f8f9fa;
+        }
+        .app-container {
+            border-radius: 15px; /* Bo tròn khung */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+            padding: 20px;
+            margin-top: 20px;
+            background-color: var(--bs-body-bg); /* Sử dụng biến Bootstrap cho nền */
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        body[data-bs-theme="dark"] .app-container {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+        .simulator-frame-container {
+            border: 1px solid #dee2e6; /* Viền khung iframe */
+            border-radius: 10px; /* Bo tròn khung iframe */
+            overflow: hidden; /* Đảm bảo nội dung iframe không tràn ra ngoài */
+            background-color: #f8f9fa; /* Nền trắng cho iframe container */
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px; /* Chiều cao tối thiểu */
+        }
+        body[data-bs-theme="dark"] .simulator-frame-container {
+            border-color: #495057;
+            background-color: #6c757d; /* Nền xám cho dark mode */
+        }
+        .simulator-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transition: width 0.3s, height 0.3s; /* Hiệu ứng chuyển động mượt mà */
+            background-color: white; /* Đảm bảo iframe có nền trắng */
+        }
+        /* Nút Dark Mode */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        /* Footer */
+        .footer {
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+            padding: 20px 0;
+            text-align: center;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        body[data-bs-theme="dark"] .footer {
+            color: #adb5bd;
+        }
+        /* Thiết lập responsive cho các nút */
+        .btn-group-responsive {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* Khoảng cách giữa các nút */
+            justify-content: center;
+        }
+        .btn-group-responsive .btn {
+            flex-grow: 1; /* Cho phép các nút giãn nở */
+            min-width: 120px; /* Chiều rộng tối thiểu cho nút */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .dark-mode-toggle {
+                top: 10px;
+                right: 10px;
+            }
+            .app-container {
+                padding: 15px;
+                margin-top: 10px;
+            }
+            .btn-group-responsive .btn {
+                min-width: unset; /* Bỏ min-width để tự động điều chỉnh */
+                width: 100%; /* Trên mobile, nút chiếm toàn bộ chiều rộng */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Responsive Simulator</h1>
+
+        <!-- Dark Mode Toggle Button -->
+        <button id="darkModeToggle" class="btn btn-outline-secondary rounded-pill dark-mode-toggle">
+            <i class="bi bi-moon-stars-fill"></i>
+        </button>
+
+        <div class="app-container mx-auto" style="max-width: 1200px;">
+            <div class="mb-3">
+                <label for="urlInput" class="form-label fs-5">Nhập URL trang web:</label>
+                <div class="input-group">
+                    <input type="url" class="form-control form-control-lg rounded-start-pill" id="urlInput" placeholder="https://example.com" value="https://www.google.com" aria-label="URL Input">
+                    <button class="btn btn-primary rounded-end-pill" type="button" id="loadUrlBtn">Tải Trang</button>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="mb-3">
+                <p class="fs-5 mb-2">Chọn kích thước thiết bị:</p>
+                <div class="d-flex flex-wrap gap-2 justify-content-center mb-3">
+                    <button type="button" class="btn btn-outline-info rounded-pill" data-width="375" data-height="667" data-orientation="portrait">
+                        <i class="bi bi-phone-fill me-1"></i> iPhone SE
+                    </button>
+                    <button type="button" class="btn btn-outline-info rounded-pill" data-width="414" data-height="896" data-orientation="portrait">
+                        <i class="bi bi-phone-fill me-1"></i> iPhone 8 Plus
+                    </button>
+                    <button type="button" class="btn btn-outline-info rounded-pill" data-width="768" data-height="1024" data-orientation="portrait">
+                        <i class="bi bi-tablet-fill me-1"></i> iPad
+                    </button>
+                    <button type="button" class="btn btn-outline-info rounded-pill" data-width="1366" data-height="768" data-orientation="landscape">
+                        <i class="bi bi-laptop-fill me-1"></i> Laptop HD
+                    </button>
+                    <button type="button" class="btn btn-outline-info rounded-pill" data-width="1920" data-height="1080" data-orientation="landscape">
+                        <i class="bi bi-pc-display-horizontal me-1"></i> Desktop Full HD
+                    </button>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="mb-3">
+                <p class="fs-5 mb-2">Hoặc nhập kích thước tùy chỉnh:</p>
+                <div class="row g-2 mb-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text rounded-start-pill"><i class="bi bi-arrows-expand-horizontal"></i> Rộng (px)</span>
+                            <input type="number" class="form-control rounded-end-pill" id="customWidthInput" value="375" min="100">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text rounded-start-pill"><i class="bi bi-arrows-expand-vertical"></i> Cao (px)</span>
+                            <input type="number" class="form-control rounded-end-pill" id="customHeightInput" value="667" min="100">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-success w-100 rounded-pill" id="applyCustomSizeBtn">
+                            <i class="bi bi-gear-fill me-1"></i> Áp Dụng
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="mb-3">
+                <p class="fs-5 mb-2">Xoay thiết bị:</p>
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                    <button type="button" class="btn btn-outline-warning rounded-pill" id="portraitBtn">
+                        <i class="bi bi-aspect-ratio me-1"></i> Dọc
+                    </button>
+                    <button type="button" class="btn btn-outline-warning rounded-pill" id="landscapeBtn">
+                        <i class="bi bi-aspect-ratio-fill me-1"></i> Ngang
+                    </button>
+                </div>
+            </div>
+
+            <hr>
+
+            <h2 class="text-center mt-4 mb-3">Xem trước trang web</h2>
+            <div class="simulator-frame-container" id="simulatorFrameContainer">
+                <!-- Iframe will be loaded here -->
+                <iframe id="simulatorIframe" class="simulator-iframe" src="https://www.google.com" style="width: 375px; height: 667px;"></iframe>
+            </div>
+        </div>
+
+        <footer class="footer mt-4">
+            <p>&copy; 2024 DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlInput = document.getElementById('urlInput');
+            const loadUrlBtn = document.getElementById('loadUrlBtn');
+            const simulatorIframe = document.getElementById('simulatorIframe');
+            const deviceSizeButtons = document.querySelectorAll('.btn-outline-info');
+            const customWidthInput = document.getElementById('customWidthInput');
+            const customHeightInput = document.getElementById('customHeightInput');
+            const applyCustomSizeBtn = document.getElementById('applyCustomSizeBtn');
+            const portraitBtn = document.getElementById('portraitBtn');
+            const landscapeBtn = document.getElementById('landscapeBtn');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.body;
+
+            // Function to set dark mode
+            const setDarkMode = (isDark) => {
+                if (isDark) {
+                    body.setAttribute('data-bs-theme', 'dark');
+                    darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+                } else {
+                    body.removeAttribute('data-bs-theme');
+                    darkModeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i>';
+                }
+                localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            };
+
+            // Apply dark mode on initial load
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'enabled' || (savedDarkMode === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                setDarkMode(true);
+            } else {
+                setDarkMode(false);
+            }
+
+            // Dark mode toggle event listener
+            darkModeToggle.addEventListener('click', () => {
+                const currentTheme = body.getAttribute('data-bs-theme');
+                setDarkMode(currentTheme !== 'dark');
+            });
+
+            // Function to load URL into iframe
+            const loadUrl = () => {
+                let url = urlInput.value.trim();
+                if (!url) {
+                    simulatorIframe.srcdoc = '<p style="text-align: center; color: red; font-size: 1.2em; margin-top: 50px;">Vui lòng nhập một URL hợp lệ.</p>';
+                    return;
+                }
+
+                // Add https:// if missing
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+
+                try {
+                    // Cố gắng tải URL trực tiếp
+                    simulatorIframe.src = url;
+                } catch (e) {
+                    // Xử lý lỗi nếu iframe không thể tải (ví dụ: Same-Origin Policy)
+                    simulatorIframe.srcdoc = '<p style="text-align: center; color: red; font-size: 1.2em; margin-top: 50px;">Không thể tải trang này. Có thể do lỗi bảo mật (Same-Origin Policy) hoặc URL không hợp lệ.</p>';
+                    console.error("Error loading iframe:", e);
+                }
+            };
+
+            // Function to set iframe dimensions
+            const setIframeSize = (width, height) => {
+                // Đảm bảo kích thước là số nguyên
+                const parsedWidth = parseInt(width);
+                const parsedHeight = parseInt(height);
+
+                if (isNaN(parsedWidth) || isNaN(parsedHeight) || parsedWidth < 100 || parsedHeight < 100) {
+                    console.error("Kích thước không hợp lệ. Vui lòng nhập số nguyên lớn hơn 100.");
+                    return;
+                }
+
+                simulatorIframe.style.width = `${parsedWidth}px`;
+                simulatorIframe.style.height = `${parsedHeight}px`;
+
+                customWidthInput.value = parsedWidth;
+                customHeightInput.value = parsedHeight;
+
+                // Căn giữa iframe trong khung chứa nếu kích thước nhỏ hơn khung chứa
+                const container = document.getElementById('simulatorFrameContainer');
+                container.style.justifyContent = 'center';
+                container.style.alignItems = 'center';
+            };
+
+            // Initial load of URL
+            loadUrl();
+
+            // Event listener for URL input and button
+            loadUrlBtn.addEventListener('click', loadUrl);
+            urlInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    loadUrl();
+                }
+            });
+
+            // Event listeners for predefined device size buttons
+            deviceSizeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const width = button.dataset.width;
+                    const height = button.dataset.height;
+                    const orientation = button.dataset.orientation; // portrait or landscape
+
+                    if (orientation === 'landscape') {
+                        setIframeSize(height, width); // Đổi chiều rộng và chiều cao
+                    } else {
+                        setIframeSize(width, height);
+                    }
+                });
+            });
+
+            // Event listener for applying custom size
+            applyCustomSizeBtn.addEventListener('click', () => {
+                const customWidth = customWidthInput.value;
+                const customHeight = customHeightInput.value;
+                setIframeSize(customWidth, customHeight);
+            });
+
+            // Event listeners for orientation buttons
+            portraitBtn.addEventListener('click', () => {
+                const currentWidth = parseInt(simulatorIframe.style.width);
+                const currentHeight = parseInt(simulatorIframe.style.height);
+                setIframeSize(Math.min(currentWidth, currentHeight), Math.max(currentWidth, currentHeight));
+            });
+
+            landscapeBtn.addEventListener('click', () => {
+                const currentWidth = parseInt(simulatorIframe.style.width);
+                const currentHeight = parseInt(simulatorIframe.style.height);
+                setIframeSize(Math.max(currentWidth, currentHeight), Math.min(currentWidth, currentHeight));
+            });
+
+            // Set initial size to iPhone SE
+            setIframeSize(375, 667);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kéo-thả File HTML Generator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for body, transitioning for dark mode */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light background */
+            color: #212529; /* Dark text */
+            transition: background-color 0.3s, color 0.3s; /* Smooth transition for theme change */
+        }
+
+        /* Dark mode specific styles for body */
+        body.dark-mode {
+            background-color: #212529; /* Dark background */
+            color: #e2e6ea; /* Light text */
+        }
+
+        /* Container for the main application, with shadow and rounded corners */
+        .app-container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            padding: 30px;
+            margin-top: 30px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        /* Dark mode specific styles for the app container */
+        body.dark-mode .app-container {
+            background-color: #343a40; /* Darker background */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); /* Stronger shadow */
+        }
+
+        /* Styles for draggable HTML component items in the toolbox */
+        .draggable-item {
+            cursor: grab; /* Indicate draggable */
+            padding: 10px 15px;
+            margin: 8px;
+            background-color: #e9ecef; /* Light grey background */
+            border: 1px solid #dee2e6; /* Light border */
+            border-radius: 8px; /* Rounded corners */
+            text-align: center;
+            transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s; /* Smooth hover effects */
+            font-weight: 600;
+            user-select: none; /* Prevent text selection during drag */
+        }
+
+        /* Dark mode specific styles for draggable items */
+        body.dark-mode .draggable-item {
+            background-color: #495057;
+            border-color: #6c757d;
+            color: #f8f9fa;
+        }
+
+        /* Hover effect for draggable items */
+        .draggable-item:hover {
+            background-color: #e0e4e8;
+            transform: translateY(-2px); /* Slight lift */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Dark mode hover effect for draggable items */
+        body.dark-mode .draggable-item:hover {
+            background-color: #5a6268;
+        }
+
+        /* Styles for the drop zone area */
+        .drop-zone {
+            min-height: 400px;
+            border: 2px dashed #007bff; /* Dashed blue border */
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #f0f8ff; /* Light blue background */
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        /* Dark mode specific styles for the drop zone */
+        body.dark-mode .drop-zone {
+            border-color: #17a2b8; /* Teal border */
+            background-color: #2c313a; /* Dark background */
+        }
+
+        /* Visual feedback when an item is dragged over the drop zone */
+        .drop-zone.drag-over {
+            border-color: #28a745; /* Green border */
+            background-color: #d4edda; /* Light green background */
+        }
+
+        /* Dark mode visual feedback for drag over */
+        body.dark-mode .drop-zone.drag-over {
+            border-color: #20c997; /* Lighter green border */
+            background-color: #2c5048; /* Darker green background */
+        }
+
+        /* Wrapper for elements dropped into the canvas, allowing reordering */
+        .dropped-element-wrapper {
+            position: relative;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            background-color: #ffffff;
+            cursor: move; /* Indicate reordering */
+            transition: background-color 0.2s, box-shadow 0.2s;
+        }
+
+        /* Dark mode specific styles for dropped element wrapper */
+        body.dark-mode .dropped-element-wrapper {
+            background-color: #495057;
+            border-color: #6c757d;
+        }
+
+        /* Hover effect for dropped element wrapper */
+        .dropped-element-wrapper:hover {
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Style when a dropped element is being dragged for reordering */
+        .dropped-element-wrapper.dragged {
+            opacity: 0.5; /* Make it semi-transparent */
+        }
+
+        /* Styles for the actual HTML elements displayed inside the canvas (e.g., div, p, h1) */
+        .dropped-element-wrapper > :not(.element-controls) {
+            margin: 0;
+            padding: 5px;
+            background-color: #f8f9fa; /* Lighter background for the actual element */
+            border-radius: 5px;
+            min-height: 25px; /* Ensure contenteditable areas are visible */
+        }
+
+        /* Dark mode specific styles for the actual HTML elements */
+        body.dark-mode .dropped-element-wrapper > :not(.element-controls) {
+            background-color: #5a6268;
+        }
+
+        /* Specific style for img to ensure it fits within the wrapper */
+        .dropped-element-wrapper img {
+            max-width: 100%;
+            height: auto;
+            display: block; /* Remove extra space below image */
+        }
+
+        /* Container for edit and delete buttons on dropped elements */
+        .element-controls {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px; /* Space between buttons */
+        }
+
+        /* Styles for control buttons (edit/delete) */
+        .element-controls button {
+            background: none;
+            border: none;
+            color: #6c757d; /* Grey color */
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 2px 5px;
+            border-radius: 5px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        /* Dark mode specific styles for control buttons */
+        body.dark-mode .element-controls button {
+            color: #ced4da;
+        }
+
+        /* Hover effect for control buttons */
+        .element-controls button:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #dc3545; /* Red for delete icon on hover */
+        }
+
+        /* Dark mode hover effect for control buttons */
+        body.dark-mode .element-controls button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #dc3545;
+        }
+
+        /* Styles for the attribute editor pop-up */
+        .attribute-editor {
+            position: fixed; /* Fixed to viewport */
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000; /* Ensure it's above other content */
+            width: 280px; /* Fixed width for consistency */
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%); /* Adjust for true centering */
+        }
+
+        /* Dark mode specific styles for the attribute editor */
+        body.dark-mode .attribute-editor {
+            background-color: #343a40;
+            border-color: #6c757d;
+        }
+
+        .attribute-editor .form-group {
+            margin-bottom: 10px;
+        }
+
+        .attribute-editor input[type="text"] {
+            font-size: 0.9rem;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            width: 100%;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+
+        /* Dark mode specific styles for attribute editor input fields */
+        body.dark-mode .attribute-editor input[type="text"] {
+            background-color: #495057;
+            border-color: #6c757d;
+            color: #e2e6ea;
+        }
+
+        .attribute-editor button {
+            margin-top: 10px;
+            margin-right: 5px;
+        }
+
+        /* Styles for the generated HTML textarea */
+        textarea#htmlCode {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; /* Monospace font for code */
+            min-height: 250px;
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 0.9rem;
+            color: #212529;
+            resize: vertical; /* Allow vertical resizing */
+        }
+
+        /* Dark mode specific styles for the HTML textarea */
+        body.dark-mode textarea#htmlCode {
+            background-color: #495057;
+            border-color: #6c757d;
+            color: #f8f9fa;
+        }
+
+        /* Floating dark mode toggle button */
+        .btn-floating {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1030; /* Above most Bootstrap components */
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Ensure Bootstrap icon color inherits from the button text */
+        .btn-floating .bi {
+            color: inherit;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 15px;
+                margin-top: 15px;
+            }
+            .draggable-item {
+                margin: 5px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+            .drop-zone {
+                min-height: 300px;
+            }
+            textarea#htmlCode {
+                min-height: 150px;
+            }
+            .btn-floating {
+                top: 10px;
+                right: 10px;
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+            .attribute-editor {
+                width: 90%; /* Make editor take more width on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <!-- Application Title -->
+        <h1 class="text-center mb-4 display-4 fw-bold">Kéo-thả File HTML Generator</h1>
+
+        <!-- Dark Mode Toggle Button -->
+        <button id="darkModeToggle" class="btn btn-outline-secondary btn-floating">
+            <!-- Icon will be set by JavaScript based on current theme -->
+            <i class="bi bi-moon-stars-fill"></i>
+        </button>
+
+        <!-- Main Application Container -->
+        <div class="app-container mx-auto">
+            <div class="row">
+                <!-- Toolbox - List of Draggable HTML Components -->
+                <div class="col-lg-3 col-md-4 mb-4">
+                    <h5 class="mb-3 text-center fw-semibold">Thành phần HTML</h5>
+                    <div class="d-flex flex-wrap justify-content-center">
+                        <div class="draggable-item" data-tag="div" draggable="true">DIV</div>
+                        <div class="draggable-item" data-tag="p" draggable="true">PARAGRAPH</div>
+                        <div class="draggable-item" data-tag="h1" draggable="true">HEADING 1</div>
+                        <div class="draggable-item" data-tag="img" draggable="true">IMAGE</div>
+                        <div class="draggable-item" data-tag="button" draggable="true">BUTTON</div>
+                        <div class="draggable-item" data-tag="input" draggable="true">INPUT</div>
+                    </div>
+                </div>
+
+                <!-- Drop Zone & Generated HTML Output Area -->
+                <div class="col-lg-9 col-md-8">
+                    <h5 class="mb-3 text-center fw-semibold">Khu vực kéo và thả</h5>
+                    <div id="dropZone" class="drop-zone mb-4">
+                        <!-- Elements dragged and dropped by the user will be rendered here -->
+                    </div>
+
+                    <div class="mb-3">
+                        <h5 class="mb-2 fw-semibold">Mã HTML đã tạo</h5>
+                        <!-- Textarea to display the generated HTML, read-only -->
+                        <textarea id="htmlCode" class="form-control" rows="10" readonly></textarea>
+                    </div>
+
+                    <!-- Action Buttons: Clear Canvas and Copy HTML -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button id="clearCanvasBtn" class="btn btn-warning me-md-2 btn-lg">
+                            <i class="bi bi-trash-fill"></i> Xóa Canvas
+                        </button>
+                        <button id="copyHtmlBtn" class="btn btn-primary btn-lg">
+                            <i class="bi bi-clipboard"></i> Sao chép HTML
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-5 text-muted">
+            <p>DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper (JS for Bootstrap components) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5fSCDK1p6uHTCFOqS3E/oD0ESFzNENQ_tI4YdYQf2vJt0+eN" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get references to key DOM elements
+            const dropZone = document.getElementById('dropZone');
+            const htmlCodeTextarea = document.getElementById('htmlCode');
+            const copyHtmlBtn = document.getElementById('copyHtmlBtn');
+            const clearCanvasBtn = document.getElementById('clearCanvasBtn');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+
+            let draggedElementTag = null; // Stores the HTML tag (e.g., 'div', 'p') when dragging from the toolbox
+            let draggedCanvasElement = null; // Stores the DOM element being dragged *within* the canvas for reordering
+
+            // --- Dark Mode Logic ---
+            // Check localStorage for previous theme preference
+            const currentTheme = localStorage.getItem('theme');
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Set icon to sun for dark mode
+            } else {
+                 darkModeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i>'; // Set icon to moon for light mode
+            }
+
+            // Toggle dark mode on button click
+            darkModeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                if (document.body.classList.contains('dark-mode')) {
+                    localStorage.setItem('theme', 'dark'); // Save preference
+                    darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Change icon
+                } else {
+                    localStorage.setItem('theme', 'light'); // Save preference
+                    darkModeToggle.innerHTML = '<i class="bi bi-moon-stars-fill"></i>'; // Change icon
+                }
+            });
+
+            // --- Drag and Drop for Toolbox Items ---
+            // Add dragstart listener to all draggable items in the toolbox
+            document.querySelectorAll('.draggable-item').forEach(item => {
+                item.addEventListener('dragstart', (e) => {
+                    draggedElementTag = e.target.dataset.tag; // Get the HTML tag from data-tag attribute
+                    e.dataTransfer.setData('text/plain', draggedElementTag); // Set data for drag operation
+                    e.dataTransfer.effectAllowed = 'copy'; // Visual feedback (e.g., plus cursor)
+                });
+            });
+
+            // --- Drag and Drop for Canvas (Reordering Existing Elements) ---
+            // Add dragstart listener to the drop zone (event delegation) for reordering
+            dropZone.addEventListener('dragstart', (e) => {
+                // Only consider elements that are wrappers for dropped components
+                if (e.target.classList.contains('dropped-element-wrapper')) {
+                    draggedCanvasElement = e.target; // Store the element being dragged
+                    e.dataTransfer.effectAllowed = 'move'; // Visual feedback for move operation
+                    e.dataTransfer.setData('text/plain', e.target.id); // Set data (not strictly used for reorder but good practice)
+                    e.target.classList.add('dragged'); // Add a class for visual feedback (e.g., opacity)
+                }
+            });
+
+            // Clean up when dragging ends
+            dropZone.addEventListener('dragend', (e) => {
+                if (e.target.classList.contains('dropped-element-wrapper')) {
+                    e.target.classList.remove('dragged'); // Remove visual feedback class
+                    draggedCanvasElement = null; // Reset dragged element
+                    generateHtml(); // Regenerate HTML after reordering is complete
+                }
+            });
+
+            // --- Drop Zone Event Listeners ---
+            // dragover: Fires continually while a dragged item is over a valid drop target
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Prevent default to allow drop
+                dropZone.classList.add('drag-over'); // Add visual feedback for drag over
+
+                // If an element is being reordered within the canvas
+                if (draggedCanvasElement) {
+                    const afterElement = getDragAfterElement(dropZone, e.clientY); // Find element to insert after
+                    if (afterElement == null) {
+                        // If no element found, append to the end
+                        dropZone.appendChild(draggedCanvasElement);
+                    } else {
+                        // Insert the dragged element before the next sibling of the found element
+                        // This ensures it drops *after* the element found by getDragAfterElement
+                        dropZone.insertBefore(draggedCanvasElement, afterElement);
+                    }
+                }
+            });
+
+            // dragleave: Fires when a dragged item leaves a valid drop target
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over'); // Remove visual feedback
+            });
+
+            // drop: Fires when a dragged item is dropped on a valid drop target
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('drag-over'); // Remove visual feedback
+
+                // If reordering within the canvas, HTML generation is handled in dragend
+                if (draggedCanvasElement) {
+                    // Reordering has already been handled in dragover, just ensure class is removed
+                    draggedCanvasElement.classList.remove('dragged');
+                    generateHtml(); // Regenerate HTML to reflect new order
+                    draggedCanvasElement = null;
+                }
+                // If dropping a new element from the toolbox
+                else if (draggedElementTag) {
+                    // Create a wrapper for the new element, allowing controls and reordering
+                    const newElementWrapper = document.createElement('div');
+                    newElementWrapper.classList.add('dropped-element-wrapper');
+                    newElementWrapper.setAttribute('draggable', 'true'); // Make it draggable for reordering
+                    newElementWrapper.id = `element-${Date.now()}`; // Assign a unique ID
+
+                    // Create controls (edit and delete buttons)
+                    const elementControls = document.createElement('div');
+                    elementControls.classList.add('element-controls');
+
+                    const editBtn = document.createElement('button');
+                    editBtn.innerHTML = '<i class="bi bi-gear-fill"></i>'; // Bootstrap gear icon
+                    editBtn.title = 'Chỉnh sửa thuộc tính';
+                    editBtn.addEventListener('click', (event) => {
+                        event.stopPropagation(); // Prevent the click from propagating to the drop zone
+                        showAttributeEditor(newElementWrapper); // Show the attribute editor
+                    });
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.innerHTML = '<i class="bi bi-x-circle-fill"></i>'; // Bootstrap X icon
+                    deleteBtn.title = 'Xóa phần tử';
+                    deleteBtn.addEventListener('click', (event) => {
+                        event.stopPropagation();
+                        // Use a custom confirmation instead of alert/confirm
+                        const confirmDelete = document.createElement('div');
+                        confirmDelete.classList.add('attribute-editor'); // Reusing styling
+                        confirmDelete.innerHTML = `
+                            <h6 class="mb-3">Xác nhận xóa</h6>
+                            <p>Bạn có chắc chắn muốn xóa phần tử này không?</p>
+                            <button class="btn btn-danger btn-sm" id="confirmDeleteBtn">Xóa</button>
+                            <button class="btn btn-secondary btn-sm" id="cancelDeleteBtn">Hủy</button>
+                        `;
+                        document.body.appendChild(confirmDelete);
+
+                        document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+                            newElementWrapper.remove(); // Remove the element
+                            generateHtml(); // Regenerate HTML
+                            confirmDelete.remove(); // Close confirmation
+                        });
+                        document.getElementById('cancelDeleteBtn').addEventListener('click', () => {
+                            confirmDelete.remove(); // Close confirmation
+                        });
+                    });
+
+                    elementControls.appendChild(editBtn);
+                    elementControls.appendChild(deleteBtn);
+
+                    // Create the actual HTML element based on the dragged tag
+                    const innerElement = document.createElement(draggedElementTag);
+                    innerElement.contentEditable = true; // Make content editable by default for text-based elements
+
+                    // Set default content or attributes based on the HTML tag
+                    switch (draggedElementTag) {
+                        case 'div':
+                            innerElement.textContent = 'Đây là một DIV';
+                            break;
+                        case 'p':
+                            innerElement.textContent = 'Đây là một đoạn văn bản.';
+                            break;
+                        case 'h1':
+                            innerElement.textContent = 'Đây là Tiêu đề chính';
+                            break;
+                        case 'img':
+                            innerElement.src = 'https://placehold.co/150x100/A0A0A0/FFFFFF?text=Hình+ảnh'; // Placeholder image
+                            innerElement.alt = 'Ảnh placeholder';
+                            innerElement.contentEditable = false; // Images should not be contenteditable
+                            break;
+                        case 'button':
+                            innerElement.textContent = 'Nhấn vào đây';
+                            innerElement.classList.add('btn', 'btn-secondary', 'btn-sm'); // Add Bootstrap button styling
+                            innerElement.contentEditable = true; // Allow editing button text
+                            break;
+                        case 'input':
+                            innerElement.type = 'text'; // Default input type
+                            innerElement.placeholder = 'Nhập văn bản...';
+                            innerElement.classList.add('form-control', 'form-control-sm'); // Add Bootstrap input styling
+                            innerElement.contentEditable = false; // Input element itself shouldn't be contenteditable
+                            break;
+                    }
+
+                    // Listen for input events on contenteditable elements to update HTML immediately
+                    innerElement.addEventListener('input', generateHtml);
+
+                    // Append the actual element and its controls to the wrapper
+                    newElementWrapper.appendChild(innerElement);
+                    newElementWrapper.appendChild(elementControls);
+
+                    // Determine where to insert the new element based on drop position
+                    const afterElement = getDragAfterElement(dropZone, e.clientY);
+                    if (afterElement == null) {
+                        dropZone.appendChild(newElementWrapper);
+                    } else {
+                        dropZone.insertBefore(newElementWrapper, afterElement);
+                    }
+
+                    draggedElementTag = null; // Reset dragged tag
+                    generateHtml(); // Regenerate HTML to reflect the new element
+                }
+            });
+
+            // Helper function to find the element that the dragged item should be placed after
+            function getDragAfterElement(container, y) {
+                // Get all draggable elements currently in the container, excluding the one being dragged
+                const draggableElements = [...container.querySelectorAll('.dropped-element-wrapper:not(.dragged)')];
+
+                return draggableElements.reduce((closest, child) => {
+                    const box = child.getBoundingClientRect();
+                    // Calculate the offset from the center of the child element
+                    const offset = y - box.top - box.height / 2;
+                    // If the offset is negative (above center) and greater than current closest offset, this is the new closest
+                    if (offset < 0 && offset > closest.offset) {
+                        return { offset: offset, element: child };
+                    } else {
+                        return closest;
+                    }
+                }, { offset: Number.NEGATIVE_INFINITY }).element; // Initial closest is negative infinity
+            }
+
+            // --- Attribute Editor Logic ---
+            let currentEditedElementWrapper = null; // Stores the wrapper of the element being edited
+            function showAttributeEditor(elementWrapper) {
+                currentEditedElementWrapper = elementWrapper;
+                const innerElement = elementWrapper.querySelector(':not(.element-controls)'); // Get the actual HTML element inside the wrapper
+
+                // Remove any existing attribute editor to prevent multiple instances
+                const existingEditor = document.getElementById('attributeEditor');
+                if (existingEditor) existingEditor.remove();
+
+                // Create the attribute editor pop-up div
+                const editor = document.createElement('div');
+                editor.id = 'attributeEditor';
+                editor.classList.add('attribute-editor');
+
+                // Build the HTML content for the editor dynamically
+                let editorHtml = `
+                    <h6 class="mb-3">Chỉnh sửa thuộc tính</h6>
+                    <div class="mb-2">
+                        <label for="attrId" class="form-label">ID:</label>
+                        <input type="text" id="attrId" class="form-control form-control-sm" value="${innerElement.id || ''}">
+                    </div>
+                    <div class="mb-2">
+                        <label for="attrClass" class="form-label">Class:</label>
+                        <input type="text" id="attrClass" class="form-control form-control-sm" value="${Array.from(innerElement.classList).filter(cls => !cls.startsWith('form-control') && !cls.startsWith('btn')).join(' ') || ''}">
+                    </div>
+                `;
+
+                // Add specific input fields based on the element's tag type
+                if (innerElement.tagName === 'IMG') {
+                    editorHtml += `
+                        <div class="mb-2">
+                            <label for="attrSrc" class="form-label">SRC:</label>
+                            <input type="text" id="attrSrc" class="form-control form-control-sm" value="${innerElement.src || ''}">
+                        </div>
+                        <div class="mb-2">
+                            <label for="attrAlt" class="form-label">ALT:</label>
+                            <input type="text" id="attrAlt" class="form-control form-control-sm" value="${innerElement.alt || ''}">
+                        </div>
+                    `;
+                } else if (innerElement.tagName === 'INPUT') {
+                     editorHtml += `
+                        <div class="mb-2">
+                            <label for="attrType" class="form-label">Type:</label>
+                            <input type="text" id="attrType" class="form-control form-control-sm" value="${innerElement.type || 'text'}">
+                        </div>
+                        <div class="mb-2">
+                            <label for="attrPlaceholder" class="form-label">Placeholder:</label>
+                            <input type="text" id="attrPlaceholder" class="form-control form-control-sm" value="${innerElement.placeholder || ''}">
+                        </div>
+                     `;
+                }
+
+                editorHtml += `
+                    <button class="btn btn-primary btn-sm" id="saveAttrsBtn">Lưu</button>
+                    <button class="btn btn-secondary btn-sm" id="cancelAttrsBtn">Hủy</button>
+                `;
+
+                editor.innerHTML = editorHtml;
+                document.body.appendChild(editor); // Append to body to make it float
+
+                // Add event listeners for Save and Cancel buttons
+                document.getElementById('saveAttrsBtn').addEventListener('click', () => {
+                    // Update the inner element's attributes from the editor's input fields
+                    innerElement.id = document.getElementById('attrId').value;
+
+                    // Update class names, preserving original Bootstrap classes for form-control and buttons
+                    const newClasses = document.getElementById('attrClass').value.split(' ').filter(cls => cls.trim() !== '');
+                    const currentBootstrapClasses = Array.from(innerElement.classList).filter(cls => cls.startsWith('form-control') || cls.startsWith('btn'));
+                    innerElement.className = [...currentBootstrapClasses, ...newClasses].join(' ');
+
+                    if (innerElement.tagName === 'IMG') {
+                        innerElement.src = document.getElementById('attrSrc').value;
+                        innerElement.alt = document.getElementById('attrAlt').value;
+                    } else if (innerElement.tagName === 'INPUT') {
+                        innerElement.type = document.getElementById('attrType').value;
+                        innerElement.placeholder = document.getElementById('attrPlaceholder').value;
+                    }
+
+                    editor.remove(); // Close the editor
+                    currentEditedElementWrapper = null;
+                    generateHtml(); // Regenerate HTML to reflect changes
+                });
+
+                document.getElementById('cancelAttrsBtn').addEventListener('click', () => {
+                    editor.remove(); // Close the editor
+                    currentEditedElementWrapper = null;
+                });
+            }
+
+            // --- HTML Generation Logic ---
+            function generateHtml() {
+                let htmlContent = '';
+                // Iterate through all dropped element wrappers in the drop zone
+                dropZone.querySelectorAll('.dropped-element-wrapper').forEach(wrapper => {
+                    const innerElement = wrapper.querySelector(':not(.element-controls)'); // Get the actual HTML element
+                    const tag = innerElement.tagName.toLowerCase(); // Get the lowercase tag name (e.g., 'div', 'p')
+                    let attributes = '';
+
+                    // Collect all attributes from the inner element
+                    for (let i = 0; i < innerElement.attributes.length; i++) {
+                        const attr = innerElement.attributes[i];
+                        // Exclude internal attributes used for app logic or temporary classes
+                        if (attr.name !== 'contenteditable' && !attr.name.startsWith('data-') && attr.name !== 'class') {
+                            attributes += ` ${attr.name}="${attr.value}"`;
+                        }
+                    }
+
+                    // Special handling for the class attribute to include only relevant classes
+                    let classList = Array.from(innerElement.classList).filter(cls =>
+                        !cls.startsWith('dropped-element-wrapper') &&
+                        !cls.startsWith('element-controls') &&
+                        cls !== 'dragged' // Remove temporary drag class
+                    );
+                    if (classList.length > 0) {
+                        attributes += ` class="${classList.join(' ')}"`;
+                    }
+
+                    // Append the HTML string based on whether it's a self-closing tag or not
+                    if (tag === 'img' || tag === 'input') { // Self-closing tags do not have inner content
+                        htmlContent += `<${tag}${attributes}>\n`;
+                    } else {
+                        // For other tags, include the text content
+                        // Encode HTML entities in text content to prevent issues
+                        const textContent = innerElement.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                        htmlContent += `<${tag}${attributes}>${textContent}</${tag}>\n`;
+                    }
+                });
+                htmlCodeTextarea.value = htmlContent; // Update the textarea with the generated HTML
+            }
+
+            // --- Copy to Clipboard ---
+            copyHtmlBtn.addEventListener('click', () => {
+                htmlCodeTextarea.select(); // Select the text in the textarea
+                try {
+                    // Use document.execCommand('copy') for better compatibility in iframe environments
+                    document.execCommand('copy');
+                    copyHtmlBtn.textContent = 'Đã sao chép!'; // Change button text
+                    copyHtmlBtn.classList.remove('btn-primary');
+                    copyHtmlBtn.classList.add('btn-success'); // Change button style to success
+                    setTimeout(() => {
+                        // Revert button text and style after a short delay
+                        copyHtmlBtn.innerHTML = '<i class="bi bi-clipboard"></i> Sao chép HTML';
+                        copyHtmlBtn.classList.remove('btn-success');
+                        copyHtmlBtn.classList.add('btn-primary');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Không thể sao chép HTML:', err);
+                    // Provide error feedback if copying fails
+                    copyHtmlBtn.textContent = 'Lỗi sao chép!';
+                    copyHtmlBtn.classList.remove('btn-primary');
+                    copyHtmlBtn.classList.add('btn-danger'); // Change button style to danger
+                    setTimeout(() => {
+                        copyHtmlBtn.innerHTML = '<i class="bi bi-clipboard"></i> Sao chép HTML';
+                        copyHtmlBtn.classList.remove('btn-danger');
+                        copyHtmlBtn.classList.add('btn-primary');
+                    }, 2000);
+                }
+            });
+
+            // --- Clear Canvas Functionality ---
+            clearCanvasBtn.addEventListener('click', () => {
+                // Use a custom confirmation dialog instead of window.confirm
+                const confirmClear = document.createElement('div');
+                confirmClear.classList.add('attribute-editor'); // Reusing styling
+                confirmClear.innerHTML = `
+                    <h6 class="mb-3">Xác nhận xóa Canvas</h6>
+                    <p>Bạn có chắc chắn muốn xóa toàn bộ canvas không?</p>
+                    <button class="btn btn-danger btn-sm" id="confirmClearBtn">Xóa tất cả</button>
+                    <button class="btn btn-secondary btn-sm" id="cancelClearBtn">Hủy</button>
+                `;
+                document.body.appendChild(confirmClear);
+
+                document.getElementById('confirmClearBtn').addEventListener('click', () => {
+                    dropZone.innerHTML = ''; // Clear all elements from the drop zone
+                    generateHtml(); // Regenerate HTML (will be empty)
+                    confirmClear.remove(); // Close confirmation
+                });
+                document.getElementById('cancelClearBtn').addEventListener('click', () => {
+                    confirmClear.remove(); // Close confirmation
+                });
+            });
+
+            // Initial generation of HTML when the page loads (it will be empty initially)
+            generateHtml();
+        });
+    </script>
+</body>
+</html>

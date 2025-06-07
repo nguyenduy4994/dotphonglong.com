@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toast Notification Generator</title>
+    <!-- Bootstrap CSS (phiên bản 5.3.3) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6Auy+5w-5l-b0kE/L-5dF3e0L7Q/X4zM4k0k2k2F2L2L2" crossorigin="anonymous">
+    <!-- Bootstrap Icons (cho các biểu tượng) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts - Inter (phông chữ dễ nhìn) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Thiết lập phông chữ, màu nền và hiệu ứng chuyển đổi cho body */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Nền sáng mặc định */
+            color: #212529; /* Chữ tối mặc định */
+            transition: background-color 0.3s, color 0.3s; /* Chuyển đổi mượt mà khi thay đổi chế độ */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao viewport */
+        }
+
+        /* Phong cách cho chế độ tối (dark mode) */
+        body.dark-mode {
+            background-color: #212529; /* Nền tối */
+            color: #f8f9fa; /* Chữ sáng */
+        }
+
+        /* Phong cách cho các thẻ card trong chế độ tối */
+        body.dark-mode .card {
+            background-color: #343a40; /* Nền card tối hơn */
+            color: #f8f9fa;
+            border-color: #495057; /* Viền card tối hơn */
+        }
+
+        /* Phong cách cho các trường nhập liệu và chọn trong chế độ tối */
+        body.dark-mode .form-control,
+        body.dark-mode .form-select {
+            background-color: #495057; /* Nền trường nhập liệu tối */
+            color: #f8f9fa;
+            border-color: #6c757d; /* Viền trường nhập liệu tối */
+        }
+
+        /* Phong cách cho placeholder của trường nhập liệu trong chế độ tối */
+        body.dark-mode .form-control::placeholder {
+            color: #ced4da;
+        }
+
+        /* Phong cách cho các tùy chọn trong select box trong chế độ tối */
+        body.dark-mode .form-select option {
+            background-color: #495057;
+            color: #f8f9fa;
+        }
+
+        /* Phong cách cho tiêu đề toast trong chế độ tối */
+        body.dark-mode .toast-header {
+            background-color: #495057;
+            color: #f8f9fa;
+            border-bottom-color: #6c757d;
+        }
+
+        /* Phong cách cho nội dung toast trong chế độ tối */
+        body.dark-mode .toast-body {
+            background-color: #343a40;
+            color: #f8f9fa;
+        }
+
+        /* Ghi đè màu nền của các loại toast cụ thể trong chế độ tối để đảm bảo hiển thị đúng */
+        body.dark-mode .toast.text-bg-success { background-color: #198754 !important; }
+        body.dark-mode .toast.text-bg-info { background-color: #0dcaf0 !important; }
+        body.dark-mode .toast.text-bg-warning { background-color: #ffc107 !important; }
+        body.dark-mode .toast.text-bg-danger { background-color: #dc3545 !important; }
+        body.dark-mode .toast .btn-close {
+            filter: invert(1); /* Đảo màu nút đóng để dễ nhìn hơn trong chế độ tối */
+        }
+
+        /* Container chính của ứng dụng */
+        .app-container {
+            max-width: 700px; /* Chiều rộng tối đa */
+            margin: 50px auto; /* Căn giữa theo chiều ngang, có khoảng cách trên dưới */
+            padding: 30px;
+            border-radius: 15px; /* Bo tròn góc */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+            background-color: #ffffff; /* Nền trắng mặc định */
+        }
+
+        /* Nút chuyển đổi chế độ tối (float ở góc trên bên phải) */
+        .dark-mode-toggle {
+            position: fixed; /* Cố định vị trí */
+            top: 20px;
+            right: 20px;
+            z-index: 1050; /* Đảm bảo nút nằm trên các toast */
+        }
+
+        /* Container cho các toast, vị trí sẽ được điều chỉnh bằng JavaScript */
+        .toast-container-wrapper {
+            position: fixed; /* Cố định vị trí */
+            z-index: 10; /* Đảm bảo toast hiển thị trên các nội dung khác */
+            margin: 1rem; /* Khoảng cách từ các cạnh */
+        }
+
+        /* Các lớp định vị cho toast container */
+        .toast-container-top-right { top: 0; right: 0; }
+        .toast-container-top-left { top: 0; left: 0; }
+        .toast-container-bottom-right { bottom: 0; right: 0; }
+        .toast-container-bottom-left { bottom: 0; left: 0; }
+
+        /* Footer của ứng dụng */
+        footer {
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+            padding: 20px 0;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Nút chuyển đổi chế độ tối -->
+    <button class="btn btn-outline-secondary dark-mode-toggle rounded-pill" id="darkModeToggle">
+        <i class="bi bi-moon-fill d-none" id="moonIcon"></i> <!-- Icon mặt trăng (chế độ tối) -->
+        <i class="bi bi-sun-fill" id="sunIcon"></i> <!-- Icon mặt trời (chế độ sáng) -->
+    </button>
+
+    <!-- Tiêu đề ứng dụng -->
+    <div class="container text-center mt-5">
+        <h1 class="display-4 fw-bold text-primary">Toast Notification Generator</h1>
+    </div>
+
+    <!-- Khung chính của ứng dụng -->
+    <div class="container app-container card border-0">
+        <div class="card-body">
+            <h2 class="card-title text-center mb-4 text-secondary">Tạo Thông Báo Toast Tùy Chỉnh</h2>
+
+            <!-- Trường nhập tiêu đề Toast -->
+            <div class="mb-3">
+                <label for="toastTitle" class="form-label">Tiêu đề Toast:</label>
+                <input type="text" class="form-control rounded-pill" id="toastTitle" placeholder="Nhập tiêu đề...">
+            </div>
+
+            <!-- Trường nhập nội dung Toast -->
+            <div class="mb-3">
+                <label for="toastContent" class="form-label">Nội dung Toast:</label>
+                <textarea class="form-control rounded-pill" id="toastContent" rows="3" placeholder="Nhập nội dung thông báo..."></textarea>
+            </div>
+
+            <!-- Các tùy chọn cho Toast (Loại, Vị trí, Thời gian) -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label for="toastType" class="form-label">Loại Toast:</label>
+                    <select class="form-select rounded-pill" id="toastType">
+                        <option value="success" selected>Thành công (Success)</option>
+                        <option value="info">Thông tin (Info)</option>
+                        <option value="warning">Cảnh báo (Warning)</option>
+                        <option value="danger">Nguy hiểm (Danger)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="toastPosition" class="form-label">Vị trí:</label>
+                    <select class="form-select rounded-pill" id="toastPosition">
+                        <option value="top-right" selected>Trên cùng bên phải</option>
+                        <option value="top-left">Trên cùng bên trái</option>
+                        <option value="bottom-right">Dưới cùng bên phải</option>
+                        <option value="bottom-left">Dưới cùng bên trái</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="toastDuration" class="form-label">Thời gian hiển thị:</label>
+                    <select class="form-select rounded-pill" id="toastDuration">
+                        <option value="3000" selected>3 giây</option>
+                        <option value="5000">5 giây</option>
+                        <option value="0">Không giới hạn</option> <!-- Giá trị 0 nghĩa là không tự động ẩn -->
+                    </select>
+                </div>
+            </div>
+
+            <!-- Nút Tạo Toast -->
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-primary btn-lg rounded-pill shadow-sm" id="generateToastBtn">
+                    <i class="bi bi-bell-fill me-2"></i>Tạo Toast
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container cho các Toast sẽ được hiển thị -->
+    <div class="toast-container-wrapper" id="liveToastContainer">
+        <!-- Các Toast sẽ được thêm vào đây bằng JavaScript -->
+    </div>
+
+    <!-- Footer của ứng dụng -->
+    <footer class="mt-auto">
+        <p>DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle (bao gồm Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HI/Hh3mKjXoJt{L-5dF3e0L7Q/X4zM4k0k2k2F2L2L2" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Lấy tham chiếu đến các phần tử DOM
+            const toastTitleInput = document.getElementById('toastTitle');
+            const toastContentInput = document.getElementById('toastContent');
+            const toastTypeSelect = document.getElementById('toastType');
+            const toastPositionSelect = document.getElementById('toastPosition');
+            const toastDurationSelect = document.getElementById('toastDuration');
+            const generateToastBtn = document.getElementById('generateToastBtn');
+            const liveToastContainer = document.getElementById('liveToastContainer');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const moonIcon = document.getElementById('moonIcon');
+            const sunIcon = document.getElementById('sunIcon');
+
+            // Đặt giá trị mặc định cho các trường nhập liệu
+            toastTitleInput.value = 'Thông báo mới!';
+            toastContentInput.value = 'Đây là nội dung của thông báo toast của bạn.';
+
+            // Khởi tạo trạng thái chế độ tối
+            let isDarkMode = false;
+            // Kiểm tra trạng thái đã lưu trong localStorage
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark-mode');
+                isDarkMode = true;
+                moonIcon.classList.remove('d-none');
+                sunIcon.classList.add('d-none');
+            } else {
+                sunIcon.classList.remove('d-none');
+                moonIcon.classList.add('d-none');
+            }
+
+            // Xử lý sự kiện chuyển đổi chế độ tối/sáng
+            darkModeToggle.addEventListener('click', function() {
+                isDarkMode = !isDarkMode; // Đảo ngược trạng thái
+                document.body.classList.toggle('dark-mode', isDarkMode); // Thêm/xóa lớp 'dark-mode' trên body
+                localStorage.setItem('darkMode', isDarkMode); // Lưu trạng thái vào localStorage
+
+                // Chuyển đổi biểu tượng mặt trăng/mặt trời
+                if (isDarkMode) {
+                    moonIcon.classList.remove('d-none');
+                    sunIcon.classList.add('d-none');
+                } else {
+                    sunIcon.classList.remove('d-none');
+                    moonIcon.classList.add('d-none');
+                }
+            });
+
+            // Xử lý sự kiện khi nút "Tạo Toast" được nhấn
+            generateToastBtn.addEventListener('click', function() {
+                const title = toastTitleInput.value.trim() || 'Thông báo'; // Lấy tiêu đề, nếu trống thì dùng "Thông báo"
+                let content = toastContentInput.value.trim(); // Lấy nội dung
+                const type = toastTypeSelect.value; // Lấy loại toast (success, info, ...)
+                const position = toastPositionSelect.value; // Lấy vị trí (top-right, bottom-left, ...)
+                const duration = parseInt(toastDurationSelect.value); // Lấy thời gian hiển thị (chuyển sang số)
+
+                // Xóa các lớp định vị cũ từ toast container
+                liveToastContainer.classList.remove(
+                    'toast-container-top-right',
+                    'toast-container-top-left',
+                    'toast-container-bottom-right',
+                    'toast-container-bottom-left'
+                );
+                // Áp dụng lớp định vị mới cho toast container
+                liveToastContainer.classList.add(`toast-container-${position}`);
+
+                // Tạo một ID ngẫu nhiên cho toast để đảm bảo tính duy nhất
+                const toastId = `toast-${Date.now()}`;
+
+                // Tạo phần tử HTML cho toast
+                const toastElement = document.createElement('div');
+                toastElement.id = toastId;
+                toastElement.classList.add('toast', 'fade', `text-bg-${type}`); // Thêm các lớp Bootstrap cơ bản và lớp màu nền
+                toastElement.setAttribute('role', 'alert');
+                toastElement.setAttribute('aria-live', 'assertive');
+                toastElement.setAttribute('aria-atomic', 'true');
+
+                // Thiết lập thuộc tính autohide và delay dựa trên thời gian hiển thị đã chọn
+                if (duration === 0) {
+                    toastElement.setAttribute('data-bs-autohide', 'false'); // Không tự động ẩn
+                } else {
+                    toastElement.setAttribute('data-bs-autohide', 'true');
+                    toastElement.setAttribute('data-bs-delay', duration.toString()); // Thời gian ẩn
+                }
+
+                // Cấu trúc nội dung HTML của toast
+                toastElement.innerHTML = `
+                    <div class="toast-header">
+                        <i class="bi ${getIconClass(type)} me-2"></i> <!-- Biểu tượng dựa trên loại toast -->
+                        <strong class="me-auto">${title}</strong>
+                        <small>Vừa xong</small>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Đóng"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${content || 'Không có nội dung.'} <!-- Hiển thị nội dung hoặc thông báo nếu không có -->
+                    </div>
+                `;
+
+                // Thêm toast vào container
+                liveToastContainer.appendChild(toastElement);
+
+                // Khởi tạo đối tượng Toast của Bootstrap và hiển thị nó
+                const bsToast = new bootstrap.Toast(toastElement);
+                bsToast.show();
+
+                // Xóa toast khỏi DOM sau khi nó đã ẩn hoàn toàn để tránh tích tụ
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    toastElement.remove();
+                });
+            });
+
+            // Hàm trợ giúp để lấy lớp biểu tượng Bootstrap Icons dựa trên loại toast
+            function getIconClass(type) {
+                switch (type) {
+                    case 'success': return 'bi-check-circle-fill text-success';
+                    case 'info': return 'bi-info-circle-fill text-info';
+                    case 'warning': return 'bi-exclamation-triangle-fill text-warning';
+                    case 'danger': return 'bi-x-circle-fill text-danger';
+                    default: return 'bi-bell-fill'; // Biểu tượng mặc định
+                }
+            }
+        });
+    </script>
+</body>
+</html>

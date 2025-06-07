@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Generator</title>
+    <!-- Bootstrap CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* Tùy chỉnh CSS tổng thể */
+        body {
+            font-family: 'Inter', sans-serif; /* Sử dụng font Inter hoặc sans-serif mặc định */
+            transition: background-color 0.3s, color 0.3s; /* Chuyển động mượt mà khi đổi chế độ sáng/tối */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--bs-body-bg); /* Bootstrap body background variable */
+            color: var(--bs-body-color); /* Bootstrap body text color variable */
+        }
+        .app-container {
+            max-width: 960px; /* Chiều rộng tối đa của khung ứng dụng */
+            margin: 2rem auto; /* Căn giữa và tạo khoảng cách */
+            padding: 2rem;
+            background-color: var(--bs-body-bg);
+            border-radius: 1rem; /* Bo góc nhẹ nhàng */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Đổ bóng tinh tế */
+            flex-grow: 1; /* Cho phép khung mở rộng */
+        }
+        .dark-mode-toggle {
+            position: fixed; /* Nút dark mode nổi lên */
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050; /* Đảm bảo nút nằm trên các yếu tố khác */
+            font-size: 1.5rem; /* Kích thước icon lớn hơn */
+        }
+        .code-preview {
+            background-color: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            max-height: 400px; /* Giới hạn chiều cao của khung code preview */
+            overflow-y: auto; /* Thêm thanh cuộn khi nội dung dài */
+            font-size: 0.875rem; /* Font nhỏ hơn cho code */
+        }
+        h1 {
+            font-weight: 700; /* Tiêu đề đậm */
+            margin-bottom: 2rem;
+        }
+        .form-label {
+            font-weight: 600; /* Label đậm hơn */
+        }
+        footer {
+            padding: 1rem;
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--bs-secondary-color); /* Màu chữ phụ đạo */
+        }
+        /* Điều chỉnh màu sắc cho Dark Mode */
+        html[data-bs-theme="dark"] .app-container {
+            background-color: #212529; /* Nền tối hơn cho khung app */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4); /* Đổ bóng đậm hơn */
+            color: #f8f9fa; /* Chữ sáng */
+        }
+        html[data-bs-theme="dark"] .code-preview {
+            background-color: #343a40; /* Nền tối hơn cho code preview */
+            border-color: #495057; /* Viền tối hơn */
+            color: #dee2e6; /* Chữ code sáng */
+        }
+        /* Tùy chỉnh để đảm bảo phông chữ dễ nhìn trên mọi kích thước màn hình */
+        @media (max-width: 768px) {
+            .app-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            .dark-mode-toggle {
+                top: 0.5rem;
+                right: 0.5rem;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body data-bs-theme="light">
+    <!-- Nút Dark Mode Toggle -->
+    <button class="btn btn-outline-secondary dark-mode-toggle rounded-circle p-2" id="darkModeToggle" aria-label="Toggle dark mode">
+        <i class="bi bi-moon-stars-fill"></i>
+    </button>
+
+    <div class="container text-center mt-4">
+        <h1 class="display-4 fw-bold">Modal Generator</h1>
+    </div>
+
+    <div class="app-container">
+        <div class="row">
+            <!-- Phần tùy chỉnh Modal -->
+            <div class="col-lg-6 mb-4">
+                <h2 class="h4 mb-3">Tùy chỉnh Modal</h2>
+                <div class="mb-3">
+                    <label for="modalTitleInput" class="form-label">Tiêu đề Modal:</label>
+                    <input type="text" class="form-control" id="modalTitleInput" value="Tiêu đề Modal của bạn">
+                </div>
+                <div class="mb-3">
+                    <label for="modalBodyInput" class="form-label">Nội dung Modal:</label>
+                    <textarea class="form-control" id="modalBodyInput" rows="5">Nội dung của modal sẽ hiển thị ở đây. Bạn có thể thêm bất kỳ văn bản, HTML hoặc các thành phần Bootstrap khác vào đây.</textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="modalSizeSelect" class="form-label">Kích thước Modal:</label>
+                    <select class="form-select" id="modalSizeSelect">
+                        <option value="">Mặc định</option>
+                        <option value="modal-sm">Nhỏ (Small)</option>
+                        <option value="modal-lg">Lớn (Large)</option>
+                        <option value="modal-xl">Rất lớn (Extra Large)</option>
+                        <option value="modal-fullscreen">Toàn màn hình (Fullscreen)</option>
+                    </select>
+                </div>
+
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="headerCloseBtn" checked>
+                    <label class="form-check-label" for="headerCloseBtn">Nút đóng (Close button) ở header</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="footerDismissBtn" checked>
+                    <label class="form-check-label" for="footerDismissBtn">Nút đóng (Dismiss button) ở footer</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="footerSaveBtn" checked>
+                    <label class="form-check-label" for="footerSaveBtn">Nút lưu (Save changes button) ở footer</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                    <input class="form-check-input" type="checkbox" id="backdropStatic" >
+                    <label class="form-check-label" for="backdropStatic">Đóng bằng cách click ra ngoài (Backdrop static)</label>
+                </div>
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input" type="checkbox" id="keyboardClose">
+                    <label class="form-check-label" for="keyboardClose">Đóng bằng phím Esc (Keyboard true)</label>
+                </div>
+            </div>
+
+            <!-- Phần xem trước và hành động -->
+            <div class="col-lg-6">
+                <h2 class="h4 mb-3">Mã HTML & Xem trước</h2>
+                <div class="mb-3">
+                    <label class="form-label">Mã HTML của Modal:</label>
+                    <pre class="code-preview"><code id="modalHtmlCode"></code></pre>
+                </div>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-primary btn-lg" id="copyCodeBtn">
+                        <i class="bi bi-files me-2"></i>Sao chép Mã
+                    </button>
+                    <button class="btn btn-success btn-lg" id="launchModalBtn">
+                        <i class="bi bi-box-arrow-up-right me-2"></i>Khởi chạy Modal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal động sẽ được thêm vào đây để xem trước -->
+    <div class="modal fade" id="dynamicModal" tabindex="-1" aria-labelledby="dynamicModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dynamicModalLabel"></h5>
+                    <!-- Nút đóng header -->
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <!-- Modal Body -->
+                <div class="modal-body"></div>
+                <!-- Modal Footer -->
+                <div class="modal-footer">
+                    <!-- Nút dismiss footer -->
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <!-- Nút save changes footer -->
+                    <button type="button" class="btn btn-primary">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-muted">
+        <p>DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Lấy tham chiếu đến các phần tử DOM
+        const modalTitleInput = document.getElementById('modalTitleInput');
+        const modalBodyInput = document.getElementById('modalBodyInput');
+        const modalSizeSelect = document.getElementById('modalSizeSelect');
+        const headerCloseBtn = document.getElementById('headerCloseBtn');
+        const footerDismissBtn = document.getElementById('footerDismissBtn');
+        const footerSaveBtn = document.getElementById('footerSaveBtn');
+        const backdropStatic = document.getElementById('backdropStatic');
+        const keyboardClose = document.getElementById('keyboardClose');
+        const modalHtmlCode = document.getElementById('modalHtmlCode');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const launchModalBtn = document.getElementById('launchModalBtn');
+        const dynamicModal = document.getElementById('dynamicModal');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Hàm để tạo và cập nhật mã HTML của modal
+        function generateModalCode() {
+            const title = modalTitleInput.value;
+            const bodyContent = modalBodyInput.value;
+            const sizeClass = modalSizeSelect.value ? ` ${modalSizeSelect.value}` : '';
+            const showHeaderClose = headerCloseBtn.checked;
+            const showFooterDismiss = footerDismissBtn.checked;
+            const showFooterSave = footerSaveBtn.checked;
+            const isBackdropStatic = backdropStatic.checked;
+            const isKeyboardClose = keyboardClose.checked;
+
+            let modalHtml = `<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"`;
+
+            if (isBackdropStatic) {
+                modalHtml += ` data-bs-backdrop="static"`;
+            }
+            if (!isKeyboardClose) { // keyboard="false" nếu checkbox không được chọn
+                modalHtml += ` data-bs-keyboard="false"`;
+            }
+            modalHtml += `>\n`;
+            modalHtml += `  <div class="modal-dialog${sizeClass}">\n`;
+            modalHtml += `    <div class="modal-content">\n`;
+            modalHtml += `      <div class="modal-header">\n`;
+            modalHtml += `        <h1 class="modal-title fs-5" id="exampleModalLabel">${title}</h1>\n`;
+            if (showHeaderClose) {
+                modalHtml += `        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>\n`;
+            }
+            modalHtml += `      </div>\n`;
+            modalHtml += `      <div class="modal-body">\n`;
+            modalHtml += `        ${bodyContent}\n`;
+            modalHtml += `      </div>\n`;
+
+            if (showFooterDismiss || showFooterSave) {
+                modalHtml += `      <div class="modal-footer">\n`;
+                if (showFooterDismiss) {
+                    modalHtml += `        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>\n`;
+                }
+                if (showFooterSave) {
+                    modalHtml += `        <button type="button" class="btn btn-primary">Save changes</button>\n`;
+                }
+                modalHtml += `      </div>\n`;
+            }
+            modalHtml += `    </div>\n`;
+            modalHtml += `  </div>\n`;
+            modalHtml += `</div>`;
+
+            modalHtmlCode.textContent = modalHtml; // Hiển thị mã HTML trong <pre>
+
+            // Cập nhật nội dung của modal xem trước
+            const dynamicModalEl = document.getElementById('dynamicModal');
+            const dynamicModalTitle = dynamicModalEl.querySelector('.modal-title');
+            const dynamicModalBody = dynamicModalEl.querySelector('.modal-body');
+            const dynamicModalHeaderCloseBtn = dynamicModalEl.querySelector('.modal-header .btn-close');
+            const dynamicModalFooter = dynamicModalEl.querySelector('.modal-footer');
+            const dynamicModalFooterDismissBtn = dynamicModalFooter.querySelector('[data-bs-dismiss="modal"]');
+            const dynamicModalFooterSaveBtn = dynamicModalFooter.querySelector('.btn-primary');
+            const dynamicModalDialog = dynamicModalEl.querySelector('.modal-dialog');
+
+            dynamicModalTitle.textContent = title;
+            dynamicModalBody.innerHTML = bodyContent; // Sử dụng innerHTML để hiển thị nội dung tùy chỉnh
+
+            // Cập nhật hiển thị nút đóng header
+            if (showHeaderClose) {
+                dynamicModalHeaderCloseBtn.style.display = 'block';
+            } else {
+                dynamicModalHeaderCloseBtn.style.display = 'none';
+            }
+
+            // Cập nhật hiển thị footer và các nút trong footer
+            if (showFooterDismiss || showFooterSave) {
+                dynamicModalFooter.style.display = 'flex';
+                if (showFooterDismiss) {
+                    dynamicModalFooterDismissBtn.style.display = 'inline-block';
+                } else {
+                    dynamicModalFooterDismissBtn.style.display = 'none';
+                }
+                if (showFooterSave) {
+                    dynamicModalFooterSaveBtn.style.display = 'inline-block';
+                } else {
+                    dynamicModalFooterSaveBtn.style.display = 'none';
+                }
+            } else {
+                dynamicModalFooter.style.display = 'none';
+            }
+
+            // Cập nhật kích thước modal
+            dynamicModalDialog.className = `modal-dialog${sizeClass}`;
+
+            // Cập nhật thuộc tính data-bs-backdrop và data-bs-keyboard
+            if (isBackdropStatic) {
+                dynamicModalEl.setAttribute('data-bs-backdrop', 'static');
+            } else {
+                dynamicModalEl.removeAttribute('data-bs-backdrop');
+            }
+            if (!isKeyboardClose) {
+                dynamicModalEl.setAttribute('data-bs-keyboard', 'false');
+            } else {
+                dynamicModalEl.removeAttribute('data-bs-keyboard');
+            }
+        }
+
+        // Gắn các trình nghe sự kiện vào các phần tử điều khiển
+        modalTitleInput.addEventListener('input', generateModalCode);
+        modalBodyInput.addEventListener('input', generateModalCode);
+        modalSizeSelect.addEventListener('change', generateModalCode);
+        headerCloseBtn.addEventListener('change', generateModalCode);
+        footerDismissBtn.addEventListener('change', generateModalCode);
+        footerSaveBtn.addEventListener('change', generateModalCode);
+        backdropStatic.addEventListener('change', generateModalCode);
+        keyboardClose.addEventListener('change', generateModalCode);
+
+        // Nút Sao chép Mã
+        copyCodeBtn.addEventListener('click', () => {
+            const codeToCopy = modalHtmlCode.textContent;
+            // Sử dụng document.execCommand('copy') cho khả năng tương thích rộng hơn trong môi trường iframe
+            const textarea = document.createElement('textarea');
+            textarea.value = codeToCopy;
+            textarea.style.position = 'fixed'; // Để không ảnh hưởng đến layout
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                // Hiển thị thông báo sao chép thành công bằng Bootstrap Toast
+                const toastPlacement = document.createElement('div');
+                toastPlacement.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                toastPlacement.innerHTML = `
+                    <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                Mã HTML đã được sao chép!
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(toastPlacement);
+                const toastEl = toastPlacement.querySelector('.toast');
+                const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+                toast.show();
+
+                toastEl.addEventListener('hidden.bs.toast', () => {
+                    toastPlacement.remove(); // Xóa toast sau khi ẩn
+                });
+
+            } catch (err) {
+                console.error('Không thể sao chép mã:', err);
+                alert('Không thể sao chép mã. Vui lòng thử lại hoặc sao chép thủ công.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        });
+
+        // Nút Khởi chạy Modal
+        launchModalBtn.addEventListener('click', () => {
+            const myModal = new bootstrap.Modal(dynamicModal);
+            myModal.show();
+        });
+
+        // Logic Dark Mode
+        function initializeDarkMode() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                body.setAttribute('data-bs-theme', savedTheme);
+                updateDarkModeIcon(savedTheme);
+            } else {
+                // Mặc định là light mode nếu chưa có trong localStorage
+                body.setAttribute('data-bs-theme', 'light');
+                updateDarkModeIcon('light');
+            }
+        }
+
+        function updateDarkModeIcon(theme) {
+            const icon = darkModeToggle.querySelector('i');
+            if (theme === 'dark') {
+                icon.classList.remove('bi-moon-stars-fill');
+                icon.classList.add('bi-sun-fill');
+                darkModeToggle.setAttribute('aria-label', 'Toggle light mode');
+            } else {
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-stars-fill');
+                darkModeToggle.setAttribute('aria-label', 'Toggle dark mode');
+            }
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-bs-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-bs-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateDarkModeIcon(newTheme);
+        });
+
+        // Khởi tạo ứng dụng khi trang tải xong
+        window.onload = () => {
+            initializeDarkMode(); // Khởi tạo chế độ sáng/tối
+            generateModalCode(); // Tạo mã modal ban đầu
+        };
+    </script>
+</body>
+</html>
