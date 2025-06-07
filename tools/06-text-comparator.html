@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công Cụ So Sánh Văn Bản</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Google Fonts: Manrope for better readability -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Diff Match Patch Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/diff_match_patch/20121119/diff_match_patch.js"></script>
+
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Manrope', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .main-app-frame {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-top: 2rem;
+            background-color: var(--bs-tertiary-bg);
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+        }
+
+        /* Styling for the diff output */
+        ins {
+            background-color: #d4edda; /* Light green for insertions */
+            text-decoration: none;
+            padding: 0.1em 0.2em;
+            border-radius: 0.25rem;
+        }
+
+        del {
+            background-color: #f8d7da; /* Light red for deletions */
+            text-decoration: line-through;
+            padding: 0.1em 0.2em;
+            border-radius: 0.25rem;
+        }
+
+        /* Dark mode specific styles for diff output */
+        [data-bs-theme="dark"] ins {
+            background-color: #19875440; /* Darker, transparent green */
+        }
+
+        [data-bs-theme="dark"] del {
+            background-color: #dc354540; /* Darker, transparent red */
+        }
+        
+        #result-container {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            background-color: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color);
+        }
+        
+        textarea.form-control {
+            height: 250px;
+            font-size: 1.1rem;
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1.5rem;
+            z-index: 1050;
+        }
+        
+        .footer-text {
+            margin-top: 3rem;
+            color: var(--bs-secondary-color);
+        }
+    </style>
+</head>
+<body class="bg-body-tertiary">
+
+    <!-- Dark Mode Toggle Switch -->
+    <div class="form-check form-switch dark-mode-toggle">
+        <input class="form-check-input" type="checkbox" role="switch" id="darkModeSwitch" title="Chuyển chế độ Sáng/Tối">
+    </div>
+
+    <div class="container py-5">
+        <header class="text-center">
+            <h1 class="display-5 fw-bold">Công Cụ So Sánh Văn Bản</h1>
+            <p class="lead text-muted">Dán hai đoạn văn bản để tìm sự khác biệt.</p>
+        </header>
+
+        <main class="main-app-frame">
+            <!-- Input Textareas -->
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <label for="text1" class="form-label fw-bold">Văn bản 1</label>
+                    <textarea class="form-control" id="text1" placeholder="Dán văn bản gốc vào đây..."></textarea>
+                </div>
+                <div class="col-lg-6">
+                    <label for="text2" class="form-label fw-bold">Văn bản 2</label>
+                    <textarea class="form-control" id="text2" placeholder="Dán văn bản đã sửa đổi vào đây..."></textarea>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <button class="btn btn-primary btn-lg px-5" id="compareBtn">
+                    So sánh
+                </button>
+                <button class="btn btn-outline-secondary btn-lg px-5 ms-2" id="clearBtn">
+                    Xóa
+                </button>
+            </div>
+
+            <!-- Result Display -->
+            <div id="result-container" class="d-none">
+                <h3 class="fw-bold border-bottom pb-2 mb-3">Kết quả so sánh</h3>
+                <div id="output"></div>
+            </div>
+        </main>
+        
+        <footer class="text-center footer-text">
+            <p>DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            const text1Input = document.getElementById('text1');
+            const text2Input = document.getElementById('text2');
+            const compareBtn = document.getElementById('compareBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const resultContainer = document.getElementById('result-container');
+            const outputDiv = document.getElementById('output');
+            const darkModeSwitch = document.getElementById('darkModeSwitch');
+            const htmlElement = document.documentElement;
+
+            // Initialize diff-match-patch
+            const dmp = new diff_match_patch();
+
+            /**
+             * Function to perform the comparison and display results
+             */
+            function performCompare() {
+                const text1 = text1Input.value;
+                const text2 = text2Input.value;
+
+                // Generate the diff
+                const diff = dmp.diff_main(text1, text2);
+                
+                // Make the diff more human-readable
+                dmp.diff_cleanupSemantic(diff);
+
+                // Convert the diff to pretty HTML
+                const prettyHtml = dmp.diff_prettyHtml(diff);
+                
+                // Display the result
+                outputDiv.innerHTML = prettyHtml;
+                resultContainer.classList.remove('d-none'); // Show the result container
+            }
+
+            /**
+             * Function to clear inputs and results
+             */
+            function clearFields() {
+                text1Input.value = '';
+                text2Input.value = '';
+                outputDiv.innerHTML = '';
+                resultContainer.classList.add('d-none'); // Hide the result container
+            }
+            
+            /**
+             * Function to toggle dark mode
+             */
+            function toggleDarkMode() {
+                if (darkModeSwitch.checked) {
+                    htmlElement.setAttribute('data-bs-theme', 'dark');
+                } else {
+                    htmlElement.setAttribute('data-bs-theme', 'light');
+                }
+            }
+
+            // --- Event Listeners ---
+            compareBtn.addEventListener('click', performCompare);
+            clearBtn.addEventListener('click', clearFields);
+            darkModeSwitch.addEventListener('change', toggleDarkMode);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm tra Tốc độ Gõ phím</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh; /* Đảm bảo body có đủ chiều cao */
+            display: flex;
+            flex-direction: column; /* Sắp xếp nội dung theo cột */
+        }
+        .text-section {
+            border: 2px solid var(--bs-secondary-bg);
+            border-radius: 0.75rem; /* Rounded corners */
+            padding: 1.5rem;
+            min-height: 150px;
+            overflow-y: auto;
+            line-height: 1.8;
+            font-size: 1.25rem;
+            background-color: var(--bs-secondary-bg);
+            transition: background-color 0.3s;
+        }
+        .text-input {
+            border-radius: 0.75rem; /* Rounded corners */
+            font-size: 1.25rem;
+            min-height: 150px;
+            resize: none; /* Ngăn người dùng thay đổi kích thước textarea */
+            padding: 1rem;
+        }
+        .correct {
+            color: var(--bs-success);
+        }
+        .incorrect {
+            color: var(--bs-danger);
+            text-decoration: underline; /* Gạch chân ký tự sai */
+        }
+        .current {
+            background-color: var(--bs-primary-bg-subtle);
+            border-radius: 0.25rem;
+            padding: 0 2px;
+        }
+        .dark-mode-toggle {
+            position: fixed; /* Nút dark mode float */
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .dark-mode-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        .dark-mode-toggle svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+            padding: 1.5rem 0;
+            background-color: var(--bs-tertiary-bg);
+            color: var(--bs-secondary-color);
+            border-top: 1px solid var(--bs-border-color);
+        }
+    </style>
+</head>
+<body class="d-flex flex-column">
+
+    <!-- Dark Mode Toggle Button -->
+    <button id="darkModeToggle" class="btn btn-outline-secondary dark-mode-toggle d-flex align-items-center justify-content-center p-2" aria-label="Toggle dark mode">
+        <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-moon-fill" viewBox="0 0 16 16">
+            <path d="M6 .278a.768.768 0 0 0-.08.897 6.785 6.785 0 0 1 .879 4.515 6.785 6.785 0 0 1-.879 4.515.768.768 0 0 0 .08.897.777.777 0 0 0 .897.08 8.163 8.163 0 0 0 6.386-3.874A8.163 8.163 0 0 0 6.897.198a.777.777 0 0 0-.897-.08z"/>
+        </svg>
+        <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sun-fill d-none" viewBox="0 0 16 16">
+            <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.414a.5.5 0 1 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.343 3.343a.5.5 0 0 1 .707 0L5.457 4.757a.5.5 0 0 1-.707.707L3.343 4.05a.5.5 0 0 1 0-.707"/>
+        </svg>
+    </button>
+
+    <div class="container my-5 flex-grow-1">
+        <h1 class="text-center mb-4 display-4 fw-bold">Kiểm tra Tốc độ Gõ phím</h1>
+
+        <div class="card shadow-lg border-0 rounded-4 p-4 p-md-5">
+            <div class="card-body">
+                <!-- Select Text Length/Difficulty -->
+                <div class="mb-4">
+                    <label for="textLength" class="form-label fs-5">Chọn độ dài văn bản:</label>
+                    <select id="textLength" class="form-select form-select-lg rounded-3">
+                        <option value="short">Ngắn (30 giây)</option>
+                        <option value="medium">Trung bình (60 giây)</option>
+                        <option value="long">Dài (90 giây)</option>
+                    </select>
+                </div>
+
+                <!-- Timer & Results -->
+                <div class="row align-items-center mb-4">
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <p class="mb-0 fs-4">Thời gian: <span id="timer" class="fw-bold text-primary">60 giây</span></p>
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <p class="mb-0 fs-4">WPM: <span id="wpm" class="fw-bold text-success">0</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-0 fs-4">Độ chính xác: <span id="accuracy" class="fw-bold text-info">100%</span></p>
+                    </div>
+                </div>
+
+                <!-- Sample Text Display -->
+                <div id="sampleTextDisplay" class="text-section mb-4 user-select-none">
+                    <!-- Text will be loaded here -->
+                </div>
+
+                <!-- User Input -->
+                <div class="mb-4">
+                    <textarea id="textInput" class="form-control text-input" placeholder="Bắt đầu gõ ở đây..." rows="6" disabled></textarea>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <button id="startButton" class="btn btn-primary btn-lg rounded-pill px-5 py-3 shadow">Bắt đầu</button>
+                    <button id="resetButton" class="btn btn-outline-secondary btn-lg rounded-pill px-5 py-3 shadow">Bắt đầu lại</button>
+                </div>
+
+                <!-- Message Box -->
+                <div id="messageBox" class="mt-4 p-3 rounded-3 text-center d-none"></div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-0">&copy; 2025 DOTPHONGLONG Mini App</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // DOM Elements
+        const sampleTextDisplay = document.getElementById('sampleTextDisplay');
+        const textInput = document.getElementById('textInput');
+        const timerDisplay = document.getElementById('timer');
+        const wpmDisplay = document.getElementById('wpm');
+        const accuracyDisplay = document.getElementById('accuracy');
+        const startButton = document.getElementById('startButton');
+        const resetButton = document.getElementById('resetButton');
+        const textLengthSelect = document.getElementById('textLength');
+        const messageBox = document.getElementById('messageBox');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const moonIcon = document.getElementById('moonIcon');
+        const sunIcon = document.getElementById('sunIcon');
+
+        // Sample Texts for different lengths
+        const sampleTexts = {
+            short: {
+                text: "Thành công không phải là đích đến, mà là cả một hành trình bạn đã đi qua để đạt được những gì mình muốn. Hãy kiên trì mỗi ngày.",
+                time: 30
+            },
+            medium: {
+                text: "Sự kiên nhẫn là chìa khóa mở cánh cửa thành công. Hãy luôn tin tưởng vào khả năng của bản thân và không ngừng học hỏi, rèn luyện. Mọi nỗ lực đều sẽ được đền đáp xứng đáng. Cuộc sống luôn đầy thử thách nhưng cũng tràn ngập cơ hội nếu bạn biết nắm bắt.",
+                time: 60
+            },
+            long: {
+                text: "Công nghệ thông tin đang phát triển với tốc độ chóng mặt, thay đổi cách chúng ta sống, làm việc và giao tiếp. Từ trí tuệ nhân tạo, học máy đến blockchain và điện toán đám mây, những đổi mới này không chỉ nâng cao hiệu quả mà còn tạo ra những cơ hội mới chưa từng có. Để không bị bỏ lại phía sau, việc liên tục cập nhật kiến thức và kỹ năng là điều vô cùng quan trọng. Hãy luôn sẵn sàng thích nghi và học hỏi để phát triển trong một thế giới đang thay đổi nhanh chóng.",
+                time: 90
+            }
+        };
+
+        let currentSampleText = '';
+        let timeLeft = 0;
+        let timerInterval;
+        let isTypingStarted = false;
+        let charactersTyped = 0;
+        let correctCharacters = 0;
+        let totalTimeTaken = 0; // In seconds
+        let currentTextIndex = 0; // To track current character in sample text
+
+        // --- Dark Mode Functionality ---
+        const setDarkMode = (isDark) => {
+            const htmlElement = document.documentElement;
+            if (isDark) {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                moonIcon.classList.add('d-none');
+                sunIcon.classList.remove('d-none');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                moonIcon.classList.remove('d-none');
+                sunIcon.classList.add('d-none');
+                localStorage.setItem('theme', 'light');
+            }
+        };
+
+        // Initialize dark mode based on localStorage or system preference
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            setDarkMode(savedTheme === 'dark');
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            setDarkMode(true);
+        } else {
+            setDarkMode(false);
+        }
+
+        darkModeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            setDarkMode(currentTheme === 'light'); // Toggle to dark if current is light, else to light
+        });
+
+
+        // --- Core Game Logic ---
+
+        // Function to show a message box
+        function showMessageBox(message, type = 'info') {
+            messageBox.textContent = message;
+            messageBox.className = `mt-4 p-3 rounded-3 text-center alert alert-${type}`;
+            messageBox.classList.remove('d-none');
+        }
+
+        // Function to hide the message box
+        function hideMessageBox() {
+            messageBox.classList.add('d-none');
+        }
+
+        // Function to load and display sample text
+        function loadSampleText(length) {
+            const textData = sampleTexts[length];
+            currentSampleText = textData.text;
+            timeLeft = textData.time;
+            timerDisplay.textContent = `${timeLeft} giây`;
+            sampleTextDisplay.innerHTML = ''; // Clear previous text
+            currentSampleText.split('').forEach(char => {
+                const span = document.createElement('span');
+                span.textContent = char;
+                sampleTextDisplay.appendChild(span);
+            });
+            resetGame(); // Reset game state after loading new text
+        }
+
+        // Initialize game on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSampleText(textLengthSelect.value);
+            textInput.disabled = true; // Initially disabled
+            startButton.disabled = false; // Start button enabled
+            resetButton.disabled = true; // Reset button disabled
+            hideMessageBox();
+        });
+
+        // Event listener for text length selection
+        textLengthSelect.addEventListener('change', (event) => {
+            loadSampleText(event.target.value);
+            startButton.disabled = false;
+            resetButton.disabled = true;
+        });
+
+        // Start Button Click Handler
+        startButton.addEventListener('click', () => {
+            startGame();
+        });
+
+        // Reset Button Click Handler
+        resetButton.addEventListener('click', () => {
+            loadSampleText(textLengthSelect.value); // Reload current selected text to reset everything
+            startButton.disabled = false; // Re-enable start button
+        });
+
+        // Function to start the game
+        function startGame() {
+            if (isTypingStarted) return; // Prevent multiple starts
+            hideMessageBox();
+            textInput.value = '';
+            textInput.disabled = false;
+            textInput.focus();
+            isTypingStarted = true;
+            charactersTyped = 0;
+            correctCharacters = 0;
+            totalTimeTaken = 0;
+            currentTextIndex = 0;
+            wpmDisplay.textContent = '0';
+            accuracyDisplay.textContent = '100%';
+            startButton.disabled = true; // Disable start button once started
+            resetButton.disabled = false; // Enable reset button
+
+            // Highlight the first character to type
+            updateTextHighlight();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = `${timeLeft} giây`;
+                totalTimeTaken++;
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // Function to reset the game state
+        function resetGame() {
+            clearInterval(timerInterval);
+            isTypingStarted = false;
+            textInput.value = '';
+            textInput.disabled = true;
+            charactersTyped = 0;
+            correctCharacters = 0;
+            totalTimeTaken = 0;
+            currentTextIndex = 0;
+            timerDisplay.textContent = `${sampleTexts[textLengthSelect.value].time} giây`;
+            wpmDisplay.textContent = '0';
+            accuracyDisplay.textContent = '100%';
+            startButton.disabled = false;
+            resetButton.disabled = true;
+            hideMessageBox();
+            // Re-render the sample text to remove any highlighting
+            loadSampleText(textLengthSelect.value);
+        }
+
+        // Function to end the game
+        function endGame(completed = false) {
+            clearInterval(timerInterval);
+            isTypingStarted = false;
+            textInput.disabled = true;
+            startButton.disabled = false; // Re-enable start button
+            resetButton.disabled = false; // Ensure reset button is enabled
+
+            calculateResults();
+
+            if (completed) {
+                showMessageBox("Hoàn thành! Kết quả của bạn đã được tính.", "success");
+            } else {
+                showMessageBox("Hết giờ! Bạn đã hoàn thành bài kiểm tra.", "warning");
+            }
+        }
+
+        // Event listener for user input
+        textInput.addEventListener('input', (event) => {
+            if (!isTypingStarted) {
+                startGame(); // Start timer on first input
+            }
+
+            const typedText = textInput.value;
+            charactersTyped = typedText.length;
+            correctCharacters = 0;
+            currentTextIndex = 0; // Reset index for comparison
+
+            // Iterate through the typed text and compare with sample text
+            const sampleSpans = sampleTextDisplay.querySelectorAll('span');
+            let isCurrentCharCorrect = true;
+
+            for (let i = 0; i < sampleSpans.length; i++) {
+                const sampleChar = sampleSpans[i].textContent;
+                const typedChar = typedText[i];
+
+                if (typedChar == null) { // User hasn't typed this character yet
+                    sampleSpans[i].className = ''; // Remove any previous highlighting
+                } else if (typedChar === sampleChar) {
+                    sampleSpans[i].className = 'correct';
+                    correctCharacters++;
+                } else {
+                    sampleSpans[i].className = 'incorrect';
+                    isCurrentCharCorrect = false; // Mark current char as incorrect
+                }
+            }
+            
+            // Set current text index for next character
+            currentTextIndex = typedText.length;
+            updateTextHighlight();
+            
+            // Check if all characters are typed correctly
+            if (typedText === currentSampleText && isCurrentCharCorrect) {
+                endGame(true); // User completed successfully
+            }
+        });
+
+        // Function to update highlighting for current character
+        function updateTextHighlight() {
+            const sampleSpans = sampleTextDisplay.querySelectorAll('span');
+            sampleSpans.forEach((span, index) => {
+                if (index === currentTextIndex) {
+                    span.classList.add('current');
+                } else {
+                    span.classList.remove('current');
+                }
+            });
+        }
+
+        // Calculate and display WPM and Accuracy
+        function calculateResults() {
+            const wordsTyped = charactersTyped / 5; // Standard WPM calculation (5 chars per word)
+            const timeInMinutes = totalTimeTaken / 60;
+            let wpm = 0;
+            if (timeInMinutes > 0) {
+                wpm = Math.round(wordsTyped / timeInMinutes);
+            }
+            
+            let accuracy = 0;
+            if (charactersTyped > 0) {
+                accuracy = Math.round((correctCharacters / charactersTyped) * 100);
+            }
+
+            wpmDisplay.textContent = wpm;
+            accuracyDisplay.textContent = `${accuracy}%`;
+        }
+
+        // Prevent accidental pasting
+        textInput.addEventListener('paste', (event) => {
+            event.preventDefault();
+            showMessageBox("Không được phép dán văn bản!", "danger");
+        });
+    </script>
+
+</body>
+</html>
