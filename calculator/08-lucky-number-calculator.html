@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máy Tính Số Chủ Đạo - Thần Số Học</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Variables cho Light & Dark Mode */
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #212529;
+            --card-bg-color: #ffffff;
+            --card-border-color: rgba(0,0,0,.1);
+            --primary-color: #6f42c1; /* Màu tím huyền bí */
+            --primary-hover-color: #5a359a;
+            --result-color: #a450e3;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #e9e9e9; /* Chữ sáng hơn */
+            --card-bg-color: #1e1e1e;
+            --card-border-color: rgba(255,255,255,.15);
+            --primary-color: #bb86fc; /* Màu tím nổi bật hơn */
+            --primary-hover-color: #a362ff;
+            --result-color: #d1b3ff; /* Màu kết quả sáng và rực rỡ hơn */
+        }
+
+        /* General Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        /* App Title */
+        .app-title {
+            font-weight: 900;
+            color: var(--primary-color);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            transition: color 0.3s;
+        }
+
+        /* Main App Card */
+        .calculator-card {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--card-border-color);
+            color: var(--text-color); /* <<< FIX: Áp dụng màu chữ cho toàn bộ card */
+            border-radius: 1.25rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s; /* Thêm "color" vào transition */
+            max-width: 500px;
+        }
+        
+        .form-label {
+            font-weight: 700;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 700;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            /* Chỉnh màu chữ trên nút để tương phản */
+            color: var(--bg-color); 
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover-color);
+            border-color: var(--primary-hover-color);
+            color: var(--bg-color);
+        }
+        
+        body:not(.dark-mode) .btn-primary {
+            color: #ffffff;
+        }
+        body:not(.dark-mode) .btn-primary:hover {
+            color: #ffffff;
+        }
+
+        .btn-outline-secondary {
+            border-radius: 0.75rem;
+            padding: 0.75rem;
+        }
+        
+        body.dark-mode .btn-outline-secondary {
+             color: var(--text-color);
+             border-color: var(--card-border-color);
+        }
+
+        /* Result Display */
+        #result-container {
+            display: none;
+        }
+        
+        #lucky-number {
+            font-size: 5rem;
+            font-weight: 900;
+            color: var(--result-color);
+            transition: color 0.3s;
+            text-shadow: 0 0 25px var(--result-color), 0 0 10px rgba(255,255,255,0.3); /* Tăng hiệu ứng phát sáng */
+        }
+
+        #interpretation {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        /* Cải thiện độ tương phản cho text-muted trong dark mode */
+        body.dark-mode .text-muted {
+            color: rgba(233, 233, 233, 0.65) !important;
+        }
+        
+        /* Dark Mode Toggle Button */
+        #darkModeToggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Footer */
+        footer {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        body.dark-mode footer {
+            color: #666;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <!-- Dark Mode Toggle -->
+    <button id="darkModeToggle" class="btn btn-outline-secondary">
+        ☀️
+    </button>
+    
+    <!-- Main Content Container -->
+    <div class="container main-content d-flex flex-column justify-content-center py-5">
+        <h1 class="app-title text-center mb-4">Máy Tính Số Chủ Đạo</h1>
+
+        <!-- Calculator Card -->
+        <div class="card calculator-card p-4 p-md-5 mx-auto w-100">
+            <div class="card-body">
+                <form id="numerology-form">
+                    <div class="mb-4">
+                        <label for="birthdate" class="form-label fs-5">Chọn ngày sinh của bạn:</label>
+                        <input type="date" class="form-control form-control-lg" id="birthdate" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Xem kết quả</button>
+                        <button type="button" id="clearBtn" class="btn btn-outline-secondary btn-lg">Xóa</button>
+                    </div>
+                </form>
+
+                <!-- Result Area -->
+                <div id="result-container" class="mt-5 text-center">
+                    <h5 class="text-muted">Con số chủ đạo của bạn là</h5>
+                    <p id="lucky-number" class="display-1"></p>
+                    <p id="interpretation" class="mt-3"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center py-3">
+        <p class="mb-0">DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Main JavaScript Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const form = document.getElementById('numerology-form');
+            const birthdateInput = document.getElementById('birthdate');
+            const clearBtn = document.getElementById('clearBtn');
+            const resultContainer = document.getElementById('result-container');
+            const luckyNumberEl = document.getElementById('lucky-number');
+            const interpretationEl = document.getElementById('interpretation');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.body;
+
+            // Dữ liệu diễn giải ý nghĩa các con số
+            const interpretations = {
+                1: 'Số 1: Người tiên phong, độc lập và đầy tham vọng. Bạn có tố chất lãnh đạo bẩm sinh và luôn nỗ lực để đạt được mục tiêu của mình.',
+                2: 'Số 2: Người hòa giải, nhạy cảm và giàu lòng trắc ẩn. Bạn là người kết nối tuyệt vời, luôn tìm kiếm sự cân bằng và hòa hợp.',
+                3: 'Số 3: Người truyền cảm hứng, sáng tạo và có óc hài hước. Bạn có khả năng giao tiếp tốt và luôn mang lại niềm vui cho mọi người.',
+                4: 'Số 4: Người thực tế, ổn định và chăm chỉ. Bạn là nền tảng vững chắc, luôn làm việc có kế hoạch và đáng tin cậy.',
+                5: 'Số 5: Người yêu tự do, thích phiêu lưu và mạo hiểm. Bạn khao khát khám phá những điều mới mẻ và không ngại thay đổi.',
+                6: 'Số 6: Người nuôi dưỡng, có trách nhiệm và yêu thương. Bạn luôn quan tâm, chăm sóc cho gia đình và cộng đồng của mình.',
+                7: 'Số 7: Người tìm kiếm tri thức, có trực giác tốt và sâu sắc. Bạn thích phân tích, tìm hiểu và khám phá những bí ẩn của cuộc sống.',
+                8: 'Số 8: Người có quyền lực, tự tin và tham vọng vật chất. Bạn có khả năng điều hành, quản lý và đạt được thành công lớn về tài chính.',
+                9: 'Số 9: Người nhân đạo, có lòng vị tha và lý tưởng. Bạn có trái tim rộng mở, luôn mong muốn cống hiến và giúp đỡ người khác.',
+                11: 'Số 11 (Master): Người có trực giác siêu nhạy, mang năng lượng tâm linh mạnh mẽ. Bạn có khả năng truyền cảm hứng và khai sáng cho người khác.',
+                22: 'Số 22 (Master): Người kiến tạo bậc thầy, có khả năng biến ước mơ thành hiện thực. Bạn là người vừa có lý tưởng lớn, vừa có khả năng thực thi phi thường.'
+            };
+            
+            // Hàm tính tổng các chữ số của một số
+            function sumDigits(num) {
+                return String(num).split('').reduce((acc, digit) => acc + Number(digit), 0);
+            }
+
+            // Hàm tính con số chủ đạo
+            function calculateLifePathNumber(dateString) {
+                if (!dateString) return null;
+
+                const digits = dateString.replace(/-/g, '');
+                let sum = sumDigits(digits);
+
+                // Tiếp tục cộng dồn cho đến khi là số có 1 chữ số hoặc là 11, 22
+                while (sum > 9 && sum !== 11 && sum !== 22) {
+                    sum = sumDigits(sum);
+                }
+                
+                return sum;
+            }
+
+            // Xử lý sự kiện submit form
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Ngăn chặn form gửi đi
+                const birthdate = birthdateInput.value;
+                if (!birthdate) {
+                    // Yêu cầu người dùng nhập ngày
+                    birthdateInput.focus();
+                    return;
+                }
+                
+                const luckyNumber = calculateLifePathNumber(birthdate);
+                
+                if (luckyNumber && interpretations[luckyNumber]) {
+                    luckyNumberEl.textContent = luckyNumber;
+                    interpretationEl.textContent = interpretations[luckyNumber];
+                    resultContainer.style.display = 'block'; // Hiển thị kết quả
+                }
+            });
+
+            // Xử lý sự kiện nút Xóa
+            clearBtn.addEventListener('click', function() {
+                birthdateInput.value = '';
+                resultContainer.style.display = 'none'; // Ẩn kết quả
+                luckyNumberEl.textContent = '';
+                interpretationEl.textContent = '';
+            });
+
+            // Xử lý Dark Mode Toggle
+            darkModeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                
+                // Cập nhật icon cho nút toggle
+                if (body.classList.contains('dark-mode')) {
+                    darkModeToggle.textContent = '☀️'; // Sun icon for switching to light mode
+                } else {
+                    darkModeToggle.textContent = '🌙'; // Moon icon for switching to dark mode
+                }
+            });
+        });
+    </script>
+</body>
+</html>
