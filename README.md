@@ -41,9 +41,9 @@
 
 ## 🔢 Công cụ tính toán
 
-1.  ➕ [Máy tính cơ bản](https://dotphonglong.com/calculator/01-basic-calculator.html)
-2.  ⚖️ [Máy tính BMI](https://dotphonglong.com/calculator/02-bmi-calculator.html)
-3.  🤰 [Máy tính tuổi thai](https://dotphonglong.com/calculator/03-pregnancy-calculator.html)
+1.  ➕ [Máy tính cơ bản](https://dotphonglong.com/calculator/01-basic-calculator.html) ✅
+2.  ⚖️ [Máy tính BMI](https://dotphonglong.com/calculator/02-bmi-calculator.html) ✅
+3.  🤰 [Máy tính tuổi thai](https://dotphonglong.com/calculator/03-pregnancy-calculator.html) ✅
 4.  💸 [Máy tính tiền tip](https://dotphonglong.com/calculator/04-tip-calculator.html)
 5.  🔁 [Chuyển đổi đơn vị](https://dotphonglong.com/calculator/05-unit-converter.html)
 6.  💱 [Máy tính tỷ giá ngoại tệ (tĩnh)](https://dotphonglong.com/calculator/06-currency-converter.html)
