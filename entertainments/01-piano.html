@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano mini</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* Định nghĩa biến CSS cho chế độ sáng */
+        :root {
+            --light-bg: #f8f9fa; /* Màu nền chính */
+            --light-card-bg: #ffffff; /* Màu nền cho khung ứng dụng */
+            --light-text: #212529; /* Màu chữ chính */
+            --light-key-white-bg: #ffffff; /* Màu nền phím trắng */
+            --light-key-white-border: #adb5bd; /* Màu viền phím trắng */
+            --light-key-black-bg: #343a40; /* Màu nền phím đen */
+            --light-key-black-border: #212529; /* Màu viền phím đen */
+            --light-key-active-white-bg: #e2e6ea; /* Màu phím trắng khi nhấn */
+            --light-key-active-black-bg: #495057; /* Màu phím đen khi nhấn */
+            --light-shadow: rgba(0, 0, 0, 0.15); /* Màu đổ bóng */
+        }
+
+        /* Định nghĩa biến CSS cho chế độ tối */
+        .dark-mode {
+            --light-bg: #212529;
+            --light-card-bg: #343a40;
+            --light-text: #f8f9fa;
+            --light-key-white-bg: #ced4da;
+            --light-key-white-border: #6c757d;
+            --light-key-black-bg: #1a1e21;
+            --light-key-black-border: #000000;
+            --light-key-active-white-bg: #909294;
+            --light-key-active-black-bg: #000000;
+            --light-shadow: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Phong cách chung cho body */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            transition: background-color 0.3s, color 0.3s; /* Chuyển đổi mượt mà */
+            min-height: 100vh; /* Chiều cao tối thiểu 100% viewport */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Căn chỉnh container */
+        .container {
+            flex: 1; /* Cho phép container giãn nở */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Phong cách cho khung ứng dụng (card) */
+        .card {
+            background-color: var(--light-card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem var(--light-shadow);
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        /* Khung chứa các phím piano */
+        .piano-container {
+            position: relative;
+            display: flex; /* Dùng flexbox cho các phím trắng */
+            width: 100%;
+            max-width: 900px; /* Chiều rộng tối đa */
+            height: 250px; /* Chiều cao cố định */
+            margin-top: 2rem;
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            overflow: hidden; /* Ẩn các phần thừa của phím đen */
+            background-color: #000; /* Nền đen cho khu vực piano */
+        }
+
+        /* Phong cách cho phím trắng */
+        .white-key {
+            flex-grow: 1; /* Phân chia không gian đều giữa các phím trắng */
+            border: 1px solid var(--light-key-white-border);
+            border-right: none; /* Bỏ viền phải để các phím nối liền */
+            background-color: var(--light-key-white-bg);
+            height: 100%;
+            cursor: pointer; /* Thay đổi con trỏ khi di chuột */
+            position: relative;
+            transition: background-color 0.1s ease; /* Chuyển đổi màu nền mượt mà */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Căn chữ xuống dưới */
+            padding-bottom: 0.5rem;
+            font-weight: bold;
+            user-select: none; /* Ngăn không cho chọn văn bản */
+            box-sizing: border-box; /* Bao gồm padding và border trong kích thước */
+        }
+
+        /* Phím trắng cuối cùng cần có viền phải */
+        .white-key:last-child {
+            border-right: 1px solid var(--light-key-white-border);
+        }
+
+        /* Hiệu ứng khi phím trắng được nhấn */
+        .white-key.active {
+            background-color: var(--light-key-active-white-bg);
+            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.2); /* Đổ bóng nhấn xuống */
+        }
+
+        /* Phong cách cho phím đen */
+        .black-key {
+            position: absolute; /* Định vị tuyệt đối trên các phím trắng */
+            width: 60%; /* Chiều rộng 60% so với một phím trắng */
+            height: 60%; /* Chiều cao 60% so với một phím trắng */
+            background-color: var(--light-key-black-bg);
+            border: 1px solid var(--light-key-black-border);
+            cursor: pointer;
+            z-index: 10; /* Đặt phím đen lên trên phím trắng */
+            transition: background-color 0.1s ease;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 0.5rem;
+            font-weight: bold;
+            color: var(--light-text); /* Màu chữ phím đen */
+            user-select: none;
+            box-sizing: border-box;
+            border-bottom-left-radius: 0.25rem; /* Bo góc dưới */
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        /* Hiệu ứng khi phím đen được nhấn */
+        .black-key.active {
+            background-color: var(--light-key-active-black-bg);
+            box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Định vị các phím đen (sử dụng calc để đảm bảo responsive) */
+        /* Các giá trị 'left' được tính toán để căn giữa phím đen giữa hai phím trắng */
+        /* (100% / 8) là chiều rộng của một phím trắng */
+        /* 0.45 là một hệ số để căn chỉnh vị trí tốt nhất */
+        .black-key[data-note="C#4"] { left: calc((100% / 8) * 0.45); }
+        .black-key[data-note="D#4"] { left: calc((100% / 8) * 1.45); }
+        .black-key[data-note="F#4"] { left: calc((100% / 8) * 3.45); }
+        .black-key[data-note="G#4"] { left: calc((100% / 8) * 4.45); }
+        .black-key[data-note="A#4"] { left: calc((100% / 8) * 5.45); }
+
+
+        /* Điều chỉnh cho màn hình nhỏ hơn (responsive) */
+        @media (max-width: 768px) {
+            .piano-container {
+                height: 200px; /* Giảm chiều cao piano */
+            }
+            .white-key, .black-key {
+                font-size: 0.7rem; /* Giảm kích thước chữ */
+            }
+            .black-key {
+                height: 55%; /* Phím đen hơi nhỏ hơn */
+            }
+        }
+
+        /* Hiển thị tên nốt nhạc */
+        .note-display {
+            min-height: 2rem; /* Chiều cao tối thiểu */
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--light-text);
+            transition: color 0.3s;
+        }
+
+        /* Nút Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed; /* Cố định vị trí */
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000; /* Đảm bảo nằm trên cùng */
+            background-color: var(--light-card-bg);
+            border-color: var(--light-key-white-border);
+            color: var(--light-text);
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+            box-shadow: 0 0.25rem 0.5rem var(--light-shadow);
+            border-radius: 0.5rem; /* Bo góc cho khung nút */
+        }
+        .dark-mode-toggle .btn {
+            border: none; /* Xóa viền mặc định của nút */
+            background-color: transparent; /* Nền trong suốt */
+            color: var(--light-text);
+        }
+        .dark-mode-toggle .btn:hover {
+            background-color: rgba(0, 0, 0, 0.05); /* Hiệu ứng hover nhẹ */
+        }
+        .dark-mode .dark-mode-toggle .btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto; /* Đẩy footer xuống cuối trang */
+            padding: 1rem 0;
+            background-color: var(--light-card-bg);
+            border-top: 1px solid var(--light-key-white-border);
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--light-text);
+        }
+    </style>
+</head>
+<body>
+    <!-- Nút Dark Mode Toggle -->
+    <div class="dark-mode-toggle">
+        <button class="btn" id="darkModeToggle">
+            <i class="bi bi-moon-fill" id="darkModeIcon"></i>
+        </button>
+    </div>
+
+    <!-- Container chính của ứng dụng -->
+    <div class="container d-flex flex-column align-items-center justify-content-center py-5">
+        <!-- Tiêu đề ứng dụng -->
+        <h1 class="text-center mb-4 display-4 fw-bold">Piano mini</h1>
+
+        <!-- Khung ứng dụng (card) -->
+        <div class="card p-4 w-100" style="max-width: 900px;">
+            <!-- Khu vực hiển thị tên nốt nhạc -->
+            <div id="noteDisplay" class="note-display text-center"></div>
+
+            <!-- Khung chứa bàn phím piano -->
+            <div class="piano-container">
+                <!-- Các phím trắng -->
+                <div class="white-key" data-note="C4" data-key="a">C4</div>
+                <div class="white-key" data-note="D4" data-key="s">D4</div>
+                <div class="white-key" data-note="E4" data-key="d">E4</div>
+                <div class="white-key" data-note="F4" data-key="f">F4</div>
+                <div class="white-key" data-note="G4" data-key="g">G4</div>
+                <div class="white-key" data-note="A4" data-key="h">A4</div>
+                <div class="white-key" data-note="B4" data-key="j">B4</div>
+                <div class="white-key" data-note="C5" data-key="k">C5</div>
+
+                <!-- Các phím đen (được định vị tuyệt đối) -->
+                <div class="black-key" data-note="C#4" data-key="w">C#4</div>
+                <div class="black-key" data-note="D#4" data-key="e">D#4</div>
+                <div class="black-key" data-note="F#4" data-key="t">F#4</div>
+                <div class="black-key" data-note="G#4" data-key="y">G#4</div>
+                <div class="black-key" data-note="A#4" data-key="u">A#4</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-3">
+        <div class="container text-center">
+            <p class="mb-0">DOTPHONGLONG Mini App</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle (bao gồm Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eJ7w9GkL+N" crossorigin="anonymous"></script>
+    <!-- Tone.js for audio generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Khởi tạo Tone.js PolySynth để tạo âm thanh. PolySynth cho phép chơi nhiều nốt cùng lúc.
+            const synth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: {
+                    type: "sine" // Sử dụng sóng hình sin cho âm thanh cơ bản
+                },
+                envelope: { // Cấu hình ADSR (Attack, Decay, Sustain, Release) cho mỗi nốt
+                    attack: 0.005, // Thời gian khởi tạo âm thanh
+                    decay: 0.1,    // Thời gian suy giảm
+                    sustain: 0.2,  // Mức độ duy trì
+                    release: 0.5   // Thời gian tắt âm thanh
+                }
+            }).toDestination(); // Kết nối synth với đầu ra âm thanh mặc định của thiết bị
+
+            // Lấy các phần tử DOM cần thiết
+            const noteDisplay = document.getElementById('noteDisplay');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeIcon = document.getElementById('darkModeIcon');
+            const body = document.body;
+
+            // Ánh xạ phím bàn phím (`data-key`) tới các nốt nhạc (`data-note`) và các phần tử DOM tương ứng.
+            const keyMap = {
+                'a': { note: 'C4', element: null },
+                's': { note: 'D4', element: null },
+                'd': { note: 'E4', element: null },
+                'f': { note: 'F4', element: null },
+                'g': { note: 'G4', element: null },
+                'h': { note: 'A4', element: null },
+                'j': { note: 'B4', element: null },
+                'k': { note: 'C5', element: null }, // Thêm nốt C5 và phím 'k'
+
+                'w': { note: 'C#4', element: null },
+                'e': { note: 'D#4', element: null },
+                't': { note: 'F#4', element: null },
+                'y': { note: 'G#4', element: null },
+                'u': { note: 'A#4', element: null }
+            };
+
+            // Lặp qua tất cả các phím piano (trắng và đen) trên giao diện
+            document.querySelectorAll('.white-key, .black-key').forEach(keyElement => {
+                const dataKey = keyElement.dataset.key; // Lấy phím bàn phím được gán
+                if (keyMap[dataKey]) { // Nếu phím này có trong ánh xạ
+                    keyMap[dataKey].element = keyElement; // Gán phần tử DOM vào keyMap
+
+                    // Thêm sự kiện 'pointerdown' (cho cả chuột và cảm ứng) để bắt đầu phát nốt
+                    keyElement.addEventListener('pointerdown', (e) => {
+                        // Chỉ xử lý nếu là click chuột trái hoặc chạm cảm ứng, không phải chuột phải
+                        if (e.button === 0 || e.pointerType === 'touch') {
+                            playNote(keyElement);
+                            e.preventDefault(); // Ngăn chặn hành vi mặc định của trình duyệt (ví dụ: chọn văn bản)
+                        }
+                    });
+                    // Thêm sự kiện 'pointerup' để ngừng phát nốt khi nhả chuột/chạm
+                    keyElement.addEventListener('pointerup', () => {
+                        releaseNote(keyElement);
+                    });
+                    // Thêm sự kiện 'pointerleave' để ngừng phát nốt nếu con trỏ rời khỏi phím trong khi đang nhấn
+                    keyElement.addEventListener('pointerleave', () => {
+                        releaseNote(keyElement);
+                    });
+                }
+            });
+
+            // Hàm phát nốt nhạc
+            function playNote(keyElement) {
+                const note = keyElement.dataset.note; // Lấy tên nốt từ thuộc tính data-note
+                // Đảm bảo Tone.js đã được khởi động (cần một tương tác của người dùng để bắt đầu audio context)
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                synth.triggerAttack(note); // Bắt đầu phát nốt
+                keyElement.classList.add('active'); // Thêm lớp 'active' để hiển thị hiệu ứng nhấn
+                noteDisplay.textContent = note; // Cập nhật hiển thị tên nốt nhạc
+            }
+
+            // Hàm ngừng phát nốt nhạc
+            function releaseNote(keyElement) {
+                const note = keyElement.dataset.note;
+                synth.triggerRelease(note); // Ngừng phát nốt
+                keyElement.classList.remove('active'); // Xóa lớp 'active'
+            }
+
+            // Xử lý sự kiện nhấn phím bàn phím (keydown)
+            document.addEventListener('keydown', (e) => {
+                const key = e.key.toLowerCase(); // Lấy phím đã nhấn và chuyển về chữ thường
+                // Kiểm tra xem phím có trong ánh xạ và phím ảo chưa được nhấn (để tránh lặp lại âm thanh)
+                if (keyMap[key] && !keyMap[key].element.classList.contains('active')) {
+                    playNote(keyMap[key].element); // Phát nốt tương ứng
+                    e.preventDefault(); // Ngăn chặn hành vi mặc định của trình duyệt (ví dụ: cuộn trang)
+                }
+            });
+
+            // Xử lý sự kiện nhả phím bàn phím (keyup)
+            document.addEventListener('keyup', (e) => {
+                const key = e.key.toLowerCase();
+                if (keyMap[key]) { // Nếu phím có trong ánh xạ
+                    releaseNote(keyMap[key].element); // Ngừng phát nốt
+                }
+            });
+
+            // Xử lý chức năng Dark Mode
+            darkModeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark-mode'); // Chuyển đổi lớp 'dark-mode' trên body
+                // Lưu trạng thái dark mode vào localStorage để duy trì lựa chọn của người dùng
+                if (body.classList.contains('dark-mode')) {
+                    localStorage.setItem('dark-mode', 'enabled');
+                    darkModeIcon.classList.remove('bi-moon-fill'); // Đổi biểu tượng sang mặt trời
+                    darkModeIcon.classList.add('bi-sun-fill');
+                } else {
+                    localStorage.setItem('dark-mode', 'disabled');
+                    darkModeIcon.classList.remove('bi-sun-fill'); // Đổi biểu tượng sang mặt trăng
+                    darkModeIcon.classList.add('bi-moon-fill');
+                }
+            });
+
+            // Tải trạng thái dark mode từ localStorage khi trang được tải lần đầu
+            if (localStorage.getItem('dark-mode') === 'enabled') {
+                body.classList.add('dark-mode');
+                darkModeIcon.classList.remove('bi-moon-fill');
+                darkModeIcon.classList.add('bi-sun-fill');
+            } else {
+                // Đảm bảo biểu tượng mặc định là mặt trăng nếu không có dark mode hoặc disabled
+                darkModeIcon.classList.remove('bi-sun-fill');
+                darkModeIcon.classList.add('bi-moon-fill');
+            }
+        });
+    </script>
+</body>
+</html>

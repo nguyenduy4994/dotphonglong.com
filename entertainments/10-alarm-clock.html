@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng Dụng Báo Thức</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light mode background */
+            color: #212529; /* Light mode text color */
+            transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Dark Mode styles */
+        body.dark-mode {
+            background-color: #212529; /* Dark mode background */
+            color: #e2e6ea; /* Dark mode text color */
+        }
+
+        body.dark-mode .card {
+            background-color: #343a40; /* Darker card background */
+            border-color: #495057;
+        }
+
+        body.dark-mode .form-control {
+            background-color: #495057;
+            color: #e2e6ea;
+            border-color: #6c757d;
+        }
+
+        body.dark-mode .form-control::placeholder {
+            color: #ced4da;
+        }
+
+        body.dark-mode .list-group-item {
+            background-color: #495057;
+            color: #e2e6ea;
+            border-color: #6c757d;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 100%;
+            border: none;
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .dark-mode-toggle:hover {
+            background-color: #0b5ed7;
+            transform: scale(1.05);
+        }
+
+        .clock-display {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #0d6efd; /* Primary color for clock */
+        }
+
+        .alarm-input-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .list-group-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .list-group-item .btn-close {
+            font-size: 0.8rem;
+        }
+
+        .alarm-ringing-message {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(220, 53, 69, 0.95);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+            display: none; /* Hidden by default */
+            z-index: 1050;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .alarm-ringing-message button {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        footer {
+            margin-top: auto; /* Push footer to the bottom */
+            padding: 1rem;
+            background-color: #e9ecef;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        body.dark-mode footer {
+            background-color: #495057;
+            color: #ced4da;
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark Mode Toggle Button -->
+    <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">
+        <i class="bi bi-moon-fill" id="darkModeIcon"></i>
+    </button>
+
+    <div class="main-content">
+        <div class="card p-4">
+            <h1 class="text-center mb-4 fw-bold text-primary">Ứng Dụng Báo Thức</h1>
+
+            <!-- Current Time Display -->
+            <div class="text-center mb-4">
+                <div id="clockDisplay" class="clock-display">00:00:00 AM</div>
+            </div>
+
+            <!-- Set Alarm Section -->
+            <div class="mb-4 p-3 border rounded-3 bg-light">
+                <h5 class="fw-bold mb-3">Đặt Báo Thức Mới</h5>
+                <div class="row g-3 align-items-end">
+                    <div class="col-6">
+                        <label for="alarmHour" class="form-label">Giờ</label>
+                        <input type="number" id="alarmHour" class="form-control form-control-lg" min="0" max="23" placeholder="HH" value="00">
+                    </div>
+                    <div class="col-6">
+                        <label for="alarmMinute" class="form-label">Phút</label>
+                        <input type="number" id="alarmMinute" class="form-control form-control-lg" min="0" max="59" placeholder="MM" value="00">
+                    </div>
+                    <div class="col-12">
+                        <button id="setAlarmBtn" class="btn btn-primary btn-lg w-100 mt-2">Thêm Báo Thức</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List of Set Alarms -->
+            <div>
+                <h5 class="fw-bold mb-3">Các Báo Thức Đã Đặt</h5>
+                <ul id="alarmsList" class="list-group">
+                    <!-- Alarms will be appended here -->
+                    <li class="list-group-item d-none">Không có báo thức nào.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alarm Ringing Message & Stop Button -->
+    <div id="alarmRingingMessage" class="alarm-ringing-message">
+        BÁO THỨC ĐANG KÊU!
+        <button id="stopAlarmBtn" class="btn btn-danger btn-lg w-100">Tắt Chuông</button>
+    </div>
+
+    <!-- Audio for Alarm Sound -->
+    <audio id="alarmSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_32283e5329.mp3" preload="auto"></audio>
+
+    <!-- Footer -->
+    <footer class="text-center mt-auto py-3">
+        DOTPHONGLONG Mini App
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eOzrKbKxZJ/nM" crossorigin="anonymous"></script>
+
+    <script>
+        // Get DOM elements
+        const clockDisplay = document.getElementById('clockDisplay');
+        const alarmHourInput = document.getElementById('alarmHour');
+        const alarmMinuteInput = document.getElementById('alarmMinute');
+        const setAlarmBtn = document.getElementById('setAlarmBtn');
+        const alarmsList = document.getElementById('alarmsList');
+        const alarmSound = document.getElementById('alarmSound');
+        const alarmRingingMessage = document.getElementById('alarmRingingMessage');
+        const stopAlarmBtn = document.getElementById('stopAlarmBtn');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+
+        // Array to store alarms {id: timestamp, time: "HH:MM", active: boolean}
+        let alarms = [];
+        let alarmTimeout; // To store the setTimeout ID for stopping alarm
+
+        // --- Functions ---
+
+        // 1. Update the current time display
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let seconds = now.getSeconds();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+
+            hours = hours % 12;
+            hours = hours ? hours : 12; // The hour '0' should be '12'
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+
+            const timeString = `${hours}:${minutes}:${seconds} ${ampm}`;
+            clockDisplay.textContent = timeString;
+
+            // Check for active alarms every second
+            checkAlarms(now);
+        }
+
+        // 2. Add a new alarm
+        function addAlarm() {
+            let hour = parseInt(alarmHourInput.value);
+            let minute = parseInt(alarmMinuteInput.value);
+
+            // Basic validation
+            if (isNaN(hour) || isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+                showMessage("Vui lòng nhập giờ và phút hợp lệ!", 'alert-warning');
+                return;
+            }
+
+            // Format time for display and comparison
+            const formattedHour = hour < 10 ? '0' + hour : hour;
+            const formattedMinute = minute < 10 ? '0' + minute : minute;
+            const alarmTime = `${formattedHour}:${formattedMinute}`;
+
+            // Check for duplicate alarms (optional, but good practice)
+            if (alarms.some(alarm => alarm.time === alarmTime)) {
+                showMessage(`Báo thức lúc ${alarmTime} đã được đặt rồi!`, 'alert-info');
+                return;
+            }
+
+            const newAlarm = {
+                id: Date.now(), // Unique ID for each alarm
+                time: alarmTime,
+                active: true
+            };
+
+            alarms.push(newAlarm);
+            renderAlarms();
+            showMessage(`Báo thức lúc ${alarmTime} đã được thêm!`, 'alert-success');
+
+            // Clear input fields
+            alarmHourInput.value = '00';
+            alarmMinuteInput.value = '00';
+        }
+
+        // 3. Render the list of alarms
+        function renderAlarms() {
+            alarmsList.innerHTML = ''; // Clear existing list
+
+            if (alarms.length === 0) {
+                const noAlarmItem = document.createElement('li');
+                noAlarmItem.className = 'list-group-item text-center text-muted';
+                noAlarmItem.textContent = 'Không có báo thức nào.';
+                alarmsList.appendChild(noAlarmItem);
+                return;
+            }
+
+            // Sort alarms by time for better readability
+            alarms.sort((a, b) => {
+                const [ah, am] = a.time.split(':').map(Number);
+                const [bh, bm] = b.time.split(':').map(Number);
+                if (ah !== bh) return ah - bh;
+                return am - bm;
+            });
+
+            alarms.forEach(alarm => {
+                const listItem = document.createElement('li');
+                listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+                listItem.innerHTML = `
+                    <span>${alarm.time}</span>
+                    <button type="button" class="btn-close" aria-label="Xóa báo thức" data-alarm-id="${alarm.id}"></button>
+                `;
+                alarmsList.appendChild(listItem);
+            });
+        }
+
+        // 4. Check if any alarm should ring
+        function checkAlarms(now) {
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+
+            alarms.forEach(alarm => {
+                if (alarm.active) {
+                    const [alarmHour, alarmMinute] = alarm.time.split(':').map(Number);
+
+                    if (currentHour === alarmHour && currentMinute === alarmMinute && now.getSeconds() === 0) {
+                        // Mark alarm as inactive to prevent re-ringing in the same minute
+                        // For a recurring alarm, you would reset `active` after stopping the sound
+                        alarm.active = false;
+                        ringAlarm(alarm.time);
+                    }
+                }
+            });
+        }
+
+        // 5. Ring the alarm
+        function ringAlarm(alarmTime) {
+            alarmSound.play();
+            alarmSound.loop = true; // Loop the sound
+            alarmRingingMessage.style.display = 'block'; // Show the message
+            alarmRingingMessage.innerHTML = `BÁO THỨC ĐANG KÊU: ${alarmTime}!
+                                             <button id="stopAlarmBtn" class="btn btn-danger btn-lg w-100 mt-3">Tắt Chuông</button>`;
+
+            // Re-get the stop button if it was recreated
+            document.getElementById('stopAlarmBtn').onclick = stopAlarm;
+
+            // Set a timeout to automatically stop the alarm after a few minutes (e.g., 5 minutes = 300000ms)
+            // This is a safety measure in case the user doesn't press the button
+            alarmTimeout = setTimeout(stopAlarm, 300000); // Stop after 5 minutes
+        }
+
+        // 6. Stop the alarm
+        function stopAlarm() {
+            alarmSound.pause();
+            alarmSound.currentTime = 0; // Reset audio to start
+            alarmSound.loop = false;
+            alarmRingingMessage.style.display = 'none'; // Hide the message
+            clearTimeout(alarmTimeout); // Clear the auto-stop timeout
+            showMessage("Chuông báo thức đã tắt.", 'alert-info');
+
+            // Re-activate all alarms after stopping.
+            // This allows alarms to ring again tomorrow if they are daily.
+            // If alarms are one-time, you'd remove them from the list here.
+            alarms.forEach(alarm => alarm.active = true);
+        }
+
+
+        // 7. Delete an alarm
+        function deleteAlarm(event) {
+            if (event.target.classList.contains('btn-close')) {
+                const alarmIdToDelete = parseInt(event.target.dataset.alarmId);
+                const alarmToDelete = alarms.find(alarm => alarm.id === alarmIdToDelete);
+                if (!alarmToDelete) return; // Should not happen
+
+                // Confirm with user using a custom modal-like message since `confirm()` is not allowed
+                const confirmMessage = `Bạn có chắc chắn muốn xóa báo thức lúc ${alarmToDelete.time}?`;
+                showCustomConfirmation(confirmMessage, () => {
+                    alarms = alarms.filter(alarm => alarm.id !== alarmIdToDelete);
+                    renderAlarms();
+                    showMessage(`Báo thức lúc ${alarmToDelete.time} đã được xóa.`, 'alert-danger');
+                });
+            }
+        }
+
+        // 8. Handle Dark Mode Toggle
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            if (isDarkMode) {
+                darkModeIcon.classList.remove('bi-moon-fill');
+                darkModeIcon.classList.add('bi-sun-fill');
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                darkModeIcon.classList.remove('bi-sun-fill');
+                darkModeIcon.classList.add('bi-moon-fill');
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+
+        // 9. Display a temporary message (replaces alert/confirm)
+        function showMessage(message, type = 'alert-info') {
+            // Remove any existing messages first
+            const existingAlert = document.querySelector('.temp-alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type} temp-alert position-fixed bottom-0 start-50 translate-middle-x mb-3 rounded-3 shadow-sm`;
+            alertDiv.style.zIndex = '1060';
+            alertDiv.style.width = 'fit-content';
+            alertDiv.style.maxWidth = '90%';
+            alertDiv.style.fontSize = '0.9rem';
+            alertDiv.setAttribute('role', 'alert');
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000); // Message disappears after 3 seconds
+        }
+
+        // 10. Custom confirmation dialog (replaces window.confirm)
+        function showCustomConfirmation(message, onConfirm) {
+            // Create modal elements
+            const modalHtml = `
+                <div class="modal fade" id="customConfirmModal" tabindex="-1" aria-labelledby="customConfirmModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="customConfirmModalLabel">Xác Nhận</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                            </div>
+                            <div class="modal-body">
+                                ${message}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="button" class="btn btn-danger" id="confirmActionButton">Xóa</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Append modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            const confirmModal = new bootstrap.Modal(document.getElementById('customConfirmModal'));
+            confirmModal.show();
+
+            document.getElementById('confirmActionButton').onclick = () => {
+                onConfirm();
+                confirmModal.hide();
+                // Clean up modal from DOM after hiding
+                document.getElementById('customConfirmModal').addEventListener('hidden.bs.modal', function (event) {
+                    event.target.remove();
+                }, { once: true });
+            };
+        }
+
+
+        // --- Event Listeners ---
+        setAlarmBtn.addEventListener('click', addAlarm);
+        alarmsList.addEventListener('click', deleteAlarm);
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+
+        // --- Initial Setup ---
+        window.onload = function() {
+            // Set initial hour/minute to current time for convenience
+            const now = new Date();
+            alarmHourInput.value = now.getHours().toString().padStart(2, '0');
+            alarmMinuteInput.value = now.getMinutes().toString().padStart(2, '0');
+
+            // Check for dark mode preference from localStorage
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-mode');
+                darkModeIcon.classList.remove('bi-moon-fill');
+                darkModeIcon.classList.add('bi-sun-fill');
+            }
+
+            // Start the clock
+            setInterval(updateClock, 1000);
+            updateClock(); // Call once immediately to avoid delay
+            renderAlarms(); // Render any previously set alarms (if persistence was implemented, for this basic example, it starts empty)
+        };
+    </script>
+</body>
+</html>

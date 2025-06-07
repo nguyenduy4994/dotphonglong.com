@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>White Noise Player</title>
+    <!-- Tải Bootstrap CSS phiên bản mới nhất -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Tải Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Tải phông chữ Inter từ Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS tùy chỉnh cho ứng dụng */
+        body {
+            font-family: 'Inter', sans-serif; /* Sử dụng phông chữ Inter */
+            background-color: #f8f9fa; /* Màu nền mặc định cho chế độ sáng */
+            color: #212529; /* Màu chữ mặc định cho chế độ sáng */
+            transition: background-color 0.3s, color 0.3s; /* Hiệu ứng chuyển đổi mượt mà */
+            min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao màn hình */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Đẩy footer xuống dưới */
+        }
+
+        /* Phong cách cho chế độ tối */
+        body.dark-mode {
+            background-color: #343a40; /* Màu nền cho chế độ tối */
+            color: #f8f9fa; /* Màu chữ cho chế độ tối */
+        }
+
+        /* Phong cách cho thẻ card trong chế độ tối */
+        body.dark-mode .card {
+            background-color: #495057 !important; /* Màu nền card tối hơn */
+            color: #f8f9fa !important; /* Màu chữ card sáng hơn */
+            border-color: #6c757d !important; /* Màu viền card */
+        }
+
+        /* Phong cách cho thanh trượt âm lượng trong chế độ tối */
+        body.dark-mode .form-range::-webkit-slider-thumb {
+            background-color: #f8f9fa; /* Màu nắm trượt */
+        }
+        body.dark-mode .form-range::-moz-range-thumb {
+            background-color: #f8f9fa;
+        }
+        body.dark-mode .form-range::-ms-thumb {
+            background-color: #f8f9fa;
+        }
+
+        /* Khung chính của ứng dụng */
+        .container-app {
+            max-width: 960px; /* Chiều rộng tối đa */
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            border-radius: 1rem; /* Bo góc */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1); /* Đổ bóng nhẹ */
+            background-color: #ffffff; /* Màu nền cho khung chính (chế độ sáng) */
+        }
+
+        /* Thẻ âm thanh white noise */
+        .white-noise-card {
+            border-radius: 0.75rem; /* Bo góc */
+            margin-bottom: 1.5rem; /* Khoảng cách dưới */
+            transition: transform 0.2s ease-in-out; /* Hiệu ứng hover */
+        }
+
+        .white-noise-card:hover {
+            transform: translateY(-5px); /* Nâng nhẹ thẻ khi hover */
+        }
+
+        /* Nút phát/dừng */
+        .btn-play-pause {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1.25rem;
+            border-radius: 0.5rem; /* Bo góc */
+            transition: background-color 0.2s, border-color 0.2s; /* Hiệu ứng chuyển đổi màu */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Đổ bóng cho nút */
+        }
+
+        .btn-play-pause.playing {
+            background-color: #dc3545 !important; /* Màu đỏ khi đang phát */
+            border-color: #dc3545 !important;
+        }
+
+        .btn-play-pause.playing:hover {
+            background-color: #c82333 !important; /* Màu đỏ đậm hơn khi hover */
+            border-color: #bd2130 !important;
+        }
+
+        /* Thanh trượt âm lượng */
+        .volume-control {
+            margin-top: 1rem;
+        }
+
+        /* Nút Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed; /* Cố định vị trí */
+            top: 1rem; /* Cách top 1rem */
+            right: 1rem; /* Cách phải 1rem */
+            z-index: 1000; /* Đảm bảo nút nằm trên cùng */
+            border-radius: 50%; /* Nút hình tròn */
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Đổ bóng cho nút */
+            background-color: rgba(255, 255, 255, 0.8); /* Nền hơi trong suốt */
+            border: 1px solid #dee2e6; /* Viền */
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background-color: rgba(52, 58, 64, 0.8); /* Nền cho dark mode */
+            border: 1px solid #495057;
+            color: #f8f9fa; /* Màu icon */
+        }
+
+        .dark-mode-toggle i {
+            font-size: 1.2rem;
+            color: #6c757d; /* Màu icon mặc định */
+        }
+
+        body.dark-mode .dark-mode-toggle i {
+            color: #f8f9fa; /* Màu icon trong dark mode */
+        }
+
+        /* Footer */
+        footer {
+            padding: 1.5rem 0;
+            text-align: center;
+            color: #6c757d; /* Màu chữ footer */
+            font-size: 1rem;
+            background-color: transparent; /* Nền trong suốt */
+            margin-top: 2rem; /* Khoảng cách trên */
+        }
+
+        body.dark-mode footer {
+            color: #adb5bd; /* Màu chữ footer trong dark mode */
+        }
+    </style>
+</head>
+<body>
+    <!-- Nút Dark Mode Toggle -->
+    <button id="darkModeToggle" class="btn dark-mode-toggle">
+        <i class="bi bi-moon-fill"></i> <!-- Icon mặt trăng mặc định -->
+    </button>
+
+    <!-- Tiêu đề ứng dụng -->
+    <h1 class="text-center my-4 display-3 fw-bold">White Noise Player</h1>
+
+    <!-- Khung chính của ứng dụng -->
+    <div class="container container-app">
+        <div class="row" id="noiseCardsContainer">
+            <!-- Các thẻ âm thanh white noise sẽ được thêm vào đây bằng JavaScript -->
+        </div>
+
+        <!-- Nút "Dừng tất cả" -->
+        <div class="text-center mt-5">
+            <button id="stopAllButton" class="btn btn-danger btn-lg px-5 py-3 rounded-pill shadow-lg">
+                <i class="bi bi-stop-fill me-2"></i> Dừng tất cả
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer của ứng dụng -->
+    <footer class="mt-auto">
+        <p>DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Tải Bootstrap JS Bundle (bao gồm Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Mảng chứa thông tin về các loại âm thanh white noise
+        const noises = [
+            { id: 'rain', name: 'Tiếng mưa', audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' }, // Placeholder URL - Cần thay thế bằng đường dẫn âm thanh thật
+            { id: 'fan', name: 'Tiếng quạt', audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' }, // Placeholder URL
+            { id: 'ocean', name: 'Tiếng sóng biển', audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' }, // Placeholder URL
+            { id: 'static', name: 'Tiếng tĩnh điện', audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' }, // Placeholder URL
+            { id: 'fire', name: 'Tiếng lửa trại', audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3' }, // Placeholder URL
+            { id: 'forest', name: 'Tiếng rừng', audioSrc: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3' } // Placeholder URL
+        ];
+
+        // LƯU Ý QUAN TRỌNG:
+        // Các đường dẫn audioSrc trên đây là các URL placeholder từ SoundHelix (thực tế là nhạc).
+        // Để ứng dụng hoạt động với âm thanh white noise thực tế, bạn CẦN THAY THẾ các URL này
+        // bằng đường dẫn đến các file âm thanh white noise (.mp3, .wav) của riêng bạn.
+        // Lý tưởng nhất, bạn nên chuyển đổi các file âm thanh này thành Data URI (Base64)
+        // để chúng được nhúng trực tiếp vào file HTML và ứng dụng hoàn toàn tự chứa.
+        // Ví dụ Data URI: 'data:audio/mpeg;base64,...'
+
+        // Đối tượng để lưu trữ các đối tượng Audio và trạng thái phát
+        const audioPlayers = {};
+        const noiseStates = {}; // Lưu trữ trạng thái isPlaying cho mỗi âm thanh
+
+        // Tham chiếu đến container chứa các thẻ âm thanh
+        const noiseCardsContainer = document.getElementById('noiseCardsContainer');
+        // Tham chiếu đến nút "Dừng tất cả"
+        const stopAllButton = document.getElementById('stopAllButton');
+        // Tham chiếu đến nút Dark Mode Toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        // Tham chiếu đến thẻ body
+        const body = document.body;
+
+        /**
+         * Hàm khởi tạo và hiển thị các thẻ âm thanh white noise.
+         */
+        function initializeNoiseCards() {
+            noises.forEach(noise => {
+                // Tạo một đối tượng Audio cho mỗi âm thanh
+                const audio = new Audio(noise.audioSrc);
+                audio.loop = true; // Lặp lại âm thanh
+                audio.volume = 0.5; // Âm lượng mặc định 50%
+                audioPlayers[noise.id] = audio; // Lưu trữ đối tượng Audio
+
+                noiseStates[noise.id] = { isPlaying: false }; // Khởi tạo trạng thái
+
+                // Tạo cấu trúc HTML cho mỗi thẻ âm thanh
+                const colDiv = document.createElement('div');
+                // Sử dụng các lớp Bootstrap để tạo responsive layout (2 cột trên mobile, 3 cột trên tablet/desktop)
+                colDiv.className = 'col-12 col-md-6 col-lg-4 mb-4';
+                colDiv.innerHTML = `
+                    <div class="card white-noise-card p-3 shadow-sm">
+                        <div class="card-body text-center">
+                            <h5 class="card-title fw-bold fs-4">${noise.name}</h5>
+                            <button class="btn btn-primary btn-play-pause mt-3" data-noise-id="${noise.id}">
+                                <i class="bi bi-play-fill me-2"></i> Phát
+                            </button>
+                            <div class="volume-control mt-3">
+                                <label for="volume-${noise.id}" class="form-label">Âm lượng:</label>
+                                <input type="range" class="form-range" id="volume-${noise.id}" min="0" max="1" step="0.01" value="0.5">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                noiseCardsContainer.appendChild(colDiv);
+            });
+
+            // Sau khi các thẻ được thêm vào DOM, gán các sự kiện lắng nghe
+            attachEventListeners();
+        }
+
+        /**
+         * Hàm gán các sự kiện lắng nghe cho các nút và thanh trượt.
+         */
+        function attachEventListeners() {
+            // Lắng nghe sự kiện click cho tất cả các nút play/pause
+            document.querySelectorAll('.btn-play-pause').forEach(button => {
+                button.addEventListener('click', () => {
+                    const noiseId = button.dataset.noiseId;
+                    togglePlayPause(noiseId, button);
+                });
+            });
+
+            // Lắng nghe sự kiện input cho tất cả các thanh trượt âm lượng
+            document.querySelectorAll('.form-range').forEach(slider => {
+                slider.addEventListener('input', () => {
+                    const noiseId = slider.id.replace('volume-', '');
+                    setVolume(noiseId, parseFloat(slider.value));
+                });
+            });
+
+            // Lắng nghe sự kiện click cho nút "Dừng tất cả"
+            stopAllButton.addEventListener('click', stopAllSounds);
+
+            // Lắng nghe sự kiện click cho nút Dark Mode Toggle
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+        }
+
+        /**
+         * Hàm chuyển đổi trạng thái phát/dừng của một âm thanh.
+         * @param {string} noiseId - ID của âm thanh.
+         * @param {HTMLElement} button - Nút play/pause tương ứng.
+         */
+        function togglePlayPause(noiseId, button) {
+            const audio = audioPlayers[noiseId];
+            const state = noiseStates[noiseId];
+
+            if (state.isPlaying) {
+                audio.pause(); // Dừng âm thanh
+                button.innerHTML = '<i class="bi bi-play-fill me-2"></i> Phát'; // Đổi icon và chữ
+                button.classList.remove('btn-danger', 'playing');
+                button.classList.add('btn-primary');
+                state.isPlaying = false;
+            } else {
+                audio.play().catch(e => console.error("Lỗi khi phát âm thanh:", e)); // Phát âm thanh
+                button.innerHTML = '<i class="bi bi-stop-fill me-2"></i> Dừng'; // Đổi icon và chữ
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-danger', 'playing');
+                state.isPlaying = true;
+            }
+        }
+
+        /**
+         * Hàm điều chỉnh âm lượng của một âm thanh.
+         * @param {string} noiseId - ID của âm thanh.
+         * @param {number} volume - Giá trị âm lượng (0.0 đến 1.0).
+         */
+        function setVolume(noiseId, volume) {
+            const audio = audioPlayers[noiseId];
+            audio.volume = volume;
+        }
+
+        /**
+         * Hàm dừng tất cả các âm thanh đang phát.
+         */
+        function stopAllSounds() {
+            for (const id in audioPlayers) {
+                const audio = audioPlayers[id];
+                const button = document.querySelector(`.btn-play-pause[data-noise-id="${id}"]`);
+                const state = noiseStates[id];
+
+                if (state.isPlaying) {
+                    audio.pause(); // Dừng âm thanh
+                    audio.currentTime = 0; // Đặt lại về đầu
+                    if (button) {
+                        button.innerHTML = '<i class="bi bi-play-fill me-2"></i> Phát';
+                        button.classList.remove('btn-danger', 'playing');
+                        button.classList.add('btn-primary');
+                    }
+                    state.isPlaying = false;
+                }
+            }
+        }
+
+        /**
+         * Hàm chuyển đổi chế độ sáng/tối.
+         */
+        function toggleDarkMode() {
+            body.classList.toggle('dark-mode'); // Thêm/bỏ lớp 'dark-mode' trên body
+            const isDarkMode = body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode); // Lưu trạng thái vào localStorage
+
+            // Cập nhật icon của nút toggle
+            const icon = darkModeToggle.querySelector('i');
+            if (isDarkMode) {
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun-fill');
+            } else {
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-fill');
+            }
+        }
+
+        /**
+         * Hàm tải trạng thái chế độ tối từ localStorage khi trang được tải.
+         */
+        function loadDarkModePreference() {
+            const savedDarkMode = localStorage.getItem('darkMode');
+            if (savedDarkMode === 'true') {
+                body.classList.add('dark-mode');
+                const icon = darkModeToggle.querySelector('i');
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun-fill');
+            }
+        }
+
+        // Khởi chạy ứng dụng khi DOM đã sẵn sàng
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDarkModePreference(); // Tải tùy chọn chế độ tối trước
+            initializeNoiseCards(); // Khởi tạo các thẻ âm thanh
+        });
+    </script>
+</body>
+</html>

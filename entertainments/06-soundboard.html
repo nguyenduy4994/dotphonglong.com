@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOTPHONGLONG Soundboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjF7aN7+6W/f+rJ3iB1f5P5Ff/gE1+x6D6B0l9Xn00V3I" crossorigin="anonymous">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* Tùy chỉnh CSS */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Light background by default */
+            color: #212529; /* Dark text by default */
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Đảm bảo footer ở cuối trang */
+        }
+
+        /* Dark Mode styles */
+        body.dark-mode {
+            background-color: #212529;
+            color: #f8f9fa;
+        }
+
+        body.dark-mode .card {
+            background-color: #343a40;
+            color: #f8f9fa;
+            border-color: #495057;
+        }
+
+        body.dark-mode .form-control {
+            background-color: #495057;
+            color: #f8f9fa;
+            border-color: #6c757d;
+        }
+
+        body.dark-mode .form-control::placeholder {
+            color: #adb5bd;
+        }
+
+        body.dark-mode .btn-secondary {
+            background-color: #5a6268;
+            border-color: #545b62;
+            color: #f8f9fa;
+        }
+
+        body.dark-mode .btn-primary {
+            background-color: #0d6efd; /* Keep primary color distinct */
+            border-color: #0d6efd;
+            color: #f8f9fa;
+        }
+
+        body.dark-mode .modal-content {
+            background-color: #343a40;
+            color: #f8f9fa;
+            border-color: #495057;
+        }
+
+        body.dark-mode .modal-header {
+            border-bottom-color: #495057;
+        }
+
+        body.dark-mode .modal-footer {
+            border-top-color: #495057;
+        }
+
+        body.dark-mode .close-button {
+            color: #f8f9fa;
+        }
+
+        .navbar-top {
+            position: fixed;
+            top: 0;
+            right: 0;
+            padding: 1rem;
+            z-index: 1050; /* Ensure it's above other content */
+        }
+
+        .sound-button {
+            width: 100%;
+            padding: 1.5rem 1rem;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border-radius: 0.75rem; /* Rounded corners */
+            margin-bottom: 1rem;
+            transition: transform 0.1s ease-in-out, background-color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .sound-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .sound-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .sound-button .button-name {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .sound-button .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .action-buttons .btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .footer {
+            margin-top: auto; /* Push footer to the bottom */
+            padding: 1.5rem 0;
+            text-align: center;
+            background-color: #e9ecef; /* Light gray for footer */
+            color: #495057;
+        }
+
+        body.dark-mode .footer {
+            background-color: #343a40;
+            color: #ced4da;
+        }
+
+        /* Adjust button sizing for smaller screens */
+        @media (max-width: 576px) {
+            .sound-button {
+                padding: 1rem 0.75rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Dark Mode Toggle Button -->
+    <div class="navbar-top">
+        <button class="btn btn-secondary rounded-pill" id="darkModeToggle">
+            <i class="bi bi-sun-fill" id="darkModeIcon"></i>
+        </button>
+    </div>
+
+    <div class="container my-5">
+        <h1 class="text-center mb-5 display-4 fw-bold">DOTPHONGLONG Soundboard</h1>
+
+        <div class="card p-4 shadow-lg rounded-4">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Các Âm Thanh</h3>
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4" id="soundButtonsContainer">
+                    <!-- Sound buttons will be rendered here by JavaScript -->
+                </div>
+
+                <hr class="my-4">
+
+                <h3 class="card-title text-center mb-4">Quản Lý Âm Thanh</h3>
+                <div class="mb-4 d-flex justify-content-center">
+                    <button class="btn btn-primary btn-lg rounded-pill" data-bs-toggle="modal" data-bs-target="#addSoundModal">
+                        <i class="bi bi-plus-circle me-2"></i> Thêm Âm Thanh Mới
+                    </button>
+                </div>
+
+                <div class="row align-items-center mb-4">
+                    <div class="col-12 col-md-4 text-center text-md-start mb-3 mb-md-0">
+                        <label for="globalVolume" class="form-label mb-0">Âm Lượng Tổng Thể:</label>
+                    </div>
+                    <div class="col-12 col-md-8">
+                        <input type="range" class="form-range" id="globalVolume" min="0" max="1" step="0.01" value="1">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Sound Modal -->
+    <div class="modal fade" id="addSoundModal" tabindex="-1" aria-labelledby="addSoundModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSoundModalLabel">Thêm Âm Thanh Mới</h5>
+                    <button type="button" class="btn-close close-button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSoundForm">
+                        <div class="mb-3">
+                            <label for="soundName" class="form-label">Tên Âm Thanh</label>
+                            <input type="text" class="form-control" id="soundName" placeholder="Ví dụ: Tiếng Vỗ Tay" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="soundUrl" class="form-label">URL Âm Thanh (.mp3, .wav)</label>
+                            <input type="url" class="form-control" id="soundUrl" placeholder="Ví dụ: https://example.com/clap.mp3" required>
+                            <div class="form-text">
+                                Vui lòng cung cấp URL trực tiếp đến tệp âm thanh (.mp3 hoặc .wav).
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Thêm Âm Thanh</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Sound Modal -->
+    <div class="modal fade" id="editSoundModal" tabindex="-1" aria-labelledby="editSoundModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editSoundModalLabel">Chỉnh Sửa Âm Thanh</h5>
+                    <button type="button" class="btn-close close-button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSoundForm">
+                        <input type="hidden" id="editSoundId">
+                        <div class="mb-3">
+                            <label for="editSoundName" class="form-label">Tên Âm Thanh</label>
+                            <input type="text" class="form-control" id="editSoundName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editSoundUrl" class="form-label">URL Âm Thanh (.mp3, .wav)</label>
+                            <input type="url" class="form-control" id="editSoundUrl" required>
+                            <div class="form-text">
+                                Vui lòng cung cấp URL trực tiếp đến tệp âm thanh (.mp3 hoặc .wav).
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 rounded-pill">Lưu Thay Đổi</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p class="mb-0">&copy; DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap Bundle JS (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eJ7eK7KkH0p1b0J" crossorigin="anonymous"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const soundButtonsContainer = document.getElementById('soundButtonsContainer');
+            const addSoundForm = document.getElementById('addSoundForm');
+            const editSoundForm = document.getElementById('editSoundForm');
+            const globalVolumeControl = document.getElementById('globalVolume');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const darkModeIcon = document.getElementById('darkModeIcon');
+
+            // Initialize Bootstrap Modals
+            const addSoundModal = new bootstrap.Modal(document.getElementById('addSoundModal'));
+            const editSoundModal = new bootstrap.Modal(document.getElementById('editSoundModal'));
+
+            // Array to store sound data
+            let sounds = [];
+            // Audio object for global volume control
+            let currentAudio = null;
+
+            // --- Dark Mode Logic ---
+            const loadDarkModePreference = () => {
+                const isDarkMode = localStorage.getItem('darkMode') === 'enabled';
+                if (isDarkMode) {
+                    document.body.classList.add('dark-mode');
+                    darkModeIcon.classList.remove('bi-sun-fill');
+                    darkModeIcon.classList.add('bi-moon-stars-fill');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    darkModeIcon.classList.remove('bi-moon-stars-fill');
+                    darkModeIcon.classList.add('bi-sun-fill');
+                }
+            };
+
+            darkModeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-mode');
+                if (document.body.classList.contains('dark-mode')) {
+                    localStorage.setItem('darkMode', 'enabled');
+                    darkModeIcon.classList.remove('bi-sun-fill');
+                    darkModeIcon.classList.add('bi-moon-stars-fill');
+                } else {
+                    localStorage.setItem('darkMode', 'disabled');
+                    darkModeIcon.classList.remove('bi-moon-stars-fill');
+                    darkModeIcon.classList.add('bi-sun-fill');
+                }
+            });
+
+            // --- Sound Data Management ---
+
+            // Function to generate a unique ID
+            const generateUniqueId = () => {
+                return Date.now().toString(36) + Math.random().toString(36).substring(2);
+            };
+
+            // Function to load sounds from localStorage
+            const loadSounds = () => {
+                const storedSounds = localStorage.getItem('soundboardSounds');
+                if (storedSounds) {
+                    sounds = JSON.parse(storedSounds);
+                } else {
+                    // Default sounds if none are stored
+                    sounds = [
+                        { id: generateUniqueId(), name: 'Tiếng Vỗ Tay', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+                        { id: generateUniqueId(), name: 'Tiếng Chuông', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+                        { id: generateUniqueId(), name: 'Tiếng Cười', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+                        { id: generateUniqueId(), name: 'Tiếng Bip', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' }
+                    ];
+                    saveSounds(); // Save default sounds
+                }
+            };
+
+            // Function to save sounds to localStorage
+            const saveSounds = () => {
+                localStorage.setItem('soundboardSounds', JSON.stringify(sounds));
+            };
+
+            // --- Audio Playback ---
+
+            // Function to play a sound
+            const playSound = (url) => {
+                if (currentAudio) {
+                    currentAudio.pause(); // Stop any currently playing audio
+                    currentAudio.currentTime = 0; // Reset playback position
+                }
+                currentAudio = new Audio(url);
+                currentAudio.volume = parseFloat(globalVolumeControl.value); // Apply global volume
+                currentAudio.play().catch(e => console.error("Lỗi khi phát âm thanh:", e));
+            };
+
+            // Global volume control
+            globalVolumeControl.addEventListener('input', (event) => {
+                const volume = parseFloat(event.target.value);
+                if (currentAudio) {
+                    currentAudio.volume = volume;
+                }
+            });
+
+            // --- Render UI ---
+
+            // Function to render sound buttons
+            const renderSoundButtons = () => {
+                soundButtonsContainer.innerHTML = ''; // Clear existing buttons
+                sounds.forEach(sound => {
+                    const colDiv = document.createElement('div');
+                    colDiv.className = 'col';
+
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-info text-dark sound-button d-flex flex-column justify-content-center align-items-center'; // Use info for contrast
+                    button.setAttribute('data-id', sound.id);
+
+                    const buttonName = document.createElement('span');
+                    buttonName.className = 'button-name';
+                    buttonName.textContent = sound.name;
+
+                    const actionButtonsDiv = document.createElement('div');
+                    actionButtonsDiv.className = 'action-buttons';
+
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'btn btn-sm btn-outline-dark me-2 rounded-pill';
+                    editBtn.innerHTML = '<i class="bi bi-pencil-fill"></i>';
+                    editBtn.title = 'Chỉnh sửa';
+                    editBtn.addEventListener('click', (event) => {
+                        event.stopPropagation(); // Prevent playing sound when clicking edit
+                        openEditSoundModal(sound.id);
+                    });
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger rounded-pill';
+                    deleteBtn.innerHTML = '<i class="bi bi-trash-fill"></i>';
+                    deleteBtn.title = 'Xóa';
+                    deleteBtn.addEventListener('click', (event) => {
+                        event.stopPropagation(); // Prevent playing sound when clicking delete
+                        deleteSound(sound.id);
+                    });
+
+                    actionButtonsDiv.appendChild(editBtn);
+                    actionButtonsDiv.appendChild(deleteBtn);
+
+                    button.appendChild(buttonName);
+                    button.appendChild(actionButtonsDiv);
+
+                    button.addEventListener('click', () => {
+                        playSound(sound.url);
+                    });
+
+                    colDiv.appendChild(button);
+                    soundButtonsContainer.appendChild(colDiv);
+                });
+            };
+
+            // --- Add Sound ---
+
+            addSoundForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const soundName = document.getElementById('soundName').value;
+                const soundUrl = document.getElementById('soundUrl').value;
+
+                if (soundName && soundUrl) {
+                    const newSound = {
+                        id: generateUniqueId(),
+                        name: soundName,
+                        url: soundUrl
+                    };
+                    sounds.push(newSound);
+                    saveSounds();
+                    renderSoundButtons();
+                    addSoundForm.reset();
+                    addSoundModal.hide(); // Close the modal
+                }
+            });
+
+            // --- Edit Sound ---
+
+            const openEditSoundModal = (id) => {
+                const soundToEdit = sounds.find(sound => sound.id === id);
+                if (soundToEdit) {
+                    document.getElementById('editSoundId').value = soundToEdit.id;
+                    document.getElementById('editSoundName').value = soundToEdit.name;
+                    document.getElementById('editSoundUrl').value = soundToEdit.url;
+                    editSoundModal.show();
+                }
+            };
+
+            editSoundForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const id = document.getElementById('editSoundId').value;
+                const newName = document.getElementById('editSoundName').value;
+                const newUrl = document.getElementById('editSoundUrl').value;
+
+                const soundIndex = sounds.findIndex(sound => sound.id === id);
+                if (soundIndex !== -1) {
+                    sounds[soundIndex].name = newName;
+                    sounds[soundIndex].url = newUrl;
+                    saveSounds();
+                    renderSoundButtons();
+                    editSoundModal.hide(); // Close the modal
+                }
+            });
+
+            // --- Delete Sound ---
+
+            const deleteSound = (id) => {
+                if (confirm('Bạn có chắc chắn muốn xóa âm thanh này?')) {
+                    sounds = sounds.filter(sound => sound.id !== id);
+                    saveSounds();
+                    renderSoundButtons();
+                }
+            };
+
+            // --- Initial Setup ---
+            loadDarkModePreference();
+            loadSounds();
+            renderSoundButtons();
+        });
+    </script>
+</body>
+</html>

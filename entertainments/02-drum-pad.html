@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drum Pad - DOTPHONGLONG Mini App</title>
+    <!-- Bootstrap CSS CDN (latest version) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS variables for Dark Mode */
+        :root {
+            --bg-color: #f8f9fa; /* Light mode background */
+            --text-color: #212529; /* Light mode text */
+            --card-bg: #ffffff; /* Light mode card background */
+            --pad-bg: #e0e0e0; /* Light mode pad background */
+            --pad-active-bg: #87CEEB; /* Light mode active pad background (SkyBlue) */
+            --pad-border: #cccccc; /* Light mode pad border */
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a2e; /* Dark mode background */
+            --text-color: #e0e0e0; /* Dark mode text */
+            --card-bg: #16213e; /* Dark mode card background */
+            --pad-bg: #0f3460; /* Dark mode pad background */
+            --pad-active-bg: #e94560; /* Dark mode active pad background (Crimson Red) */
+            --pad-border: #001a35; /* Dark mode pad border */
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .drum-container {
+            background-color: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            border: 1px solid var(--pad-border);
+            margin-top: 20px; /* Space from title */
+            flex-grow: 1; /* Allow container to grow */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drum-pad {
+            width: 100%;
+            padding-bottom: 100%; /* Makes the pad square */
+            position: relative;
+            background-color: var(--pad-bg);
+            border: 2px solid var(--pad-border);
+            border-radius: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem; /* Larger font for pad text */
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden; /* Ensure content doesn't spill */
+        }
+
+        .drum-pad:hover {
+            background-color: var(--pad-active-bg);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+            color: var(--text-color); /* Maintain text color on hover */
+        }
+
+        .drum-pad:active, .drum-pad.playing {
+            background-color: var(--pad-active-bg);
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            color: var(--text-color); /* Maintain text color when active */
+        }
+
+        .drum-pad-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .drum-key {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .volume-control {
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .volume-control label {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .volume-control input[type="range"] {
+            width: 80%;
+            max-width: 400px;
+            height: 8px;
+            background: var(--pad-bg);
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            transition: background 0.2s ease;
+        }
+
+        .volume-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--pad-active-bg);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .volume-control input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--pad-active-bg);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            background-color: var(--card-bg);
+            border: 1px solid var(--pad-border);
+            color: var(--text-color);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .dark-mode-toggle:hover {
+            background-color: var(--pad-active-bg);
+            color: var(--text-color);
+        }
+
+        footer {
+            margin-top: auto; /* Push footer to the bottom */
+            padding: 15px;
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 767.98px) {
+            .drum-pad {
+                font-size: 1.2rem;
+            }
+            .drum-key {
+                font-size: 0.7rem;
+            }
+            .drum-container {
+                padding: 20px;
+                margin-top: 10px;
+            }
+            .dark-mode-toggle {
+                width: 40px;
+                height: 40px;
+                font-size: 1.3rem;
+            }
+            .volume-control label {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="d-flex flex-column">
+
+    <!-- Dark Mode Toggle Button -->
+    <button id="darkModeToggle" class="dark-mode-toggle shadow-sm">
+        <i class="bi bi-moon-fill"></i>
+    </button>
+
+    <div class="container text-center my-4 flex-grow-1 d-flex flex-column">
+        <h1 class="display-4 fw-bold">Drum Pad</h1>
+
+        <div class="drum-container mx-auto">
+            <div class="row g-2 justify-content-center">
+                <!-- Drum Pads -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="q" data-sound="kick">
+                        <div class="drum-pad-content">
+                            Kick
+                            <span class="drum-key">Q</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="w" data-sound="snare">
+                        <div class="drum-pad-content">
+                            Snare
+                            <span class="drum-key">W</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="e" data-sound="hihat">
+                        <div class="drum-pad-content">
+                            Hi-Hat
+                            <span class="drum-key">E</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="a" data-sound="crash">
+                        <div class="drum-pad-content">
+                            Crash
+                            <span class="drum-key">A</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="s" data-sound="tom">
+                        <div class="drum-pad-content">
+                            Tom
+                            <span class="drum-key">S</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="d" data-sound="clap">
+                        <div class="drum-pad-content">
+                            Clap
+                            <span class="drum-key">D</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="z" data-sound="perc">
+                        <div class="drum-pad-content">
+                            Perc
+                            <span class="drum-key">Z</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="x" data-sound="rim">
+                        <div class="drum-pad-content">
+                            Rim
+                            <span class="drum-key">X</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="c" data-sound="ride">
+                        <div class="drum-pad-content">
+                            Ride
+                            <span class="drum-key">C</span>
+                        </div>
+                    </button>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <button class="drum-pad" data-key="v" data-sound="shaker">
+                        <div class="drum-pad-content">
+                            Shaker
+                            <span class="drum-key">V</span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Volume Control -->
+            <div class="volume-control mt-4">
+                <label for="volumeRange">Âm lượng:</label>
+                <input type="range" class="form-range" id="volumeRange" min="0" max="1" step="0.01" value="0.75">
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>DOTPHONGLONG Mini App</p>
+    </footer>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Mapping of drum sound names to their URLs
+        const drumSounds = {
+            kick: 'https://cdn.pixabay.com/audio/2024/08/13/audio_b31955cb8c.mp3',
+            snare: 'https://cdn.pixabay.com/audio/2022/06/05/audio_97ed83a845.mp3',
+            hihat: 'https://cdn.pixabay.com/audio/2022/03/20/audio_7e0ec079a4.mp3',
+            crash: 'https://cdn.pixabay.com/audio/2025/01/04/audio_e0d2cfcd69.mp3',
+            tom: 'https://cdn.pixabay.com/audio/2022/03/26/audio_4689659827.mp3',
+            clap: 'https://cdn.pixabay.com/audio/2022/03/19/audio_942d475509.mp3',
+            perc: 'https://cdn.pixabay.com/audio/2022/03/24/audio_3f94762948.mp3',
+            rim: 'https://cdn.pixabay.com/audio/2024/09/16/audio_cde73a8d45.mp3',
+            ride: 'https://cdn.pixabay.com/audio/2022/03/10/audio_aaff2c2ad9.mp3',
+            shaker: 'https://cdn.pixabay.com/audio/2022/03/18/audio_4a7e8cad43.mp3'
+        };
+
+        const drumPads = document.querySelectorAll('.drum-pad');
+        const volumeRange = document.getElementById('volumeRange');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const gainNode = audioContext.createGain();
+        gainNode.connect(audioContext.destination);
+
+        // Object to store loaded audio buffers
+        const audioBuffers = {};
+
+        // Function to load audio files
+        async function loadAudio(url, name) {
+            try {
+                const response = await fetch(url);
+                const arrayBuffer = await response.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                audioBuffers[name] = audioBuffer;
+            } catch (error) {
+                console.error(`Lỗi tải âm thanh ${name} từ ${url}:`, error);
+            }
+        }
+
+        // Load all sounds on page load
+        window.onload = async () => {
+            for (const soundName in drumSounds) {
+                await loadAudio(drumSounds[soundName], soundName);
+            }
+            // Set initial volume
+            gainNode.gain.value = volumeRange.value;
+        };
+
+        // Function to play sound
+        function playSound(soundName, element) {
+            const audioBuffer = audioBuffers[soundName];
+            if (!audioBuffer) {
+                console.warn(`Âm thanh '${soundName}' chưa được tải hoặc không tồn tại.`);
+                return;
+            }
+
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(gainNode);
+            source.start(0); // Play immediately
+
+            // Add visual effect
+            if (element) {
+                element.classList.add('playing');
+                setTimeout(() => {
+                    element.classList.remove('playing');
+                }, 150); // Remove 'playing' class after 150ms
+            }
+        }
+
+        // Event listener for drum pad clicks
+        drumPads.forEach(pad => {
+            pad.addEventListener('click', () => {
+                const soundName = pad.dataset.sound;
+                playSound(soundName, pad);
+            });
+        });
+
+        // Event listener for keyboard presses
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            const pad = document.querySelector(`.drum-pad[data-key="${key}"]`);
+            if (pad) {
+                const soundName = pad.dataset.sound;
+                playSound(soundName, pad);
+            }
+        });
+
+        // Event listener for volume control
+        volumeRange.addEventListener('input', (event) => {
+            gainNode.gain.value = event.target.value;
+        });
+
+        // Dark Mode Toggle Logic
+        darkModeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const icon = darkModeToggle.querySelector('i');
+            if (body.classList.contains('dark-mode')) {
+                icon.classList.remove('bi-moon-fill');
+                icon.classList.add('bi-sun-fill');
+            } else {
+                icon.classList.remove('bi-sun-fill');
+                icon.classList.add('bi-moon-fill');
+            }
+        });
+
+        // Initialize dark mode based on user preference (optional)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            darkModeToggle.click(); // Simulate click to set dark mode initially
+        }
+    </script>
+</body>
+</html>

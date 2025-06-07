@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trình phát MP3</title>
+    <!-- Tải Bootstrap CSS (Phiên bản mới nhất) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Tải Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Tải Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bs-body-bg); /* Sử dụng biến Bootstrap cho màu nền */
+            color: var(--bs-body-color); /* Sử dụng biến Bootstrap cho màu chữ */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Đảm bảo body chiếm toàn bộ chiều cao màn hình */
+        }
+        .container-fluid {
+            flex-grow: 1; /* Cho phép container chiếm không gian còn lại */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .mp3-player-card {
+            max-width: 600px;
+            width: 100%;
+            background-color: var(--bs-card-bg);
+            border-radius: 1.5rem; /* Góc bo tròn */
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Thêm bóng */
+            padding: 2rem;
+            transition: all 0.3s ease; /* Hiệu ứng chuyển đổi cho dark mode */
+        }
+        .dark-mode-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+        }
+        .volume-control, .progress-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .volume-control input[type="range"],
+        .progress-bar-container input[type="range"] {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            border-radius: 5px;
+        }
+        .volume-control input[type="range"]::-webkit-slider-thumb,
+        .progress-bar-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #0d6efd; /* Màu xanh của Bootstrap primary */
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .volume-control input[type="range"]::-moz-range-thumb,
+        .progress-bar-container input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #0d6efd;
+            cursor: pointer;
+            border-radius: 50%;
+        }
+        .btn-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+        }
+        #fileNameDisplay {
+            min-height: 1.5em; /* Đảm bảo chiều cao tối thiểu */
+            word-wrap: break-word; /* Tự động ngắt dòng */
+        }
+        footer {
+            margin-top: auto; /* Đẩy footer xuống dưới cùng */
+            padding: 1rem 0;
+            text-align: center;
+            color: var(--bs-secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Nút Dark Mode Toggle -->
+    <button id="darkModeToggle" class="btn btn-outline-secondary dark-mode-toggle rounded-pill" aria-label="Toggle dark mode">
+        <i class="bi bi-moon-fill"></i>
+    </button>
+
+    <div class="container-fluid py-5">
+        <h1 class="text-center mb-5 fw-bold text-primary">Trình phát MP3</h1>
+
+        <div class="mp3-player-card">
+            <div class="mb-4">
+                <label for="audioFile" class="form-label fs-5 mb-3">Chọn file nhạc MP3 của bạn</label>
+                <input class="form-control form-control-lg rounded-pill" id="audioFile" type="file" accept="audio/mpeg">
+            </div>
+
+            <div class="text-center mb-4">
+                <p class="mb-1 text-muted">Đang phát:</p>
+                <h3 id="fileNameDisplay" class="fw-semibold text-truncate">Chưa có bài hát nào được chọn</h3>
+            </div>
+
+            <!-- Thanh tiến trình và thời gian -->
+            <div class="progress-bar-container mb-4">
+                <span id="currentTime" class="text-muted">0:00</span>
+                <input type="range" class="form-range" id="progressBar" value="0" min="0" max="100">
+                <span id="totalTime" class="text-muted">0:00</span>
+            </div>
+
+            <!-- Các nút điều khiển -->
+            <div class="d-flex justify-content-center gap-3 mb-4">
+                <button id="playPauseBtn" class="btn btn-primary btn-circle shadow-sm" title="Phát/Tạm dừng">
+                    <i class="bi bi-play-fill"></i>
+                </button>
+                <button id="stopBtn" class="btn btn-danger btn-circle shadow-sm" title="Dừng">
+                    <i class="bi bi-stop-fill"></i>
+                </button>
+            </div>
+
+            <!-- Điều chỉnh âm lượng -->
+            <div class="volume-control">
+                <i class="bi bi-volume-mute-fill fs-4 text-muted"></i>
+                <input type="range" class="form-range" id="volumeSlider" value="100" min="0" max="100">
+                <i class="bi bi-volume-up-fill fs-4 text-muted"></i>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-auto py-3 text-center text-muted">
+        DOTPHONGLONG Mini App
+    </footer>
+
+    <!-- Tải Bootstrap JavaScript Bundle (Popper đi kèm) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <script>
+        // Lấy các phần tử DOM
+        const audioFile = document.getElementById('audioFile');
+        const fileNameDisplay = document.getElementById('fileNameDisplay');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const totalTimeDisplay = document.getElementById('totalTime');
+        const volumeSlider = document.getElementById('volumeSlider');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const bodyElement = document.body;
+        const htmlElement = document.documentElement; // Lấy thẻ html để thay đổi data-bs-theme
+
+        // Tạo một đối tượng Audio (sẽ không hiển thị trực tiếp trên giao diện)
+        const audio = new Audio();
+        let isPlaying = false; // Theo dõi trạng thái phát nhạc
+
+        // --- Chức năng Dark Mode ---
+        darkModeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-bs-theme');
+            if (currentTheme === 'light') {
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                darkModeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>'; // Icon mặt trời
+            } else {
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                darkModeToggle.innerHTML = '<i class="bi bi-moon-fill"></i>'; // Icon mặt trăng
+            }
+        });
+
+        // --- Xử lý tải file nhạc ---
+        audioFile.addEventListener('change', (event) => {
+            const file = event.target.files[0]; // Lấy file đầu tiên được chọn
+            if (file) {
+                // Kiểm tra xem file có phải là mp3 không
+                if (file.type === 'audio/mpeg') {
+                    // Tạo URL đối tượng cho file nhạc
+                    audio.src = URL.createObjectURL(file);
+                    fileNameDisplay.textContent = file.name; // Hiển thị tên file
+                    audio.load(); // Tải nhạc
+                    playPauseBtn.innerHTML = '<i class="bi bi-play-fill"></i>'; // Đặt lại icon về Play
+                    isPlaying = false;
+                    progressBar.value = 0; // Đặt lại thanh tiến trình
+                    currentTimeDisplay.textContent = '0:00';
+                    totalTimeDisplay.textContent = '0:00';
+                } else {
+                    fileNameDisplay.textContent = 'Vui lòng chọn file MP3 hợp lệ.';
+                    audio.src = ''; // Xóa nguồn nhạc
+                }
+            } else {
+                fileNameDisplay.textContent = 'Chưa có bài hát nào được chọn';
+                audio.src = '';
+            }
+        });
+
+        // --- Chức năng Play/Pause ---
+        playPauseBtn.addEventListener('click', () => {
+            if (!audio.src) {
+                // Nếu chưa có file nào được chọn
+                // Có thể hiển thị thông báo lỗi tùy chỉnh thay vì alert()
+                fileNameDisplay.textContent = 'Vui lòng chọn một file nhạc trước!';
+                return;
+            }
+
+            if (audio.paused) {
+                audio.play();
+                playPauseBtn.innerHTML = '<i class="bi bi-pause-fill"></i>'; // Đổi icon sang Pause
+                isPlaying = true;
+            } else {
+                audio.pause();
+                playPauseBtn.innerHTML = '<i class="bi bi-play-fill"></i>'; // Đổi icon sang Play
+                isPlaying = false;
+            }
+        });
+
+        // --- Chức năng Dừng ---
+        stopBtn.addEventListener('click', () => {
+            audio.pause();
+            audio.currentTime = 0; // Quay về đầu bài hát
+            playPauseBtn.innerHTML = '<i class="bi bi-play-fill"></i>'; // Đổi icon sang Play
+            isPlaying = false;
+        });
+
+        // --- Cập nhật thanh tiến trình và thời gian ---
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) { // Đảm bảo thời lượng bài hát hợp lệ
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.value = progress;
+
+                // Cập nhật thời gian hiện tại
+                currentTimeDisplay.textContent = formatTime(audio.currentTime);
+            }
+        });
+
+        // --- Cập nhật tổng thời gian khi metadata được tải ---
+        audio.addEventListener('loadedmetadata', () => {
+            if (!isNaN(audio.duration)) {
+                totalTimeDisplay.textContent = formatTime(audio.duration);
+            }
+        });
+
+        // --- Xử lý tua bài hát bằng thanh tiến trình ---
+        progressBar.addEventListener('input', () => {
+            if (!isNaN(audio.duration)) {
+                const seekTime = (progressBar.value / 100) * audio.duration;
+                audio.currentTime = seekTime;
+            }
+        });
+
+        // --- Chức năng điều chỉnh âm lượng ---
+        volumeSlider.addEventListener('input', () => {
+            audio.volume = volumeSlider.value / 100; // Chuyển đổi từ 0-100 sang 0-1
+        });
+
+        // --- Xử lý khi bài hát kết thúc ---
+        audio.addEventListener('ended', () => {
+            playPauseBtn.innerHTML = '<i class="bi bi-play-fill"></i>'; // Đặt lại icon Play
+            isPlaying = false;
+            progressBar.value = 0; // Đặt lại thanh tiến trình
+            currentTimeDisplay.textContent = '0:00'; // Đặt lại thời gian về 0
+        });
+
+        // --- Hàm định dạng thời gian (ví dụ: 3:45) ---
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+        }
+
+        // Đặt âm lượng mặc định khi tải trang
+        audio.volume = volumeSlider.value / 100;
+    </script>
+
+</body>
+</html>
