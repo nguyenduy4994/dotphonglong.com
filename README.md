@@ -41,7 +41,7 @@
 
 ## 🔢 Công cụ tính toán
 
-1.  ➕ Máy tính cơ bản
+1.  ➕ [Máy tính cơ bản](https://dotphonglong.com/calculator/01-basic-calculator.html) ✅
 2.  ⚖️ Máy tính BMI
 3.  🤰 Máy tính tuổi thai
 4.  💸 Máy tính tiền tip
