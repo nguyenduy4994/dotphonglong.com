@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ứng dụng Chia Hóa Đơn</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- Các biến màu cho chế độ Sáng & Tối --- */
+        :root {
+            --bg-color: #f8f9fa; /* Màu nền chính */
+            --text-color: #212529; /* Màu chữ chính */
+            --card-bg-color: #ffffff; /* Màu nền của card */
+            --card-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+            --results-bg-color: #0d6efd; /* Màu nền khu vực kết quả */
+            --results-text-color: #ffffff; /* Màu chữ khu vực kết quả */
+            --primary-color: #0d6efd;
+            --input-border-color: #ced4da;
+        }
+
+        body.dark-mode {
+            --bg-color: #1a1a1a;
+            --text-color: #e9ecef;
+            --card-bg-color: #2c2c2c;
+            --card-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.2);
+            --results-bg-color: #1c3d7a;
+            --results-text-color: #e9ecef;
+            --primary-color: #4dabf7;
+            --input-border-color: #495057;
+        }
+        
+        /* --- Kiểu dáng chung --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            padding-top: 2rem;
+            padding-bottom: 5rem;
+        }
+
+        .main-container {
+            max-width: 800px;
+        }
+
+        /* --- Kiểu dáng Card chính --- */
+        .bill-splitter-card {
+            background-color: var(--card-bg-color);
+            border: none;
+            border-radius: 1.5rem;
+            box-shadow: var(--card-shadow);
+            transition: background-color 0.3s, box-shadow 0.3s;
+            overflow: hidden; /* Để bo góc cho phần kết quả */
+        }
+
+        /* --- Kiểu dáng các ô nhập liệu --- */
+        .form-control, .form-select {
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--input-border-color);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb), 0.25);
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        /* --- Kiểu dáng khu vực kết quả --- */
+        .results-panel {
+            background-color: var(--results-bg-color);
+            color: var(--results-text-color);
+            padding: 2rem;
+            border-radius: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .result-item {
+            font-size: 1.1rem;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        /* --- Nút bấm --- */
+        .btn {
+            font-weight: 600;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+        }
+
+        /* --- Nút Dark Mode --- */
+        #darkModeToggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        /* --- Footer --- */
+        footer {
+            color: #6c757d; /* Màu xám cho footer */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Nút bật/tắt chế độ tối -->
+    <button id="darkModeToggle" class="btn btn-light">
+        <!-- SVG Icon mặt trăng/mặt trời -->
+        <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16">
+            <path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+        </svg>
+    </button>
+    
+    <div class="container main-container">
+        <header class="text-center my-4">
+            <h1 class="fw-bold">Ứng dụng Chia Hóa Đơn</h1>
+        </header>
+
+        <main>
+            <div class="card bill-splitter-card">
+                <div class="card-body p-lg-5">
+                    <div class="row g-4 g-lg-5">
+
+                        <!-- Cột nhập liệu -->
+                        <div class="col-lg-6">
+                            <div class="d-flex flex-column h-100">
+                                <div class="mb-4">
+                                    <label for="billTotal" class="form-label">Tổng hóa đơn</label>
+                                    <input type="number" class="form-control" id="billTotal" placeholder="Nhập tổng số tiền" min="0" step="any">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="tipPercentage" class="form-label">Chọn tiền Tip</label>
+                                    <div class="btn-group w-100" role="group">
+                                        <button type="button" class="btn btn-outline-primary tip-btn" data-tip="10">10%</button>
+                                        <button type="button" class="btn btn-outline-primary tip-btn" data-tip="15">15%</button>
+                                        <button type="button" class="btn btn-outline-primary tip-btn" data-tip="20">20%</button>
+                                    </div>
+                                    <input type="number" class="form-control mt-2" id="tipPercentage" placeholder="Hoặc nhập % tùy chỉnh" min="0">
+                                </div>
+                                <div class="mb-4">
+                                    <label for="numberOfPeople" class="form-label">Số người</label>
+                                    <input type="number" class="form-control" id="numberOfPeople" placeholder="Nhập số người" min="1" step="1" value="1">
+                                </div>
+                                
+                                <!-- Nút Đặt lại được đẩy xuống cuối -->
+                                <div class="mt-auto">
+                                    <button id="resetButton" class="btn btn-danger w-100">Đặt lại</button>
+                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Cột kết quả -->
+                        <div class="col-lg-6">
+                            <div class="results-panel d-flex flex-column h-100 justify-content-center">
+                                <div class="result-item d-flex justify-content-between align-items-center mb-4">
+                                    <div>
+                                        <p class="mb-0">Tổng tiền Tip</p>
+                                        <small>/ hóa đơn</small>
+                                    </div>
+                                    <span id="tipTotal" class="result-value">0,00₫</span>
+                                </div>
+                                <div class="result-item d-flex justify-content-between align-items-center mb-4">
+                                    <div>
+                                        <p class="mb-0">Tổng cộng</p>
+                                        <small>/ hóa đơn</small>
+                                    </div>
+                                    <span id="totalWithTip" class="result-value">0,00₫</span>
+                                </div>
+                                <hr class="my-3 border-light">
+                                <div class="result-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="mb-0">Mỗi người trả</p>
+                                        <small>/ người</small>
+                                    </div>
+                                    <span id="amountPerPerson" class="result-value">0,00₫</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-5">
+            <p>DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- Lấy các phần tử DOM ---
+            const billTotalInput = document.getElementById('billTotal');
+            const tipPercentageInput = document.getElementById('tipPercentage');
+            const numberOfPeopleInput = document.getElementById('numberOfPeople');
+            const tipButtons = document.querySelectorAll('.tip-btn');
+            
+            const tipTotalDisplay = document.getElementById('tipTotal');
+            const totalWithTipDisplay = document.getElementById('totalWithTip');
+            const amountPerPersonDisplay = document.getElementById('amountPerPerson');
+            
+            const resetButton = document.getElementById('resetButton');
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+
+            // --- Icon cho chế độ sáng/tối ---
+            const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-moon-fill" viewBox="0 0 16 16"><path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/></svg>`;
+            const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-brightness-high-fill" viewBox="0 0 16 16"><path d="M12 8a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/></svg>`;
+
+            /**
+             * Định dạng số thành chuỗi tiền tệ Việt Nam (VND).
+             * @param {number} number - Số cần định dạng.
+             * @returns {string} - Chuỗi đã định dạng.
+             */
+            function formatCurrency(number) {
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(number);
+            }
+
+            /**
+             * Hàm tính toán và cập nhật giao diện.
+             */
+            function calculateAndDisplay() {
+                const bill = parseFloat(billTotalInput.value) || 0;
+                const tipPercent = parseFloat(tipPercentageInput.value) || 0;
+                const people = parseInt(numberOfPeopleInput.value) || 1;
+
+                // Đảm bảo số người luôn ít nhất là 1
+                if (people < 1) {
+                    numberOfPeopleInput.value = 1;
+                    return;
+                }
+
+                // Tính toán
+                const tipAmount = bill * (tipPercent / 100);
+                const totalBill = bill + tipAmount;
+                const perPersonAmount = totalBill / people;
+
+                // Cập nhật giao diện
+                tipTotalDisplay.textContent = formatCurrency(tipAmount);
+                totalWithTipDisplay.textContent = formatCurrency(totalBill);
+                amountPerPersonDisplay.textContent = formatCurrency(perPersonAmount);
+            }
+
+            /**
+             * Hàm đặt lại tất cả các trường.
+             */
+            function resetAll() {
+                billTotalInput.value = '';
+                tipPercentageInput.value = '';
+                numberOfPeopleInput.value = '1';
+                // Bỏ chọn tất cả các nút tip
+                tipButtons.forEach(btn => btn.classList.remove('active'));
+                calculateAndDisplay(); // Cập nhật hiển thị về 0
+            }
+
+            // --- Gán sự kiện ---
+            
+            // Sự kiện nhập liệu cho các ô input
+            [billTotalInput, tipPercentageInput, numberOfPeopleInput].forEach(input => {
+                input.addEventListener('input', calculateAndDisplay);
+            });
+
+            // Sự kiện click cho các nút tip
+            tipButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    // Cập nhật giá trị ô input tip tùy chỉnh
+                    tipPercentageInput.value = this.dataset.tip;
+                    
+                    // Xử lý trạng thái 'active' cho nút
+                    tipButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    calculateAndDisplay();
+                });
+            });
+            
+            // Xóa trạng thái active của nút tip nếu người dùng nhập tip tùy chỉnh
+            tipPercentageInput.addEventListener('focus', () => {
+                 tipButtons.forEach(btn => btn.classList.remove('active'));
+            });
+
+            // Sự kiện click cho nút Reset
+            resetButton.addEventListener('click', resetAll);
+
+            // Sự kiện click cho nút Dark Mode
+            darkModeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                
+                // Cập nhật icon và màu nút dựa trên chế độ
+                if (body.classList.contains('dark-mode')) {
+                    themeIcon.innerHTML = sunIcon;
+                    darkModeToggle.classList.remove('btn-light');
+                    darkModeToggle.classList.add('btn-dark');
+                } else {
+                    themeIcon.innerHTML = moonIcon;
+                    darkModeToggle.classList.remove('btn-dark');
+                    darkModeToggle.classList.add('btn-light');
+                }
+            });
+
+            // Gọi hàm tính toán lần đầu khi tải trang
+            calculateAndDisplay();
+        });
+    </script>
+</body>
+</html>
