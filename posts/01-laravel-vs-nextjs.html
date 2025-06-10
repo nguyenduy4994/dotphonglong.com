@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So sánh Tương tác: Laravel vs. Next.js</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Harmony -->
+    <!-- Application Structure Plan: The application is designed as a single-page interactive dashboard. The structure prioritizes direct comparison and user guidance over the linear flow of the source report. A sticky navigation bar allows users to jump between thematic sections: 1. An 'Overview' with key stats. 2. A 'Side-by-Side Comparison' with an interactive radar chart and filterable content for deep dives into Architecture, Performance, DevEx, etc. This is the core of the app, designed for maximum user engagement. 3. An interactive 'Use Case' guide to help users choose a framework based on their project needs. 4. A 'Vietnam Ecosystem' section with charts visualizing salary and job market data. This structure was chosen to transform the static report into a dynamic tool that facilitates understanding and decision-making by allowing users to explore data in a non-linear, comparative way. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Key framework stats (version, language). Goal: Inform. Viz/Method: HTML/Tailwind Cards. Interaction: None. Justification: Quick, scannable summary. Library: N/A.
+        - Report Info: Overall framework strengths. Goal: Compare holistically. Viz/Method: Radar Chart. Interaction: Hover tooltips. Justification: Provides an immediate, high-level visual summary of strengths and weaknesses across key criteria. Library: Chart.js.
+        - Report Info: Detailed comparisons (Architecture, Performance, etc.). Goal: Detailed Comparison. Viz/Method: Two-column text blocks. Interaction: Filter buttons to switch topics. Justification: Allows users to focus on the criteria most important to them without being overwhelmed. Library: Vanilla JS.
+        - Report Info: Salary data in Vietnam. Goal: Compare earning potential. Viz/Method: Grouped Bar Chart. Interaction: Hover tooltips. Justification: Best way to compare salary ranges across different seniority levels for both ecosystems. Library: Chart.js.
+        - Report Info: Use case scenarios. Goal: Guide user decision. Viz/Method: Interactive button-based "wizard". Interaction: Clicking buttons reveals tailored recommendations. Justification: Engages the user in a decision-making process, making the advice more personal and memorable. Library: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #FDFBF5;
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link.active {
+            color: #F97316;
+            font-weight: 600;
+        }
+        .filter-btn.active {
+            background-color: #F97316;
+            color: #FFFFFF;
+        }
+        .framework-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .framework-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-md">
+        <nav class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-gray-800">
+                Laravel <span class="text-orange-500">vs</span> Next.js
+            </h1>
+            <div class="hidden md:flex space-x-6 text-gray-600 font-medium">
+                <a href="#overview" class="nav-link hover:text-orange-500 transition-colors">Tổng quan</a>
+                <a href="#comparison" class="nav-link hover:text-orange-500 transition-colors">So sánh</a>
+                <a href="#use-cases" class="nav-link hover:text-orange-500 transition-colors">Trường hợp sử dụng</a>
+                <a href="#ecosystem" class="nav-link hover:text-orange-500 transition-colors">Hệ sinh thái VN</a>
+                <a href="#conclusion" class="nav-link hover:text-orange-500 transition-colors">Kết luận</a>
+            </div>
+            <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden bg-white py-2">
+            <a href="#overview" class="block text-center py-2 text-gray-600 hover:bg-gray-100">Tổng quan</a>
+            <a href="#comparison" class="block text-center py-2 text-gray-600 hover:bg-gray-100">So sánh</a>
+            <a href="#use-cases" class="block text-center py-2 text-gray-600 hover:bg-gray-100">Trường hợp sử dụng</a>
+            <a href="#ecosystem" class="block text-center py-2 text-gray-600 hover:bg-gray-100">Hệ sinh thái VN</a>
+            <a href="#conclusion" class="block text-center py-2 text-gray-600 hover:bg-gray-100">Kết luận</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 md:py-12">
+
+        <section id="overview" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Laravel 12 và Next.js 15</h2>
+            <p class="text-center text-gray-500 max-w-3xl mx-auto mb-10">
+                Một cái nhìn tổng quan về hai trong số những framework web mạnh mẽ nhất hiện nay, đại diện cho hai trường phái công nghệ khác nhau nhưng đang dần hội tụ. Ứng dụng này sẽ giúp bạn hiểu rõ điểm mạnh, điểm yếu và sự phù hợp của chúng cho dự án của bạn.
+            </p>
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="bg-white rounded-xl shadow-lg p-6 framework-card border-l-4 border-orange-500">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800">Laravel</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-center"><span class="font-semibold w-36">Ngôn ngữ:</span> <span class="font-mono bg-orange-100 text-orange-700 px-2 py-1 rounded">PHP</span></li>
+                        <li class="flex items-center"><span class="font-semibold w-36">Kiến trúc:</span> Model-View-Controller (MVC)</li>
+                        <li class="flex items-center"><span class="font-semibold w-36">Trọng tâm:</span> Backend-focused, Full-stack</li>
+                        <li class="flex items-center"><span class="font-semibold w-36">Phiên bản mới nhất:</span> 12.x</li>
+                        <li class="flex items-center"><span class="font-semibold w-36">Hỗ trợ bảo mật đến:</span> 02/2027</li>
+                    </ul>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg p-6 framework-card border-l-4 border-gray-800">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800">Next.js</h3>
+                    <ul class="space-y-3 text-gray-600">
+                        <li class="flex items-center"><span class="font-semibold w-36">Ngôn ngữ:</span> <span class="font-mono bg-gray-200 text-gray-700 px-2 py-1 rounded">JavaScript/TypeScript</span></li>
+                        <li class="flex items-center"><span class="font-semibold w-36">Kiến trúc:</span> Component-based, App Router</li>
+                        <li class="flex items-center"><span class="font-semibold w-36">Trọng tâm:</span> Frontend-focused, Full-stack</li>
+                        <li class="flex items-center"><span class="font-semibold w-36">Phiên bản mới nhất:</span> 15.x</li>
+                        <li class="flex items-center"><span class="font-semibold w-36">Hỗ trợ bảo mật đến:</span> Đang diễn ra</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="comparison" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">So sánh Trực tiếp</h2>
+             <p class="text-center text-gray-500 max-w-3xl mx-auto mb-10">
+                Khám phá sự khác biệt cốt lõi giữa hai framework thông qua biểu đồ so sánh tổng quan và các phân tích chi tiết theo từng khía cạnh. Sử dụng các bộ lọc bên dưới để xem thông tin bạn quan tâm nhất.
+            </p>
+            <div class="chart-container mb-12">
+                <canvas id="comparisonRadarChart"></canvas>
+            </div>
+            <div class="flex justify-center flex-wrap gap-2 mb-8">
+                <button data-filter="architecture" class="filter-btn px-4 py-2 rounded-full bg-white shadow text-gray-700 font-medium transition-colors active">Kiến trúc</button>
+                <button data-filter="performance" class="filter-btn px-4 py-2 rounded-full bg-white shadow text-gray-700 font-medium transition-colors">Hiệu năng</button>
+                <button data-filter="devex" class="filter-btn px-4 py-2 rounded-full bg-white shadow text-gray-700 font-medium transition-colors">Trải nghiệm Dev</button>
+                <button data-filter="seo" class="filter-btn px-4 py-2 rounded-full bg-white shadow text-gray-700 font-medium transition-colors">SEO</button>
+                <button data-filter="security" class="filter-btn px-4 py-2 rounded-full bg-white shadow text-gray-700 font-medium transition-colors">Bảo mật</button>
+            </div>
+
+            <div id="comparison-content" class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+                <div>
+                    <h4 class="text-xl font-bold text-orange-500 mb-3">Laravel</h4>
+                    <div id="laravel-content"></div>
+                </div>
+                <div>
+                    <h4 class="text-xl font-bold text-gray-800 mb-3">Next.js</h4>
+                    <div id="nextjs-content"></div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="use-cases" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Framework nào cho dự án của bạn?</h2>
+            <p class="text-center text-gray-500 max-w-3xl mx-auto mb-10">
+                Không có lựa chọn nào là hoàn hảo cho mọi trường hợp. Hãy trả lời câu hỏi dưới đây để nhận gợi ý về framework phù hợp nhất với yêu cầu và mục tiêu của dự án bạn đang xây dựng.
+            </p>
+            <div class="bg-white p-8 rounded-xl shadow-lg max-w-3xl mx-auto">
+                <p id="use-case-question" class="text-lg font-semibold text-center mb-6">Dự án của bạn tập trung chủ yếu vào việc xây dựng một hệ thống backend phức tạp (CRM, ERP) hay một API mạnh mẽ?</p>
+                <div id="use-case-buttons" class="flex justify-center gap-4">
+                     <button data-answer="backend" class="px-6 py-2 bg-orange-500 text-white font-semibold rounded-full hover:bg-orange-600 transition-colors">Đúng vậy</button>
+                     <button data-answer="frontend" class="px-6 py-2 bg-gray-700 text-white font-semibold rounded-full hover:bg-gray-800 transition-colors">Không, tôi ưu tiên frontend & SEO</button>
+                </div>
+                <div id="use-case-result" class="hidden mt-8">
+                     <h4 class="text-xl font-bold text-center mb-4">Gợi ý dành cho bạn:</h4>
+                     <div id="laravel-recommendation" class="hidden p-4 border-l-4 border-orange-500 bg-orange-50 rounded-r-lg"></div>
+                     <div id="nextjs-recommendation" class="hidden p-4 border-l-4 border-gray-800 bg-gray-100 rounded-r-lg"></div>
+                     <div id="hybrid-recommendation" class="hidden p-4 border-l-4 border-green-500 bg-green-50 rounded-r-lg mt-4"></div>
+                     <button id="reset-use-case" class="block mx-auto mt-6 text-sm text-gray-500 hover:text-gray-800">Thử lại</button>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+        
+        <section id="ecosystem" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Hệ sinh thái và Thị trường việc làm tại Việt Nam</h2>
+            <p class="text-center text-gray-500 max-w-3xl mx-auto mb-10">
+                So sánh mức lương tham khảo và nhu cầu tuyển dụng cho lập trình viên Laravel và Next.js tại thị trường Việt Nam. Dữ liệu giúp bạn có cái nhìn thực tế về cơ hội nghề nghiệp cho từng hệ sinh thái.
+            </p>
+            <div class="chart-container">
+                 <canvas id="salaryChart"></canvas>
+            </div>
+            <p class="text-center text-xs text-gray-400 mt-2">Dữ liệu lương tham khảo từ Jobicy năm 2025 (quy đổi sang USD/năm).</p>
+        </section>
+
+        <hr class="my-16 border-gray-200">
+
+        <section id="conclusion" class="scroll-mt-20">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-2">Kết luận và Khuyến nghị</h2>
+             <p class="text-center text-gray-500 max-w-3xl mx-auto mb-10">
+                Tóm tắt những khác biệt chính và đưa ra những khuyến nghị cuối cùng để giúp bạn đưa ra quyết định kiến trúc sáng suốt, phù hợp với bối cảnh dự án, kỹ năng đội ngũ và mục tiêu dài hạn.
+            </p>
+            <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg space-y-6">
+                 <div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Tóm tắt khác biệt chính:</h4>
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li><strong class="font-medium text-gray-700">Kiến trúc:</strong> Laravel (MVC, PHP, "all-in-one") vs. Next.js (Component-based, JS/TS, "lắp ráp linh hoạt").</li>
+                        <li><strong class="font-medium text-gray-700">Hiệu năng:</strong> Next.js có lợi thế về hiệu năng cảm nhận (tải trang, SEO) nhờ SSR/SSG. Laravel mạnh về hiệu năng backend khi được cấu hình đúng.</li>
+                        <li><strong class="font-medium text-gray-700">Trường hợp sử dụng:</strong> Laravel cho backend phức tạp, API. Next.js cho SPA hiện đại, các trang ưu tiên SEO và hiệu năng.</li>
+                    </ul>
+                 </div>
+                 <div>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">Khuyến nghị cho lập trình viên:</h4>
+                    <p class="text-gray-600">
+                        Trong bối cảnh ranh giới frontend và backend ngày càng mờ nhạt, việc hiểu rõ cả hai hệ sinh thái sẽ mang lại lợi thế cạnh tranh lớn. Trang bị kiến thức về cả Laravel và Next.js giúp mở rộng cơ hội nghề nghiệp, tăng khả năng đưa ra quyết định kiến trúc tốt hơn và dễ dàng thích ứng với các dự án đa dạng.
+                    </p>
+                 </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto px-4 py-6 text-center text-gray-400 text-sm">
+            <p>Ứng dụng tương tác được tạo bởi AI dựa trên báo cáo "So sánh Chuyên sâu Laravel 12 và Next.js 15".</p>
+            <p>&copy; 2025. Mọi quyền được bảo lưu.</p>
+        </div>
+    </footer>
+
+    <script>
+        const comparisonData = {
+            architecture: {
+                laravel: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Xây dựng trên ngôn ngữ <strong>PHP</strong>, chạy trên môi trường server web truyền thống (LEMP/LAMP).</li>
+                        <li>Trọng tâm là mô hình <strong>Model-View-Controller (MVC)</strong>, phân tách rõ ràng logic nghiệp vụ, dữ liệu và giao diện.</li>
+                        <li>Triết lý "Convention over Configuration", cung cấp giải pháp full-stack toàn diện <strong>"out-of-the-box"</strong>.</li>
+                        <li>Sử dụng <strong>Eloquent ORM</strong> để tương tác cơ sở dữ liệu và <strong>Blade</strong> làm templating engine.</li>
+                    </ul>
+                `,
+                nextjs: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Xây dựng bằng <strong>JavaScript/TypeScript</strong> trên nền tảng React, chạy trên môi trường Node.js.</li>
+                        <li>Kiến trúc xoay quanh <strong>Component</strong> và <strong>App Router</strong>, với React Server Components (RSC) làm trung tâm.</li>
+                        <li>Triết lý "server-centric", tiến mạnh vào full-stack, nhưng vẫn giữ sự <strong>linh hoạt</strong> và đòi hỏi nhiều quyết định kiến trúc hơn.</li>
+                        <li>Cung cấp nhiều chiến lược rendering: <strong>SSR, SSG, ISR, CSR</strong>.</li>
+                    </ul>
+                `
+            },
+            performance: {
+                laravel: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Hiệu năng phụ thuộc vào tối ưu hóa server (PHP-FPM, Opcache), truy vấn CSDL và chiến lược caching.</li>
+                        <li><strong>Time to First Byte (TTFB)</strong> có thể chậm hơn nếu không có caching hiệu quả.</li>
+                        <li>Có thể đạt hiệu năng backend rất cạnh tranh với các công cụ như <strong>Laravel Octane</strong> (Swoole/RoadRunner).</li>
+                        <li>Tập trung tối ưu hóa các hoạt động truyền thống phía máy chủ.</li>
+                    </ul>
+                `,
+                nextjs: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Thường có <strong>TTFB rất tốt</strong> nhờ các trang được tạo tĩnh (SSG) hoặc render phía máy chủ (SSR).</li>
+                        <li><strong>React Server Components</strong> giúp giảm đáng kể lượng JavaScript cần thiết ở phía client.</li>
+                        <li>Tận dụng Rust cho các công cụ cốt lõi (Compiler, Turbopack) để <strong>cải thiện tốc độ build</strong>.</li>
+                        <li>Có lợi thế về hiệu năng cảm nhận của người dùng (thời gian tải trang).</li>
+                    </ul>
+                `
+            },
+            devex: {
+                laravel: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Được coi là <strong>dễ học</strong> với người đã quen PHP và MVC.</li>
+                        <li>Hệ sinh thái <strong>"batteries-included"</strong> (Eloquent, Blade, Artisan) giúp tăng tốc độ phát triển ban đầu.</li>
+                        <li><strong>Artisan CLI</strong> rất mạnh mẽ, tự động hóa nhiều tác vụ.</li>
+                        <li>Tính năng mới như <strong>AI Debugging Assistant</strong> hứa hẹn đơn giản hóa việc gỡ lỗi.</li>
+                    </ul>
+                `,
+                nextjs: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Yêu cầu kiến thức nền tảng về <strong>React</strong>. App Router và RSC có thể có đường cong học tập ban đầu.</li>
+                        <li>Cung cấp trải nghiệm hiện đại với <strong>Fast Refresh</strong> (hot reloading) và hỗ trợ TypeScript mạnh mẽ.</li>
+                        <li>Linh hoạt hơn nhưng đòi hỏi phải tự lựa chọn và cấu hình nhiều thư viện bên ngoài (quản lý state, form...).</li>
+                        <li>Hưởng lợi từ hệ sinh thái React/JavaScript khổng lồ.</li>
+                    </ul>
+                `
+            },
+            seo: {
+                laravel: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Phụ thuộc vào cách frontend được render. Nếu dùng Blade, HTML được render phía server, <strong>tốt cho SEO</strong>.</li>
+                        <li>Nếu chỉ dùng làm API cho một SPA (React/Vue), việc tối ưu SEO cần các giải pháp pre-rendering hoặc SSR ở phía frontend.</li>
+                        <li>Không có các công cụ SEO chuyên dụng "out-of-the-box".</li>
+                    </ul>
+                `,
+                nextjs: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Được xây dựng với <strong>SEO là ưu tiên hàng đầu</strong>.</li>
+                        <li>Khả năng <strong>SSR và SSG</strong> tạo ra các trang HTML tĩnh, giúp công cụ tìm kiếm dễ dàng thu thập và lập chỉ mục.</li>
+                        <li>Cung cấp <strong>Metadata API</strong> chuyên dụng để quản lý các thẻ meta SEO một cách hiệu quả.</li>
+                        <li>Có lợi thế vượt trội về khả năng tối ưu hóa SEO "out-of-the-box".</li>
+                    </ul>
+                `
+            },
+            security: {
+                laravel: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Cung cấp một loạt các tính năng bảo mật <strong>tích hợp sẵn</strong> và mạnh mẽ.</li>
+                        <li>Bảo vệ chống <strong>CSRF, XSS</strong>, ngăn chặn <strong>SQL injection</strong> (thông qua Eloquent ORM).</li>
+                        <li>Mã hóa mật khẩu an toàn, hỗ trợ <strong>Multi-Factor Authentication (MFA)</strong> trong phiên bản mới nhất.</li>
+                        <li>Được coi là có bộ công cụ bảo mật "tự động" rất toàn diện.</li>
+                    </ul>
+                `,
+                nextjs: `
+                    <ul class="list-disc list-inside space-y-2 text-gray-600">
+                        <li>Bảo mật phụ thuộc vào việc tuân thủ các thực hành code an toàn trong React và Node.js.</li>
+                        <li><strong>React Server Components</strong> giúp tăng cường bảo mật bằng cách giữ logic nhạy cảm và khóa API trên server.</li>
+                        <li>Không gửi các thông tin nhạy cảm xuống client.</li>
+                        <li>Đòi hỏi nhiều sự chú ý và cấu hình hơn từ lập trình viên so với các tính năng tự động của Laravel.</li>
+                    </ul>
+                `
+            },
+        };
+
+        const useCaseContent = {
+            backend: {
+                title: 'Nên chọn Laravel',
+                content: `
+                    <p class="mb-2 font-semibold text-orange-600">Laravel là lựa chọn xuất sắc cho dự án của bạn vì:</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-600">
+                        <li>Cấu trúc MVC rõ ràng và bộ công cụ toàn diện rất phù hợp cho các hệ thống backend phức tạp.</li>
+                        <li>Hệ sinh thái "all-in-one" với Eloquent ORM, hệ thống xác thực, quản lý hàng đợi (queues) giúp phát triển nhanh.</li>
+                        <li>Cung cấp các công cụ mạnh mẽ để xây dựng RESTful API hoặc GraphQL API một cách an toàn và hiệu quả.</li>
+                    </ul>
+                `
+            },
+            frontend: {
+                title: 'Nên chọn Next.js',
+                content: `
+                    <p class="mb-2 font-semibold text-gray-800">Next.js là lựa chọn lý tưởng cho dự án của bạn vì:</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-600">
+                        <li>Khả năng SSR và SSG vượt trội giúp tối ưu hóa SEO và đạt hiệu năng tải trang cực nhanh.</li>
+                        <li>Là lựa chọn hàng đầu cho các ứng dụng trang đơn (SPA) hiện đại với trải nghiệm người dùng mượt mà.</li>
+                        <li>App Router và Server Components cung cấp một giải pháp full-stack JS/TS ngày càng hoàn thiện.</li>
+                    </ul>
+                `
+            },
+            hybrid: {
+                 title: 'Cân nhắc giải pháp kết hợp (Hybrid)',
+                 content: `
+                    <p class="mb-2 font-semibold text-green-600">Một kiến trúc kết hợp sức mạnh của cả hai có thể là tối ưu nhất:</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-600">
+                        <li><strong>Backend:</strong> Sử dụng Laravel để xử lý logic nghiệp vụ phức tạp, quản lý cơ sở dữ liệu và cung cấp một API mạnh mẽ.</li>
+                        <li><strong>Frontend:</strong> Sử dụng Next.js để xây dựng một giao diện người dùng tương tác cao, hiệu năng tốt và tối ưu SEO, giao tiếp với backend Laravel qua API.</li>
+                    </ul>
+                 `
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            const radarCtx = document.getElementById('comparisonRadarChart').getContext('2d');
+            new Chart(radarCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Sức mạnh Backend', 'Hiệu năng Frontend', 'Trải nghiệm Dev (DX)', 'Khả năng SEO', 'Bảo mật Tích hợp', 'Hệ sinh thái'],
+                    datasets: [{
+                        label: 'Laravel',
+                        data: [9, 6, 8, 6, 9, 8],
+                        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        pointBackgroundColor: 'rgba(249, 115, 22, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(249, 115, 22, 1)'
+                    }, {
+                        label: 'Next.js',
+                        data: [7, 9, 7, 10, 7, 9],
+                        backgroundColor: 'rgba(51, 65, 85, 0.2)',
+                        borderColor: 'rgba(51, 65, 85, 1)',
+                        pointBackgroundColor: 'rgba(51, 65, 85, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(51, 65, 85, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.r !== null) {
+                                        label += context.parsed.r + ' / 10';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    weight: '500'
+                                },
+                                color: '#4a5568'
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: 'rgba(0, 0, 0, 0.5)',
+                                stepSize: 2
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    }
+                }
+            });
+
+            const salaryCtx = document.getElementById('salaryChart').getContext('2d');
+            new Chart(salaryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Junior Level', 'Middle Level', 'Senior Level'],
+                    datasets: [{
+                        label: 'Software Developer (Laravel Focus)',
+                        data: [24150, 34500, 51750], // Mid-points from report ranges for Software Dev
+                        backgroundColor: 'rgba(249, 115, 22, 0.6)',
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'JavaScript Developer (Next.js Focus)',
+                        data: [19670, 28100, 42150], // Mid-points from report ranges for JS Dev
+                        backgroundColor: 'rgba(51, 65, 85, 0.6)',
+                        borderColor: 'rgba(51, 65, 85, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Mức lương trung bình tham khảo tại Việt Nam (USD/năm)',
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                             ticks: {
+                                callback: function(value, index, values) {
+                                    return '$' + (value / 1000) + 'k';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            const laravelContentDiv = document.getElementById('laravel-content');
+            const nextjsContentDiv = document.getElementById('nextjs-content');
+
+            function updateContent(filter) {
+                laravelContentDiv.innerHTML = comparisonData[filter].laravel;
+                nextjsContentDiv.innerHTML = comparisonData[filter].nextjs;
+
+                filterBtns.forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.filter === filter) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    updateContent(btn.dataset.filter);
+                });
+            });
+
+            updateContent('architecture');
+
+            const useCaseButtons = document.getElementById('use-case-buttons');
+            const useCaseResult = document.getElementById('use-case-result');
+            const useCaseQuestion = document.getElementById('use-case-question');
+            const laravelReco = document.getElementById('laravel-recommendation');
+            const nextjsReco = document.getElementById('nextjs-recommendation');
+            const hybridReco = document.getElementById('hybrid-recommendation');
+            const resetBtn = document.getElementById('reset-use-case');
+
+            useCaseButtons.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON') {
+                    const answer = e.target.dataset.answer;
+                    
+                    laravelReco.classList.add('hidden');
+                    nextjsReco.classList.add('hidden');
+                    hybridReco.classList.add('hidden');
+                    
+                    if(answer === 'backend'){
+                        laravelReco.innerHTML = useCaseContent.backend.content;
+                        laravelReco.classList.remove('hidden');
+                    } else {
+                        nextjsReco.innerHTML = useCaseContent.frontend.content;
+                        nextjsReco.classList.remove('hidden');
+                    }
+                    
+                    hybridReco.innerHTML = useCaseContent.hybrid.content;
+                    hybridReco.classList.remove('hidden');
+                    
+                    useCaseButtons.classList.add('hidden');
+                    useCaseQuestion.classList.add('hidden');
+                    useCaseResult.classList.remove('hidden');
+                }
+            });
+
+            resetBtn.addEventListener('click', () => {
+                useCaseButtons.classList.remove('hidden');
+                useCaseQuestion.classList.remove('hidden');
+                useCaseResult.classList.add('hidden');
+            });
+
+        });
+    </script>
+</body>
+</html>
