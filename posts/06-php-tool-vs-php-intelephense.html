@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So Sánh Tương Tác: PHP Tools vs. PHP Intelephense</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Cool Neutrals with Blue/Purple Accents -->
+    <!-- Application Structure Plan: A single-page application with a tab-based navigation to switch between key comparison sections: Overview, Detailed Feature Comparison, Pricing, and Recommendations. This structure breaks down the dense report into digestible, user-navigable sections. The 'Overview' uses cards and a chart for a high-level summary. 'Detailed Comparison' uses interactive tabs for a feature-by-feature analysis. 'Pricing' uses a table and chart for clear cost comparison. 'Recommendations' provides an interactive checklist to guide users to the best tool for their specific profile, making the conclusion actionable and personalized. This design prioritizes user exploration and quick synthesis of information over a linear document reading experience. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Extension popularity (install counts). Goal: Inform. Viz: Donut Chart (Chart.js). Interaction: Hover tooltips. Justification: Provides a quick, visual representation of community adoption size.
+        - Report Info: Core features of each tool. Goal: Compare. Viz: Two-column card layout. Interaction: Tab-based filtering. Justification: Organizes detailed comparisons into thematic, manageable chunks, preventing user overload.
+        - Report Info: Pricing models (subscription vs. one-time). Goal: Compare. Viz: Bar Chart (Chart.js) and HTML Table. Interaction: Hover tooltips on chart. Justification: A bar chart gives an immediate sense of the cost difference, while the table provides the specific details.
+        - Report Info: User profile-based recommendations. Goal: Guide. Viz: Interactive checklist (HTML/JS). Interaction: User selection highlights the recommended tool. Justification: Transforms a static text block into a personalized, engaging tool, increasing user value.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        .tab-button.active {
+            color: #ffffff;
+            background-color: #4f46e5;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .tab-button:not(.active):hover {
+            background-color: #e0e7ff;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .feature-tab.active {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+            color: #4338ca;
+        }
+        .feature-content {
+            display: none;
+        }
+        .feature-content.active {
+            display: grid;
+        }
+        .recommendation-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .recommendation-card.highlight {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(79 70 229 / 0.4), 0 4px 6px -4px rgb(79 70 229 / 0.4);
+            border-color: #4f46e5;
+        }
+        .chart-container {
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">So Sánh Tương Tác</h1>
+            <h2 class="text-xl md:text-2xl font-semibold text-indigo-700">PHP Tools vs. PHP Intelephense</h2>
+            <p class="mt-2 text-gray-600 max-w-3xl mx-auto">Một công cụ giúp bạn chọn tiện ích mở rộng PHP phù hợp nhất cho VS Code dựa trên nhu cầu của bạn.</p>
+        </header>
+
+        <nav class="flex justify-center bg-white/70 backdrop-blur-sm rounded-xl shadow-md p-2 mb-8 sticky top-4 z-10 max-w-2xl mx-auto">
+            <button data-tab="overview" class="tab-button active flex-1 text-center py-2 px-4 rounded-lg font-semibold">Tổng Quan</button>
+            <button data-tab="comparison" class="tab-button flex-1 text-center py-2 px-4 rounded-lg font-semibold">So Sánh Chi Tiết</button>
+            <button data-tab="pricing" class="tab-button flex-1 text-center py-2 px-4 rounded-lg font-semibold">Giá Cả</button>
+            <button data-tab="recommendation" class="tab-button flex-1 text-center py-2 px-4 rounded-lg font-semibold">Khuyến Nghị</button>
+        </nav>
+
+        <main>
+            <!-- Overview Section -->
+            <section id="overview" class="content-section active">
+                 <div class="text-center mb-12">
+                    <h3 class="text-2xl font-bold mb-2">Bộ Công Cụ Toàn Diện vs. Chuyên Gia Hiệu Suất Cao</h3>
+                    <p class="max-w-4xl mx-auto text-gray-600">Phân tích này khám phá hai triết lý khác nhau: PHP Tools hướng tới một giải pháp "tất cả trong một" giống như một IDE hoàn chỉnh, trong khi PHP Intelephense tập trung chuyên sâu vào việc trở thành một máy chủ ngôn ngữ cực kỳ nhanh và chính xác. Sự lựa chọn của bạn sẽ phụ thuộc vào việc bạn ưu tiên sự tiện lợi tích hợp hay hiệu suất chuyên biệt.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+                        <h3 class="text-2xl font-bold mb-3 text-blue-700">PHP Tools (DEVSENSE)</h3>
+                        <p class="mb-4 text-gray-600">Một bộ công cụ "tất cả trong một" nhằm biến VS Code thành một IDE PHP đầy đủ tính năng, tích hợp gỡ lỗi, kiểm thử và nhiều hơn nữa.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">▶</span> <strong>Gói miễn phí phong phú:</strong> Bao gồm IntelliSense, trình gỡ lỗi Xdebug toàn diện, và tích hợp kiểm thử PHPUnit.</li>
+                            <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">▶</span> <strong>Tính năng cao cấp độc đáo:</strong> Trợ lý AI (IntelliPHP) xử lý cục bộ, tái cấu trúc nâng cao và hỗ trợ chuyên biệt cho Laravel Blade.</li>
+                             <li class="flex items-start"><span class="text-blue-500 mr-2 mt-1">▶</span> <strong>Triết lý:</strong> Cung cấp một giải pháp tích hợp, tiện lợi, "có sẵn pin".</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-purple-500">
+                        <h3 class="text-2xl font-bold mb-3 text-purple-700">PHP Intelephense</h3>
+                        <p class="mb-4 text-gray-600">Một máy chủ ngôn ngữ hiệu suất cao, tập trung vào tốc độ và độ chính xác của các tính năng trí tuệ mã nguồn cốt lõi.</p>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start"><span class="text-purple-500 mr-2 mt-1">▶</span> <strong>Hiệu suất vượt trội:</strong> Nổi tiếng về tốc độ, đặc biệt trong các dự án lớn.</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2 mt-1">▶</span> <strong>Chuyên gia ngôn ngữ:</strong> Phân tích mã sâu, hoàn thành mã nhanh và điều hướng mã xuất sắc.</li>
+                            <li class="flex items-start"><span class="text-purple-500 mr-2 mt-1">▶</span> <strong>Triết lý:</strong> Cung cấp một nền tảng ngôn ngữ vững chắc, cho phép người dùng xây dựng môi trường của riêng mình với các tiện ích mở rộng khác.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold text-center mb-4">Mức Độ Phổ Biến (Dựa trên số lượt cài đặt)</h3>
+                    <div class="chart-container">
+                        <canvas id="popularityChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Comparison Section -->
+            <section id="comparison" class="content-section">
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-bold mb-2">So Sánh Tính Năng Đối Đầu</h3>
+                    <p class="max-w-4xl mx-auto text-gray-600">Chọn một danh mục bên dưới để xem hai tiện ích mở rộng này đối đầu nhau như thế nào trong các lĩnh vực quan trọng của việc phát triển PHP. Điều này sẽ giúp bạn hiểu rõ hơn về điểm mạnh và điểm yếu của từng công cụ trong các tình huống cụ thể.</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-6">
+                    <button class="feature-tab active border-b-2 font-semibold px-4 py-2 rounded-t-lg" data-feature="intelligence">Trí Tuệ Mã Nguồn</button>
+                    <button class="feature-tab border-b-2 font-semibold px-4 py-2 rounded-t-lg" data-feature="debugging">Gỡ Lỗi</button>
+                    <button class="feature-tab border-b-2 font-semibold px-4 py-2 rounded-t-lg" data-feature="refactoring">Tái Cấu Trúc</button>
+                    <button class="feature-tab border-b-2 font-semibold px-4 py-2 rounded-t-lg" data-feature="formatting">Định Dạng Mã</button>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <!-- Intelligence Content -->
+                    <div id="intelligence-content" class="feature-content active md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-bold text-lg text-blue-700 mb-2">PHP Tools</h4>
+                            <ul class="space-y-2 text-sm list-disc list-inside">
+                                <li><strong>Tính năng cao cấp nổi bật:</strong> Trợ lý AI IntelliPHP cung cấp đề xuất toàn dòng, xử lý cục bộ để đảm bảo quyền riêng tư.</li>
+                                <li>Hỗ trợ Generics thông qua chú thích PHPStan/Psalm.</li>
+                                <li>Phân tích kiểu, tự động nhập và tích hợp hướng dẫn sử dụng PHP.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-purple-700 mb-2">PHP Intelephense</h4>
+                            <ul class="space-y-2 text-sm list-disc list-inside">
+                                <li><strong>Hiệu suất là vua:</strong> Hoàn thành mã cực nhanh, được tối ưu hóa cao.</li>
+                                <li>Hệ thống kiểu PHPDoc nâng cao và suy luận kiểu mạnh mẽ.</li>
+                                <li><strong>Tính năng cao cấp:</strong> Điều hướng kiểu tinh vi (đi đến kiểu/khai báo) và Code Lens cung cấp thông tin theo ngữ cảnh.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Debugging Content -->
+                    <div id="debugging-content" class="feature-content md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-bold text-lg text-blue-700 mb-2">PHP Tools</h4>
+                            <p class="text-2xl font-bold text-green-600">Tích hợp sẵn</p>
+                            <p class="text-sm text-gray-600">Cung cấp bộ gỡ lỗi Xdebug toàn diện ngay khi cài đặt, bao gồm máy chủ web tích hợp, điểm ghi nhật ký và thậm chí cả phân tích hiệu suất.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-purple-700 mb-2">PHP Intelephense</h4>
+                            <p class="text-2xl font-bold text-orange-500">Yêu cầu tiện ích mở rộng riêng</p>
+                            <p class="text-sm text-gray-600">Là một máy chủ ngôn ngữ, nó không bao gồm chức năng gỡ lỗi. Người dùng phải cài đặt và cấu hình một tiện ích mở rộng gỡ lỗi riêng (ví dụ: PHP Debug).</p>
+                        </div>
+                    </div>
+
+                    <!-- Refactoring Content -->
+                    <div id="refactoring-content" class="feature-content md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-bold text-lg text-blue-700 mb-2">PHP Tools</h4>
+                            <ul class="space-y-2 text-sm list-disc list-inside">
+                                <li><strong>Tính năng cao cấp mạnh mẽ:</strong> "Tái cấu trúc đổi tên" trên toàn bộ không gian làm việc với bản xem trước.</li>
+                                <li>Các hành động mã tự động hóa việc tạo getter/setter và triển khai giao diện.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-purple-700 mb-2">PHP Intelephense</h4>
+                            <ul class="space-y-2 text-sm list-disc list-inside">
+                                <li><strong>Tính năng miễn phí hữu ích:</strong> "Đổi tên ký hiệu dễ dàng", bao gồm cả việc tự động đổi tên tệp/thư mục.</li>
+                                <li>Các khả năng tái cấu trúc phức tạp hơn không phải là trọng tâm chính.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Formatting Content -->
+                    <div id="formatting-content" class="feature-content md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="font-bold text-lg text-blue-700 mb-2">PHP Tools</h4>
+                            <ul class="space-y-2 text-sm list-disc list-inside">
+                                <li>Hỗ trợ PSR-12 và các kiểu khác, có thể định dạng khi gõ hoặc lưu.</li>
+                                <li><strong>Tính năng cao cấp:</strong> Định dạng chuyên biệt cho các tệp mẫu Laravel Blade.</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg text-purple-700 mb-2">PHP Intelephense</h4>
+                            <ul class="space-y-2 text-sm list-disc list-inside">
+                                <li>Định dạng PSR-12 không mất dữ liệu, hiệu quả cho cả mã hỗn hợp.</li>
+                                <li>Tập trung vào việc tuân thủ tiêu chuẩn một cách chính xác và hiệu quả.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pricing Section -->
+            <section id="pricing" class="content-section">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl font-bold mb-2">Mô Hình Giá Cả và Cấp Phép</h3>
+                    <p class="max-w-4xl mx-auto text-gray-600">Sự khác biệt về chi phí và mô hình cấp phép là một trong những yếu tố quyết định quan trọng nhất. PHP Tools hoạt động theo mô hình đăng ký, trong khi Intelephense cung cấp giấy phép trọn đời với một lần thanh toán duy nhất. Hãy xem xét sự khác biệt về chi phí-lợi ích để đưa ra lựa chọn phù hợp với ngân sách của bạn.</p>
+                </div>
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold text-center mb-4">So Sánh Mô Hình Chi Phí (Cao cấp)</h3>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="p-3 font-semibold">Khía cạnh</th>
+                                        <th class="p-3 font-semibold text-blue-700">PHP Tools</th>
+                                        <th class="p-3 font-semibold text-purple-700">Intelephense</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b">
+                                        <td class="p-3 font-medium">Mô hình</td>
+                                        <td class="p-3">Đăng ký (Hàng năm)</td>
+                                        <td class="p-3">Mua một lần</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="p-3 font-medium">Giá tham khảo (Cá nhân)</td>
+                                        <td class="p-3">~$79 - $119 (năm đầu)</td>
+                                        <td class="p-3">~$25 (trọn đời)</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="p-3 font-medium">Cập nhật</td>
+                                        <td class="p-3">Yêu cầu đăng ký đang hoạt động</td>
+                                        <td class="p-3">Bao gồm trong lần mua duy nhất</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-medium">Giá trị</td>
+                                        <td class="p-3">Bộ công cụ toàn diện, hỗ trợ liên tục, có tính năng AI</td>
+                                        <td class="p-3">Chi phí dài hạn cực thấp cho các tính năng ngôn ngữ nâng cao</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-bold text-center mb-4">Chi Phí Ước Tính Cho Năm Đầu Tiên (Cá Nhân)</h3>
+                        <div class="chart-container">
+                            <canvas id="pricingChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recommendation Section -->
+            <section id="recommendation" class="content-section">
+                <div class="text-center mb-12">
+                    <h3 class="text-2xl font-bold mb-2">Công Cụ Nào Dành Cho Bạn?</h3>
+                    <p class="max-w-4xl mx-auto text-gray-600">Không có câu trả lời "tốt nhất" duy nhất, chỉ có "phù hợp nhất" với nhu cầu của bạn. Hãy chọn các ưu tiên của bạn bên dưới để xem khuyến nghị được cá nhân hóa, giúp bạn đưa ra quyết định cuối cùng.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg mb-8 max-w-3xl mx-auto">
+                    <h4 class="font-bold text-lg text-center mb-4">Ưu tiên của tôi là...</h4>
+                    <div id="recommendation-options" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
+                            <input type="checkbox" data-profile="budget" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-sm font-medium">Ngân sách hiệu quả</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
+                            <input type="checkbox" data-profile="allinone" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-sm font-medium">Giải pháp "Tất cả trong một"</span>
+                        </label>
+                         <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
+                            <input type="checkbox" data-profile="debugging" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-sm font-medium">Gỡ lỗi tích hợp sẵn</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
+                            <input type="checkbox" data-profile="performance" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-sm font-medium">Hiệu suất tối đa</span>
+                        </label>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
+                            <input type="checkbox" data-profile="ai" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-sm font-medium">Hỗ trợ bởi AI</span>
+                        </label>
+                         <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-100">
+                            <input type="checkbox" data-profile="laravel" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-sm font-medium">Phát triển Laravel</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div id="php-tools-recommendation" class="recommendation-card bg-white p-6 rounded-xl shadow-lg border-2 border-transparent">
+                        <h4 class="text-2xl font-bold mb-3 text-blue-700">PHP Tools được khuyến nghị</h4>
+                        <p class="text-sm text-gray-600">Lựa chọn lý tưởng cho các chuyên gia và nhóm tìm kiếm một giải pháp toàn diện, được hỗ trợ đầy đủ với các tính năng tiên tiến nhất.</p>
+                    </div>
+                    <div id="intelephense-recommendation" class="recommendation-card bg-white p-6 rounded-xl shadow-lg border-2 border-transparent">
+                        <h4 class="text-2xl font-bold mb-3 text-purple-700">PHP Intelephense được khuyến nghị</h4>
+                        <p class="text-sm text-gray-600">Sự lựa chọn hoàn hảo cho các nhà phát triển ưu tiên tốc độ, hiệu quả và giá trị lâu dài với chi phí đầu tư ban đầu thấp.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-button');
+            const sections = document.querySelectorAll('.content-section');
+            const featureTabs = document.querySelectorAll('.feature-tab');
+            const featureContents = document.querySelectorAll('.feature-content');
+            const recommendationOptions = document.getElementById('recommendation-options');
+            const phpToolsCard = document.getElementById('php-tools-recommendation');
+            const intelephenseCard = document.getElementById('intelephense-recommendation');
+            let popularityChartInstance, pricingChartInstance;
+
+            const data = {
+                popularity: {
+                    labels: ['PHP Intelephense', 'PHP Tools'],
+                    datasets: [{
+                        label: 'Số lượt cài đặt',
+                        data: [15000000, 5300000],
+                        backgroundColor: ['#8b5cf6', '#3b82f6'],
+                        hoverOffset: 4
+                    }]
+                },
+                pricing: {
+                    labels: ['PHP Intelephense (Mua một lần)', 'PHP Tools (Năm đầu)'],
+                    datasets: [{
+                        label: 'Chi phí ước tính (USD)',
+                        data: [25, 99], // Using an average of $99 for PHP tools first year
+                        backgroundColor: ['#8b5cf6', '#3b82f6'],
+                        borderColor: ['#7c3aed', '#2563eb'],
+                        borderWidth: 1
+                    }]
+                }
+            };
+
+            function createPopularityChart() {
+                const ctx = document.getElementById('popularityChart').getContext('2d');
+                if(popularityChartInstance) popularityChartInstance.destroy();
+                popularityChartInstance = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: data.popularity,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += new Intl.NumberFormat('vi-VN').format(context.parsed) + ' lượt cài đặt';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                });
+            }
+
+            function createPricingChart() {
+                const ctx = document.getElementById('pricingChart').getContext('2d');
+                if(pricingChartInstance) pricingChartInstance.destroy();
+                pricingChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: data.pricing,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                         indexAxis: 'y',
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Chi phí (USD)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateTab(targetTab) {
+                tabs.forEach(tab => tab.classList.remove('active'));
+                sections.forEach(section => section.classList.remove('active'));
+
+                const button = document.querySelector(`[data-tab="${targetTab}"]`);
+                const section = document.getElementById(targetTab);
+
+                button.classList.add('active');
+                section.classList.add('active');
+
+                if (targetTab === 'overview' && !popularityChartInstance) {
+                    createPopularityChart();
+                } else if (targetTab === 'pricing' && !pricingChartInstance) {
+                    createPricingChart();
+                }
+            }
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    updateTab(tab.dataset.tab);
+                });
+            });
+
+            featureTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetFeature = tab.dataset.feature;
+
+                    featureTabs.forEach(t => t.classList.remove('active'));
+                    featureContents.forEach(c => c.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    document.getElementById(`${targetFeature}-content`).classList.add('active');
+                });
+            });
+            
+            function updateRecommendations() {
+                const checked = Array.from(recommendationOptions.querySelectorAll('input:checked'))
+                                     .map(input => input.dataset.profile);
+                
+                phpToolsCard.classList.remove('highlight');
+                intelephenseCard.classList.remove('highlight');
+
+                if (checked.length === 0) return;
+
+                let phpToolsScore = 0;
+                let intelephenseScore = 0;
+
+                checked.forEach(profile => {
+                    switch(profile) {
+                        case 'budget':
+                            intelephenseScore += 2;
+                            break;
+                        case 'allinone':
+                        case 'debugging':
+                        case 'ai':
+                        case 'laravel':
+                            phpToolsScore += 2;
+                            break;
+                        case 'performance':
+                            intelephenseScore += 2;
+                            break;
+                    }
+                });
+
+                if (phpToolsScore > intelephenseScore) {
+                    phpToolsCard.classList.add('highlight');
+                } else if (intelephenseScore > phpToolsScore) {
+                    intelephenseCard.classList.add('highlight');
+                } else { // Equal score, highlight both
+                    phpToolsCard.classList.add('highlight');
+                    intelephenseCard.classList.add('highlight');
+                }
+            }
+
+            recommendationOptions.addEventListener('change', updateRecommendations);
+
+            // Initialize default view
+            updateTab('overview');
+        });
+    </script>
+</body>
+</html>
