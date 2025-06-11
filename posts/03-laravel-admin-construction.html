@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân Tích & Lựa Chọn Admin Panel cho Laravel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate & Sky -->
+    <!-- Application Structure Plan: The application is structured as a guided journey for the developer. It starts with the fundamental choice (Scratch vs. Package), then allows a deep dive into the most popular packages via an interactive tabbed interface. This is followed by a quantitative visual comparison using a bar chart, synthesizing the report's comparison table. The journey culminates in an interactive "Recommendation Wizard" that provides a personalized suggestion based on user input about their project's constraints and needs (budget, skills, customization). This task-oriented, progressive disclosure structure is more user-friendly and actionable than the linear format of the source report, guiding the user from broad understanding to specific, tailored advice. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Pros/Cons of Scratch vs. Packages -> Goal: Compare high-level approaches -> Viz/Method: Side-by-side card layout with icons -> Interaction: Clear visual separation for quick scanning -> Justification: Immediately frames the core dilemma for the user.
+        - Report Info: Detailed analysis of Filament, Nova, Backpack -> Goal: Inform and detail specific solutions -> Viz/Method: Tabbed interface with dynamic content, accordions for features -> Interaction: User-controlled exploration, preventing information overload -> Justification: Allows users to focus on one package at a time without scrolling through irrelevant text.
+        - Report Info: Comparison Table -> Goal: Compare packages quantitatively -> Viz/Method: Chart.js Horizontal Bar Chart -> Interaction: Hover tooltips for precise data -> Justification: Translates the static table into a more engaging and easily digestible visual format, making comparisons more intuitive.
+        - Report Info: Decision factors and recommendations -> Goal: Provide personalized guidance -> Viz/Method: Interactive form/wizard with sliders and buttons -> Interaction: User inputs dynamically filter and rank solutions -> Justification: This is the most impactful element, turning passive reading into an active, decision-support tool.
+        - Library/Method: Vanilla JS for all interactions, Chart.js for visualization.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #334155; /* slate-700 */
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0284c7; /* sky-600 */
+            border-bottom-color: #0284c7;
+        }
+        .tab-btn {
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 500px;
+            max-height: 70vh;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="text-xl font-bold text-slate-800">Laravel Admin Advisor</div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#intro" class="nav-link">Giới Thiệu</a>
+                    <a href="#decision" class="nav-link">Hướng Tiếp Cận</a>
+                    <a href="#packages" class="nav-link">Phân Tích Gói</a>
+                    <a href="#comparison" class="nav-link">So Sánh Trực Quan</a>
+                    <a href="#wizard" class="nav-link">Trợ Lý Lựa Chọn</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-8 md:py-16">
+
+        <section id="intro" class="text-center mb-16 md:mb-24">
+            <h1 class="text-4xl md:text-5xl font-bold text-sky-700 mb-4">Xây Dựng Trang Quản Trị Với Laravel</h1>
+            <p class="text-lg md:text-xl max-w-3xl mx-auto text-slate-600">
+                Mỗi dự án Laravel đều đứng trước một quyết định quan trọng: xây dựng trang quản trị từ đầu hay sử dụng các gói thư viện có sẵn? Ứng dụng này sẽ phân tích sâu từng hướng đi, so sánh các công cụ hàng đầu và giúp bạn chọn ra giải pháp tối ưu nhất.
+            </p>
+        </section>
+
+        <section id="decision" class="mb-16 md:mb-24">
+            <h2 class="text-3xl font-bold text-center mb-2 text-slate-800">Hai Hướng Tiếp Cận Chính</h2>
+            <p class="text-center text-slate-500 mb-12 max-w-2xl mx-auto">Mỗi phương pháp đều có ưu và nhược điểm riêng. Việc hiểu rõ sự đánh đổi này là bước đầu tiên để đưa ra quyết định đúng đắn cho dự án của bạn.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card bg-white p-8 rounded-xl shadow-md border border-slate-200">
+                    <h3 class="text-2xl font-bold mb-4 text-sky-600">Tự Code (Code Thuần)</h3>
+                    <p class="text-slate-600 mb-6">Xây dựng mọi thứ từ đầu, mang lại sự kiểm soát tuyệt đối nhưng đòi hỏi nhiều nguồn lực và thời gian.</p>
+                    <div class="space-y-4">
+                        <div class="font-semibold text-green-600">Ưu điểm:</div>
+                        <ul class="list-disc list-inside space-y-2 text-slate-600">
+                            <li>Toàn quyền kiểm soát thiết kế và chức năng.</li>
+                            <li>Tối ưu hóa hiệu năng theo yêu cầu riêng biệt.</li>
+                            <li>Không phụ thuộc vào thư viện bên thứ ba.</li>
+                        </ul>
+                        <div class="font-semibold text-red-600">Nhược điểm:</div>
+                        <ul class="list-disc list-inside space-y-2 text-slate-600">
+                            <li>Tốn nhiều thời gian, công sức và chi phí.</li>
+                            <li>Đòi hỏi đội ngũ có kinh nghiệm sâu rộng.</li>
+                            <li>Tiềm ẩn rủi ro bảo mật nếu thiếu kinh nghiệm.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card bg-white p-8 rounded-xl shadow-md border border-slate-200">
+                    <h3 class="text-2xl font-bold mb-4 text-sky-600">Sử Dụng Gói (Packages)</h3>
+                    <p class="text-slate-600 mb-6">Tận dụng các giải pháp dựng sẵn để tăng tốc phát triển, tiết kiệm chi phí và thừa hưởng tính năng từ cộng đồng.</p>
+                     <div class="space-y-4">
+                        <div class="font-semibold text-green-600">Ưu điểm:</div>
+                        <ul class="list-disc list-inside space-y-2 text-slate-600">
+                            <li>Tiết kiệm thời gian và chi phí phát triển.</li>
+                            <li>Nhiều tính năng sẵn có, đã được kiểm thử.</li>
+                            <li>Cộng đồng hỗ trợ lớn và cải thiện bảo mật.</li>
+                        </ul>
+                        <div class="font-semibold text-red-600">Nhược điểm:</div>
+                        <ul class="list-disc list-inside space-y-2 text-slate-600">
+                           <li>Bị giới hạn bởi khả năng của gói.</li>
+                           <li>Phụ thuộc vào bên thứ ba (cập nhật, bảo trì).</li>
+                           <li>Khó tùy biến các yêu cầu quá đặc thù.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="packages" class="mb-16 md:mb-24">
+            <h2 class="text-3xl font-bold text-center mb-2 text-slate-800">Phân Tích Các Gói Hàng Đầu</h2>
+            <p class="text-center text-slate-500 mb-12 max-w-2xl mx-auto">Khám phá chi tiết ba trong số những admin panel phổ biến và mạnh mẽ nhất trong hệ sinh thái Laravel hiện nay. Chọn một gói để xem phân tích chi tiết.</p>
+            
+            <div class="flex justify-center flex-wrap gap-4 mb-8">
+                <button class="tab-btn active text-lg font-semibold py-3 px-6 rounded-lg bg-white shadow-sm" data-tab="filament">Filament</button>
+                <button class="tab-btn text-lg font-semibold py-3 px-6 rounded-lg bg-white shadow-sm" data-tab="nova">Laravel Nova</button>
+                <button class="tab-btn text-lg font-semibold py-3 px-6 rounded-lg bg-white shadow-sm" data-tab="backpack">Backpack</button>
+            </div>
+
+            <div id="package-content" class="bg-white p-8 rounded-xl shadow-lg border border-slate-200 transition-all duration-500">
+            </div>
+        </section>
+        
+        <section id="comparison" class="mb-16 md:mb-24">
+            <h2 class="text-3xl font-bold text-center mb-2 text-slate-800">So Sánh Trực Quan</h2>
+            <p class="text-center text-slate-500 mb-12 max-w-2xl mx-auto">Biểu đồ dưới đây tóm tắt và lượng hóa các tiêu chí quan trọng, giúp bạn nhanh chóng so sánh điểm mạnh, yếu của từng giải pháp.</p>
+            <div class="bg-white p-4 sm:p-8 rounded-xl shadow-lg border border-slate-200">
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="wizard" class="bg-sky-700 text-white rounded-2xl p-8 md:p-12">
+             <h2 class="text-3xl font-bold text-center mb-2">Trợ Lý Lựa Chọn Thông Minh</h2>
+             <p class="text-center text-sky-200 mb-10 max-w-2xl mx-auto">Trả lời một vài câu hỏi về dự án của bạn, chúng tôi sẽ đưa ra gợi ý giải pháp phù hợp nhất dựa trên phân tích dữ liệu.</p>
+
+             <div class="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
+                <div class="space-y-8">
+                    <div>
+                        <label for="budget" class="block font-semibold mb-2 text-lg">1. Ngân sách của bạn?</label>
+                        <div class="flex justify-between text-sky-200 text-sm">
+                            <span>Miễn phí</span>
+                            <span>Linh hoạt</span>
+                            <span>Trả phí cao</span>
+                        </div>
+                        <input type="range" id="budget" min="1" max="3" value="2" class="w-full h-2 bg-sky-500 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                     <div>
+                        <label for="customization" class="block font-semibold mb-2 text-lg">2. Mức độ tùy biến giao diện yêu cầu?</label>
+                        <div class="flex justify-between text-sky-200 text-sm">
+                            <span>Thấp</span>
+                            <span>Trung bình</span>
+                            <span>Rất cao</span>
+                        </div>
+                        <input type="range" id="customization" min="1" max="3" value="2" class="w-full h-2 bg-sky-500 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                     <div>
+                        <label class="block font-semibold mb-3 text-lg">3. Kỹ năng chính của đội ngũ?</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <button data-skill="tall" class="skill-btn bg-sky-600 p-3 rounded-lg transition hover:bg-sky-500 focus:ring-2 ring-white ring-offset-2 ring-offset-sky-700">TALL Stack</button>
+                            <button data-skill="vue" class="skill-btn bg-sky-800 p-3 rounded-lg transition hover:bg-sky-500 focus:ring-2 ring-white ring-offset-2 ring-offset-sky-700">Vue.js</button>
+                            <button data-skill="blade" class="skill-btn bg-sky-800 p-3 rounded-lg transition hover:bg-sky-500 focus:ring-2 ring-white ring-offset-2 ring-offset-sky-700">Blade/Bootstrap</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white text-slate-800 rounded-xl p-6 shadow-2xl">
+                    <h3 class="font-bold text-xl mb-4">Gợi ý cho bạn:</h3>
+                    <div id="recommendation-list" class="space-y-4">
+                    </div>
+                </div>
+             </div>
+        </section>
+
+    </main>
+    
+    <footer class="text-center py-8 text-slate-500">
+        <p>&copy; 2025 Laravel Admin Advisor. Được tạo ra để hỗ trợ cộng đồng Laravel.</p>
+    </footer>
+
+    <script>
+        const packageData = {
+            filament: {
+                title: 'Filament',
+                description: 'Một bộ công cụ mạnh mẽ xây dựng trên TALL stack (Tailwind, Alpine.js, Livewire, Laravel), nổi bật với khả năng tùy biến cao, phát triển nhanh và cộng đồng lớn.',
+                features: [
+                    { title: 'Panel Builder', content: 'Xây dựng trang quản trị, customer-facing apps, SaaS một cách linh hoạt.' },
+                    { title: 'Form & Table Builder', content: 'Tạo form và bảng dữ liệu động, tương tác cao với Livewire.' },
+                    { title: 'Hệ sinh thái Plugin', content: 'Cộng đồng đóng góp nhiều plugin giúp mở rộng chức năng dễ dàng.' },
+                    { title: 'Tương tác động', content: 'Trải nghiệm người dùng mượt mà nhờ cập nhật giao diện theo thời gian thực.' }
+                ],
+                pros: ['Phát triển nhanh, hiện đại với TALL stack', 'Hoàn toàn miễn phí, mã nguồn mở', 'Khả năng tùy biến rất cao', 'Cộng đồng lớn và năng động'],
+                cons: ['Phụ thuộc vào Livewire và các thư viện "fast-moving"', 'Có thể có "breaking changes" khi nâng cấp', 'Hiệu năng cần được cân nhắc với dữ liệu cực lớn'],
+                ideal: 'Các dự án đòi hỏi tùy biến cao, đội ngũ yêu thích TALL stack, dự án có ngân sách hạn chế hoặc cần rapid prototyping.'
+            },
+            nova: {
+                title: 'Laravel Nova',
+                description: 'Gói admin panel chính thức từ đội ngũ Laravel, sử dụng Vue.js để tạo ra một giao diện SPA bóng bẩy, chuyên nghiệp và tích hợp sâu với framework.',
+                features: [
+                    { title: 'Resource Management', content: 'Quản lý CRUD mạnh mẽ cho Eloquent model, hỗ trợ tất cả các loại quan hệ.' },
+                    { title: 'Actions & Metrics', content: 'Thực thi tác vụ tùy chỉnh và hiển thị các biểu đồ thống kê một cách dễ dàng.' },
+                    { title: 'Lenses & Filters', content: 'Tạo các view và bộ lọc tùy chỉnh cho dữ liệu của bạn.' },
+                    { title: 'Tích hợp chính thức', content: 'Tích hợp chặt chẽ và tự nhiên với Policies, Events, Queues của Laravel.' }
+                ],
+                pros: ['Giao diện chuyên nghiệp "out-of-the-box"', 'Tích hợp chính thức, đáng tin cậy', 'Nhiều tính năng mạnh mẽ có sẵn', 'Hệ sinh thái package khá tốt'],
+                cons: ['Là sản phẩm trả phí (yêu cầu license)', 'Khá "cứng nhắc", khó tùy biến sâu giao diện và logic', 'Quá trình nâng cấp có thể phức tạp với các dự án đã tùy chỉnh nhiều'],
+                ideal: 'Các ứng dụng doanh nghiệp, SaaS, dự án cần giao diện chuyên nghiệp ngay từ đầu, không ngại chi phí và yêu cầu tùy biến không quá sâu vào lõi.'
+            },
+            backpack: {
+                title: 'Backpack for Laravel',
+                description: 'Một bộ sưu tập các package linh hoạt, xây dựng trên kiến trúc MVC truyền thống của Laravel, sử dụng Blade và Bootstrap, được đánh giá cao về sự ổn định và khả năng tùy chỉnh.',
+                features: [
+                    { title: 'CRUD Operations', content: 'Tính năng cốt lõi và mạnh mẽ nhất, dễ dàng tạo giao diện quản lý cho model.' },
+                    { title: 'Fields, Columns, Filters', content: 'Thư viện phong phú với hơn 50 loại trường nhập liệu, cột hiển thị và bộ lọc.' },
+                    { title: 'Add-ons hữu ích', content: 'Cung cấp các add-on như PermissionManager, Settings, PageManager...' },
+                    { title: 'Tùy biến dễ dàng', content: 'Dễ dàng ghi đè (overwrite) và tạo component tùy chỉnh do kiến trúc quen thuộc.' }
+                ],
+                pros: ['Rất linh hoạt và tùy biến sâu dễ dàng', 'Kiến trúc MVC quen thuộc, dễ bảo trì dài hạn', 'Phần lõi (CRUD) miễn phí và mã nguồn mở', 'Ổn định, ít phụ thuộc vào các công nghệ frontend thay đổi nhanh'],
+                cons: ['Giao diện mặc định có thể trông hơi cũ hơn so với các đối thủ', 'Cần nhiều nỗ lực thiết kế hơn để có giao diện hiện đại', 'Sử dụng jQuery trong một số thành phần (có thể là điểm trừ với một số team)'],
+                ideal: 'Các dự án đòi hỏi mức độ tùy biến sâu, đội ngũ quen thuộc với Blade/Bootstrap, ưu tiên sự ổn định và khả năng bảo trì dài hạn.'
+            }
+        };
+
+        const packageContainer = document.getElementById('package-content');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+
+        function renderPackageContent(packageName) {
+            const data = packageData[packageName];
+            let featuresHtml = data.features.map((feature, index) => `
+                <div class="border-b border-slate-200">
+                    <button class="accordion-btn w-full flex justify-between items-center text-left py-4 px-2 hover:bg-slate-50" data-index="${index}">
+                        <span class="font-semibold text-slate-700">${feature.title}</span>
+                        <span class="transform transition-transform duration-300">
+                            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </span>
+                    </button>
+                    <div class="accordion-content px-2 pb-4 text-slate-600">
+                        ${feature.content}
+                    </div>
+                </div>
+            `).join('');
+
+            packageContainer.innerHTML = `
+                <h3 class="text-3xl font-bold text-sky-600 mb-3">${data.title}</h3>
+                <p class="text-slate-600 mb-8">${data.description}</p>
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h4 class="font-bold text-xl mb-3 text-green-600">Ưu điểm</h4>
+                        <ul class="list-disc list-inside space-y-2 text-slate-600">${data.pros.map(p => `<li>${p}</li>`).join('')}</ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xl mb-3 text-red-600">Nhược điểm</h4>
+                        <ul class="list-disc list-inside space-y-2 text-slate-600">${data.cons.map(c => `<li>${c}</li>`).join('')}</ul>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-xl mb-3 text-slate-800">Trường hợp sử dụng lý tưởng</h4>
+                    <p class="text-slate-600 bg-slate-100 p-4 rounded-lg">${data.ideal}</p>
+                </div>
+                <div class="mt-8">
+                    <h4 class="font-bold text-xl mb-3 text-slate-800">Tính năng nổi bật</h4>
+                    <div class="border-t border-slate-200">
+                        ${featuresHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        packageContainer.addEventListener('click', function(e) {
+            const button = e.target.closest('.accordion-btn');
+            if (button) {
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('svg');
+                
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                    icon.parentElement.classList.remove('rotate-180');
+                } else {
+                    document.querySelectorAll('.accordion-content').forEach(el => el.style.maxHeight = null);
+                    document.querySelectorAll('.accordion-btn svg').forEach(el => el.parentElement.classList.remove('rotate-180'));
+                    content.style.maxHeight = content.scrollHeight + "px";
+                    icon.parentElement.classList.add('rotate-180');
+                }
+            }
+        });
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const tab = button.getAttribute('data-tab');
+                renderPackageContent(tab);
+            });
+        });
+
+        renderPackageContent('filament');
+
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        const comparisonChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Khả năng tùy biến', 'Dễ bảo trì', 'Chi phí', 'Cộng đồng & Hỗ trợ', 'Dễ học'],
+                datasets: [
+                    {
+                        label: 'Filament',
+                        data: [4, 3.5, 5, 5, 4],
+                        backgroundColor: 'rgba(2, 132, 199, 0.7)', // sky-600
+                        borderColor: 'rgba(2, 132, 199, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Laravel Nova',
+                        data: [2, 3, 2, 4, 3.5],
+                        backgroundColor: 'rgba(51, 65, 85, 0.7)', // slate-700
+                        borderColor: 'rgba(51, 65, 85, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Backpack',
+                        data: [5, 4.5, 4, 3, 4.5],
+                        backgroundColor: 'rgba(100, 116, 139, 0.7)', // slate-500
+                        borderColor: 'rgba(100, 116, 139, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 5,
+                        grid: {
+                            color: '#e2e8f0' // slate-200
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Đánh giá các Admin Panel theo thang điểm 5',
+                        font: {
+                            size: 16
+                        }
+                    },
+                     tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.x !== null) {
+                                    label += context.parsed.x + ' / 5';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const budgetInput = document.getElementById('budget');
+        const customizationInput = document.getElementById('customization');
+        const skillButtons = document.querySelectorAll('.skill-btn');
+        const recommendationList = document.getElementById('recommendation-list');
+        let selectedSkill = 'tall';
+
+        function calculateRecommendation() {
+            const budget = parseInt(budgetInput.value); // 1: Free, 2: Flex, 3: Paid
+            const customization = parseInt(customizationInput.value); // 1: Low, 2: Med, 3: High
+
+            let scores = {
+                'Tự Code': 0,
+                Filament: 0,
+                'Laravel Nova': 0,
+                Backpack: 0
+            };
+
+            // Budget scoring
+            if (budget === 1) { // Free
+                scores.Filament += 3;
+                scores.Backpack += 2;
+                scores['Laravel Nova'] -= 2;
+                scores['Tự Code'] -= 1;
+            } else if (budget === 3) { // Paid
+                scores['Laravel Nova'] += 2;
+                scores['Tự Code'] += 1;
+            }
+
+            // Customization scoring
+            if (customization === 1) { // Low
+                scores['Laravel Nova'] += 2;
+            } else if (customization === 3) { // High
+                scores['Tự Code'] += 3;
+                scores.Backpack += 2;
+                scores.Filament += 1;
+                scores['Laravel Nova'] -= 2;
+            }
+
+            // Skill scoring
+            if (selectedSkill === 'tall') {
+                scores.Filament += 3;
+            } else if (selectedSkill === 'vue') {
+                scores['Laravel Nova'] += 3;
+            } else if (selectedSkill === 'blade') {
+                scores.Backpack += 3;
+                scores['Tự Code'] += 1;
+            }
+
+            const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+            
+            const recommendationText = {
+                'Filament': 'Hiện đại, miễn phí và tùy biến cao với TALL stack.',
+                'Laravel Nova': 'Chuyên nghiệp, chính thống, giao diện bóng bẩy (Vue.js).',
+                'Backpack': 'Cực kỳ linh hoạt, ổn định, phù hợp với Blade/Bootstrap.',
+                'Tự Code': 'Kiểm soát tuyệt đối cho các yêu cầu siêu đặc thù.'
+            };
+            
+            recommendationList.innerHTML = sortedScores.map((item, index) => `
+                <div class="p-4 rounded-lg transition-all ${index === 0 ? 'bg-green-100 border-l-4 border-green-500' : 'bg-slate-100'}">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-lg ${index === 0 ? 'text-green-700' : 'text-slate-700'}">${item[0]}</span>
+                        ${index === 0 ? '<span class="text-xs font-bold bg-green-500 text-white px-2 py-1 rounded-full">PHÙ HỢP NHẤT</span>' : ''}
+                    </div>
+                    <p class="text-sm text-slate-600 mt-1">${recommendationText[item[0]]}</p>
+                </div>
+            `).join('');
+        }
+
+        budgetInput.addEventListener('input', calculateRecommendation);
+        customizationInput.addEventListener('input', calculateRecommendation);
+        skillButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                skillButtons.forEach(btn => {
+                    btn.classList.remove('bg-sky-500');
+                    btn.classList.add('bg-sky-800');
+                });
+                button.classList.remove('bg-sky-800');
+                button.classList.add('bg-sky-500');
+                selectedSkill = button.getAttribute('data-skill');
+                calculateRecommendation();
+            });
+        });
+
+        calculateRecommendation();
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So Sánh Tương Tác: Windsurf vs. VS Code</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Calm Harmony (Warm Neutrals) -->
+    <!-- Application Structure Plan: A single-page application designed as an interactive dashboard. The core navigation uses tabs (Tổng Quan, So Sánh AI, Hệ Sinh Thái, Hồ Sơ Người Dùng) to switch between different thematic views. This structure was chosen to break down the dense report into manageable, user-driven sections, facilitating comparison and preventing information overload. Instead of a linear scroll, users can jump directly to the topic they are most interested in, making the experience more efficient and engaging. The flow is designed to guide the user from a high-level visual overview (radar chart) to a detailed feature-by-feature interactive comparison, and finally to a personalized recommendation based on their developer profile. -->
+    <!-- Visualization & Content Choices: 
+        1. Overview (Radar Chart): Report Info -> High-level attributes (AI, Flexibility, etc.). Goal -> Quick, holistic comparison. Viz -> Chart.js Radar Chart. Interaction -> Hover tooltips. Justification -> Excellent for multi-attribute comparison of two entities. Library -> Chart.js.
+        2. AI Comparison (Interactive Cards): Report Info -> Detailed AI capabilities from Table 2. Goal -> Deep-dive feature comparison. Viz -> Side-by-side cards updated by feature buttons. Interaction -> User clicks a feature button to see specific comparison text. Justification -> Turns a static table into an active, exploratory component, improving engagement and comprehension. Library -> Vanilla JS DOM manipulation.
+        3. User Profiles (Interactive Selector): Report Info -> User archetypes from the report. Goal -> Personalized recommendation. Viz -> Buttons representing developer profiles. Interaction -> Clicking a profile reveals tailored advice. Justification -> Makes the report's conclusions actionable and relevant to the individual user. Library -> Vanilla JS DOM manipulation.
+        4. General (Styled HTML/CSS): Report Info -> Textual content, lists. Goal -> Inform and structure. Viz -> Tailwind CSS for layout, cards, and typography. Justification -> Clean, responsive, and avoids needing complex graphics libraries for non-chart elements.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #FDFBF8; /* Warm off-white */
+            color: #3f3c3a;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            color: #6b7280;
+        }
+        .nav-button.active {
+            color: #C5A07E; /* Muted Gold Accent */
+            border-bottom-color: #C5A07E;
+        }
+        .nav-button:hover {
+            color: #A5805E;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #F0EAE4;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .ai-feature-btn {
+            background-color: #F5F1ED;
+            color: #6b7280;
+            transition: all 0.2s ease-in-out;
+        }
+        .ai-feature-btn.active, .ai-feature-btn:hover {
+            background-color: #EAE2DA;
+            color: #3f3c3a;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .profile-btn {
+            background-color: #fff;
+            border: 1px solid #EAE2DA;
+            transition: all 0.2s ease-in-out;
+        }
+        .profile-btn:hover {
+             border-color: #C5A07E;
+             color: #A5805E;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-5xl font-bold text-[#3f3c3a] mb-2">Windsurf <span class="text-2xl md:text-4xl font-light text-[#A5805E]">&</span> VS Code</h1>
+            <p class="text-md md:text-lg text-gray-600 max-w-3xl mx-auto">Cuộc đối đầu giữa IDE AI-first thế hệ mới và trình soạn thảo mã nguồn phổ biến nhất thế giới. Lựa chọn nào dành cho bạn?</p>
+        </header>
+
+        <nav class="flex justify-center border-b border-gray-200 mb-12">
+            <button data-target="overview" class="nav-button active text-lg font-medium py-3 px-6 border-b-2 border-transparent">Tổng Quan</button>
+            <button data-target="ai-comparison" class="nav-button text-lg font-medium py-3 px-6 border-b-2 border-transparent">So Sánh AI</button>
+            <button data-target="ecosystem" class="nav-button text-lg font-medium py-3 px-6 border-b-2 border-transparent">Hệ Sinh Thái</button>
+            <button data-target="profiles" class="nav-button text-lg font-medium py-3 px-6 border-b-2 border-transparent">Hồ Sơ Người Dùng</button>
+        </nav>
+
+        <main>
+            <section id="overview" class="content-section active">
+                 <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-2">So Sánh Nhanh</h2>
+                    <p class="text-gray-600">
+                        Phần này cung cấp một cái nhìn tổng quan về triết lý và thế mạnh cốt lõi của mỗi công cụ. Biểu đồ radar bên dưới tóm tắt các thuộc tính chính để bạn có thể nhanh chóng nhận ra sự khác biệt cơ bản giữa Windsurf và VS Code.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center mb-12">
+                    <div class="card p-6 rounded-lg">
+                        <h3 class="text-2xl font-bold text-[#3f3c3a] mb-3">VS Code</h3>
+                        <p class="font-semibold text-[#A5805E] mb-3">Linh Hoạt, Trưởng Thành & Hướng Cộng Đồng</p>
+                        <p class="text-gray-600 mb-4">Là một trình soạn thảo mã nguồn mở, nhẹ nhàng nhưng có khả năng tùy biến vô hạn thông qua một hệ sinh thái tiện ích mở rộng khổng lồ. Sức mạnh của VS Code nằm ở sự linh hoạt, ổn định và cộng đồng người dùng đông đảo.</p>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start"><span class="text-[#C5A07E] mr-2 mt-1">►</span><span><strong>Hệ sinh thái vượt trội:</strong> Hàng ngàn tiện ích mở rộng cho mọi nhu cầu.</span></li>
+                            <li class="flex items-start"><span class="text-[#C5A07E] mr-2 mt-1">►</span><span><strong>Nền tảng trưởng thành:</strong> Ổn định, đáng tin cậy và được Microsoft hậu thuẫn.</span></li>
+                            <li class="flex items-start"><span class="text-[#C5A07E] mr-2 mt-1">►</span><span><strong>Tùy biến tối đa:</strong> Toàn quyền kiểm soát môi trường làm việc của bạn.</span></li>
+                        </ul>
+                    </div>
+                    <div class="card p-6 rounded-lg">
+                        <h3 class="text-2xl font-bold text-[#3f3c3a] mb-3">Windsurf</h3>
+                        <p class="font-semibold text-[#A5805E] mb-3">AI-First, Tích Hợp Sâu & Mang Tính Tác Nhân</p>
+                        <p class="text-gray-600 mb-4">Là một IDE được xây dựng với triết lý ưu tiên AI, nơi trí tuệ nhân tạo không phải là tiện ích bổ sung mà là một đối tác cốt lõi. Windsurf hướng đến việc tự động hóa các tác vụ phức tạp và duy trì "trạng thái dòng chảy" cho lập trình viên.</p>
+                        <ul class="space-y-2 text-gray-700">
+                           <li class="flex items-start"><span class="text-[#C5A07E] mr-2 mt-1">►</span><span><strong>AI Tác nhân (Cascade):</strong> Tự động sửa lỗi, thực thi tác vụ và hiểu sâu mã nguồn.</span></li>
+                           <li class="flex items-start"><span class="text-[#C5A07E] mr-2 mt-1">►</span><span><strong>Tích hợp liền mạch:</strong> AI được nhúng sâu vào mọi khía cạnh của quy trình làm việc.</span></li>
+                           <li class="flex items-start"><span class="text-[#C5A07E] mr-2 mt-1">►</span><span><strong>Giao diện quen thuộc:</strong> Dựa trên nền tảng VS Code, giúp giảm rào cản học tập.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card p-6 md:p-8 rounded-lg">
+                    <div class="chart-container">
+                        <canvas id="comparisonRadarChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ai-comparison" class="content-section">
+                <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-2">Cuộc Cách Mạng AI: Trợ Lý vs. Tác Nhân</h2>
+                     <p class="text-gray-600">
+                        Sự khác biệt lớn nhất nằm ở cách tiếp cận AI. VS Code cung cấp AI dưới dạng một "trợ lý" (copilot) mạnh mẽ thông qua tiện ích mở rộng, trong khi Windsurf xây dựng AI như một "tác nhân" (agent) tích hợp sâu. Hãy chọn một tính năng bên dưới để xem chúng đối đầu như thế nào.
+                    </p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-3 mb-8">
+                    <button class="ai-feature-btn active font-medium py-2 px-4 rounded-full" data-feature="context">Hiểu biết Ngữ cảnh</button>
+                    <button class="ai-feature-btn font-medium py-2 px-4 rounded-full" data-feature="agent">Hành vi Tác nhân</button>
+                    <button class="ai-feature-btn font-medium py-2 px-4 rounded-full" data-feature="debugging">Gỡ lỗi AI</button>
+                    <button class="ai-feature-btn font-medium py-2 px-4 rounded-full" data-feature="multifile">Chỉnh sửa Đa tệp</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card p-6 rounded-lg">
+                        <h4 class="text-xl font-bold mb-3">🚀 Windsurf (Cascade)</h4>
+                        <div id="windsurf-ai-content" class="text-gray-700 space-y-2"></div>
+                    </div>
+                    <div class="card p-6 rounded-lg">
+                        <h4 class="text-xl font-bold mb-3">🔧 VS Code (+ Extensions)</h4>
+                        <div id="vscode-ai-content" class="text-gray-700 space-y-2"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="ecosystem" class="content-section">
+                <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-2">Hệ Sinh Thái & Khả Năng Mở Rộng</h2>
+                    <p class="text-gray-600">
+                        Khả năng tùy biến và mở rộng là yếu tố sống còn của một IDE hiện đại. VS Code là vua trong lĩnh vực này, nhưng Windsurf có một "vũ khí bí mật" giúp nó bắt kịp một cách đáng ngạc nhiên.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="card p-6 rounded-lg">
+                        <h3 class="text-xl font-bold mb-3">VS Code: Một Thế Giới Tiện Ích</h3>
+                        <p class="text-gray-600">Điểm mạnh lớn nhất của VS Code là Chợ ứng dụng (Marketplace) khổng lồ, cung cấp hàng chục ngàn tiện ích mở rộng cho hầu hết mọi ngôn ngữ, framework và quy trình làm việc. Điều này mang lại khả năng tùy biến gần như vô hạn.</p>
+                    </div>
+                    <div class="card p-6 rounded-lg bg-[#EAE2DA]/40">
+                        <h3 class="text-xl font-bold mb-3">Windsurf: Tốt Nhất Của Cả Hai?</h3>
+                        <p class="text-gray-700">Mặc dù là một IDE riêng biệt, Windsurf có thể được cấu hình để truy cập và cài đặt tiện ích mở rộng trực tiếp từ Chợ ứng dụng của VS Code. Điều này có nghĩa là bạn có được AI tích hợp sâu của Windsurf mà không phải hy sinh hệ sinh thái mạnh mẽ mà bạn đã quen thuộc.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="profiles" class="content-section">
+                <div class="text-center mb-12 max-w-4xl mx-auto">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-2">Bạn Là Lập Trình Viên Nào?</h2>
+                    <p class="text-gray-600">
+                        Không có công cụ nào là hoàn hảo cho tất cả mọi người. Sự lựa chọn tốt nhất phụ thuộc vào phong cách làm việc, nhu cầu dự án và triết lý cá nhân của bạn. Hãy chọn hồ sơ phù hợp nhất với bạn để xem đề xuất.
+                    </p>
+                </div>
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                     <button class="profile-btn text-gray-700 font-semibold py-3 px-5 rounded-lg shadow-sm" data-profile="customizer">⚙️ Người ưa tùy biến</button>
+                     <button class="profile-btn text-gray-700 font-semibold py-3 px-5 rounded-lg shadow-sm" data-profile="pioneer">🤖 Người tiên phong AI</button>
+                     <button class="profile-btn text-gray-700 font-semibold py-3 px-5 rounded-lg shadow-sm" data-profile="teamplayer">🤝 Lập trình viên nhóm</button>
+                     <button class="profile-btn text-gray-700 font-semibold py-3 px-5 rounded-lg shadow-sm" data-profile="budget">💸 Ngân sách có hạn</button>
+                </div>
+                <div id="profile-recommendation" class="card p-8 rounded-lg min-h-[150px] flex items-center justify-center text-center transition-all duration-300">
+                    <p class="text-gray-500">Chọn một hồ sơ để xem gợi ý phù hợp...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            const aiFeatureButtons = document.querySelectorAll('.ai-feature-btn');
+            const profileButtons = document.querySelectorAll('.profile-btn');
+
+            const radarData = {
+                labels: ['Tích Hợp AI', 'Hệ Sinh Thái', 'Linh Hoạt & Tùy Biến', 'Tính Năng Gốc', 'Mức Độ Tự Chủ Của AI', 'Cộng Đồng'],
+                datasets: [{
+                    label: 'Windsurf',
+                    data: [9, 7, 6, 8, 9, 6],
+                    backgroundColor: 'rgba(197, 160, 126, 0.2)',
+                    borderColor: 'rgba(197, 160, 126, 1)',
+                    pointBackgroundColor: 'rgba(197, 160, 126, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(197, 160, 126, 1)'
+                }, {
+                    label: 'VS Code',
+                    data: [6, 10, 10, 9, 4, 10],
+                    backgroundColor: 'rgba(107, 114, 128, 0.2)',
+                    borderColor: 'rgba(107, 114, 128, 1)',
+                    pointBackgroundColor: 'rgba(107, 114, 128, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(107, 114, 128, 1)'
+                }]
+            };
+
+            const aiComparisonData = {
+                context: {
+                    windsurf: `Nhấn mạnh mạnh mẽ vào "nhận thức ngữ cảnh đầy đủ". Công cụ Lập chỉ mục (Indexing Engine) và Nhận thức Ngữ cảnh (Context Awareness) xây dựng sự hiểu biết sâu sắc về toàn bộ codebase, không chỉ các tệp đang mở.`,
+                    vscode: `Nhận thức ngữ cảnh thay đổi tùy theo tiện ích mở rộng. Các công cụ như GitHub Copilot ngày càng tốt hơn nhưng thường tập trung vào các tệp đang mở hoặc các tệp gần đây, có thể thiếu chiều sâu so với một hệ thống tích hợp gốc.`
+                },
+                agent: {
+                    windsurf: `Đây là điểm khác biệt cốt lõi. Cascade có thể tự động thực thi chuỗi hành động, chạy lệnh terminal, gỡ lỗi và lặp lại cho đến khi yêu cầu được hoàn thành. Nó hoạt động như một "tác nhân" chủ động.`,
+                    vscode: `Thường hoạt động như một "trợ lý" (copilot). AI đưa ra gợi ý, hoàn thành mã, nhưng cần sự can thiệp của người dùng cho từng bước thực thi. Hành vi tự trị rất hạn chế.`
+                },
+                debugging: {
+                    windsurf: `Tăng cường gỡ lỗi truyền thống bằng AI có thể tự động xác định lỗi, đề xuất bản sửa, và thậm chí tự động áp dụng và kiểm tra lại. AI chủ động tham gia vào quá trình tìm và sửa lỗi.`,
+                    vscode: `Hỗ trợ gỡ lỗi thông qua giải thích mã, gợi ý các bản sửa lỗi trong giao diện chat. Quá trình gỡ lỗi vẫn do nhà phát triển điều khiển hoàn toàn; AI chỉ đóng vai trò tư vấn.`
+                },
+                multifile: {
+                    windsurf: `Một thế mạnh được nhấn mạnh. AI có khả năng thực hiện các thay đổi một cách mạch lạc và nhất quán trên nhiều tệp cùng một lúc, rất hữu ích cho việc tái cấu trúc lớn hoặc triển khai tính năng.`,
+                    vscode: `Một số tiện ích mở rộng như Copilot Workspace đang hướng tới khả năng này, nhưng nhìn chung, các chỉnh sửa đa tệp tự động ít phổ biến và có thể không mạch lạc bằng một hệ thống được thiết kế cho nó.`
+                }
+            };
+
+            const profileData = {
+                customizer: {
+                    tool: 'VS Code',
+                    reason: `Với hệ sinh thái tiện ích mở rộng vô song và khả năng tùy biến mọi khía cạnh, VS Code là sân chơi lý tưởng cho những ai muốn toàn quyền kiểm soát môi trường làm việc của mình.`
+                },
+                pioneer: {
+                    tool: 'Windsurf',
+                    reason: `Nếu bạn hào hứng với việc để AI đảm nhận những tác vụ phức tạp và muốn trải nghiệm một quy trình làm việc ưu tiên AI, Windsurf với tác nhân Cascade tích hợp sâu là lựa chọn dành cho bạn.`
+                },
+                teamplayer: {
+                    tool: 'Cả hai đều mạnh',
+                    reason: `VS Code là tiêu chuẩn trong nhiều nhóm. Windsurf cung cấp các tính năng doanh nghiệp để tăng tốc độ và có thể tương thích với tiện ích VS Code. Lựa chọn phụ thuộc vào quy trình làm việc của nhóm bạn.`
+                },
+                budget: {
+                    tool: 'VS Code',
+                    reason: `VS Code hoàn toàn miễn phí và mã nguồn mở. Windsurf có gói miễn phí nhưng các tính năng AI nâng cao và dành cho nhóm sẽ cần trả phí, vì vậy VS Code là lựa chọn kinh tế nhất.`
+                }
+            };
+
+            function updateAIContent(feature) {
+                const windsurfContent = document.getElementById('windsurf-ai-content');
+                const vscodeContent = document.getElementById('vscode-ai-content');
+                
+                windsurfContent.innerHTML = `<p>${aiComparisonData[feature].windsurf}</p>`;
+                vscodeContent.innerHTML = `<p>${aiComparisonData[feature].vscode}</p>`;
+
+                aiFeatureButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.feature === feature);
+                });
+            }
+
+            function updateProfileContent(profile) {
+                const recommendationDiv = document.getElementById('profile-recommendation');
+                const data = profileData[profile];
+                recommendationDiv.innerHTML = `
+                    <div class="transition-opacity duration-300">
+                        <h4 class="text-xl font-bold text-[#A5805E] mb-2">Lựa chọn cho bạn: ${data.tool}</h4>
+                        <p class="text-gray-700">${data.reason}</p>
+                    </div>
+                `;
+            }
+
+            const ctx = document.getElementById('comparisonRadarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: radarData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    family: "'Be Vietnam Pro', sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: '#EAE2DA'
+                            },
+                            grid: {
+                                color: '#EAE2DA'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    family: "'Be Vietnam Pro', sans-serif"
+                                },
+                                color: '#3f3c3a'
+                            },
+                            ticks: {
+                                backdropColor: '#FDFBF8',
+                                color: '#6b7280'
+                            }
+                        }
+                    }
+                }
+            });
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    contentSections.forEach(section => {
+                        section.classList.toggle('active', section.id === targetId);
+                    });
+                });
+            });
+
+            aiFeatureButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    updateAIContent(button.dataset.feature);
+                });
+            });
+            
+             profileButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    updateProfileContent(button.dataset.profile);
+                });
+            });
+
+            updateAIContent('context');
+        });
+    </script>
+
+</body>
+</html>
