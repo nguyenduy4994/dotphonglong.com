@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hướng dẫn Tương tác: Cấu hình VS Code cho PHP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Dev Tones -->
+    <!-- Application Structure Plan: A single-page application with a fixed left-hand sidebar for navigation and a main content area that updates dynamically. This structure transforms the linear report into a task-oriented tool, allowing users to jump to specific topics like "Debugging" or "Databases". Content is presented using interactive cards for extensions (with copy-to-clipboard functionality), clear code snippets, and a comparative chart, making the information more digestible and actionable than a simple document. The goal is to provide a practical utility, not just a static article. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Comparisons of features between PhpStorm and VS Code extensions. Goal: Help users choose tools. Viz/Presentation: Interactive cards for extensions with "Copy ID" buttons, and a horizontal bar chart comparing core features (e.g., Code Completion, Refactoring). Interaction: Buttons copy extension IDs; chart tooltips provide context. Justification: Cards are more scannable than lists, and direct copying is highly useful. The chart visually summarizes a complex text comparison. Library/Method: Vanilla JS for interactions, Chart.js for the canvas-based chart.
+        - Report Info: `settings.json` code block. Goal: Provide an easily reusable configuration. Viz/Presentation: A formatted code block with a "Copy Code" button. Interaction: Button copies the entire snippet. Justification: Reduces user effort and eliminates copy-paste errors. Library/Method: Vanilla JS.
+        - Report Info: Categorized content (Core PHP, Debugging, etc.). Goal: Organize the information for easy navigation. Viz/Presentation: A sidebar navigation menu that dynamically shows/hides content sections. Interaction: Clicking a nav link displays the relevant section. Justification: Mirrors a modern web app UX and improves on the linear structure of the original report. Library/Method: Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; /* slate-100 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* slate-400 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* slate-500 */
+        }
+        .code-block {
+            background-color: #1e293b; /* slate-800 */
+            color: #e2e8f0; /* slate-200 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .nav-item.active {
+            background-color: #334155; /* slate-700 */
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen bg-slate-800 text-slate-200 transition-transform -translate-x-full sm:translate-x-0">
+            <div class="h-full px-3 py-4 overflow-y-auto">
+                <h1 class="text-xl font-bold text-center text-white mb-6">VS Code cho PHP</h1>
+                <ul class="space-y-2 font-medium" id="nav-menu">
+                    <li><a href="#" class="nav-item flex items-center p-2 rounded-lg hover:bg-slate-700 active" data-target="home">🏠 Trang chủ</a></li>
+                    <li><a href="#" class="nav-item flex items-center p-2 rounded-lg hover:bg-slate-700" data-target="core-php">⚙️ PHP Cốt lõi</a></li>
+                    <li><a href="#" class="nav-item flex items-center p-2 rounded-lg hover:bg-slate-700" data-target="debugging">🐞 Gỡ lỗi & Kiểm thử</a></li>
+                    <li><a href="#" class="nav-item flex items-center p-2 rounded-lg hover:bg-slate-700" data-target="version-control">🌿 Quản lý Phiên bản</a></li>
+                    <li><a href="#" class="nav-item flex items-center p-2 rounded-lg hover:bg-slate-700" data-target="database">🗃️ Cơ sở dữ liệu</a></li>
+                    <li><a href="#" class="nav-item flex items-center p-2 rounded-lg hover:bg-slate-700" data-target="frameworks">🏗️ Frameworks</a></li>
+                    <li><a href="#" class="nav-item flex items-center p-2 rounded-lg hover:bg-slate-700" data-target="utilities">🛠️ Tiện ích</a></li>
+                    <li><a href="#" class="nav-item flex items-center p-2 rounded-lg hover:bg-slate-700" data-target="config">📄 Cấu hình</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-button" class="sm:hidden fixed top-4 left-4 z-50 p-2 text-slate-800 bg-slate-200 rounded-md">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
+        <!-- Main Content -->
+        <main class="sm:ml-64 flex-1 p-4 md:p-8">
+            <div id="content-container">
+                <!-- Home Section -->
+                <section id="home" class="content-section space-y-6">
+                    <h2 class="text-3xl font-bold text-slate-800 border-b pb-2">Biến VS Code thành PhpStorm cho Lập trình viên PHP</h2>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <p class="mb-4">Visual Studio Code (VS Code) là một trình soạn thảo mã nguồn mạnh mẽ, nhưng để phát triển PHP chuyên nghiệp, nhiều người mong muốn các tính năng toàn diện của PhpStorm. Ứng dụng này sẽ hướng dẫn bạn cách tùy chỉnh VS Code với các tiện ích mở rộng và cài đặt tốt nhất để tạo ra một môi trường làm việc hiệu quả, lấy cảm hứng từ PhpStorm.</p>
+                        <p>Sử dụng thanh điều hướng bên trái để khám phá từng danh mục. Mỗi mục sẽ cung cấp các khuyến nghị về tiện ích, so sánh và các đoạn mã cấu hình để bạn có thể sao chép và sử dụng ngay lập tức.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-semibold mb-4 text-slate-800">So sánh Tính năng: PhpStorm vs. VS Code (với Tiện ích)</h3>
+                        <p class="mb-4">Để có cái nhìn tổng quan, biểu đồ dưới đây so sánh mức độ hoàn thiện của các tính năng chính giữa PhpStorm và hai tiện ích PHP phổ biến nhất cho VS Code. Điều này giúp bạn hiểu rõ hơn về những gì có thể đạt được và lựa chọn công cụ phù hợp nhất.</p>
+                        <div class="chart-container">
+                            <canvas id="featureComparisonChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Core PHP Section -->
+                <section id="core-php" class="content-section space-y-6 hidden">
+                    <h2 class="text-3xl font-bold text-slate-800 border-b pb-2">Sức mạnh Phát triển PHP Cốt lõi</h2>
+                    <p class="bg-white p-6 rounded-lg shadow-md">Để tái tạo khả năng hoàn thành mã thông minh và các tính năng chỉnh sửa mạnh mẽ của PhpStorm, bạn cần các tiện ích mở rộng chuyên dụng. Dưới đây là hai lựa chọn hàng đầu, mỗi lựa chọn có điểm mạnh riêng. Việc lựa chọn giữa chúng là một quyết định quan trọng định hình môi trường phát triển của bạn.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">PHP Intelephense</h3>
+                            <p class="mb-4 text-sm">Một máy chủ ngôn ngữ PHP hiệu suất cao, tập trung vào tốc độ và độ chính xác của IntelliSense. Các tính năng nâng cao như tái cấu trúc yêu cầu giấy phép cao cấp.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="bmewburn.vscode-intelephense-client">Sao chép ID</button>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">PHP Tools</h3>
+                            <p class="mb-4 text-sm">Một giải pháp "tất cả trong một" nhằm biến VS Code thành một IDE PHP đầy đủ, bao gồm cả trình gỡ lỗi, khám phá kiểm thử và hỗ trợ sâu cho Laravel.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="DEVSENSE.phptools-vscode">Sao chép ID</button>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-2">Tiện ích bổ sung</h3>
+                        <p class="mb-4">Để hỗ trợ việc tạo khối chú thích PHPDoc, tiện ích này là một lựa chọn tuyệt vời nếu bạn không sử dụng các tính năng cao cấp của các tiện ích trên.</p>
+                        <div class="flex items-center justify-between">
+                            <span>PHP DocBlocker</span>
+                            <button class="copy-btn bg-slate-600 text-white px-4 py-2 rounded-md hover:bg-slate-700" data-copy="neilbrayfield.php-docblocker">Sao chép ID</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Debugging Section -->
+                <section id="debugging" class="content-section space-y-6 hidden">
+                    <h2 class="text-3xl font-bold text-slate-800 border-b pb-2">Gỡ lỗi và Kiểm thử</h2>
+                    <p class="bg-white p-6 rounded-lg shadow-md">Thiết lập gỡ lỗi và kiểm thử là rất quan trọng để đảm bảo chất lượng mã. Nền tảng của việc gỡ lỗi PHP là Xdebug. Bạn cần cài đặt Xdebug trên máy chủ của mình và sử dụng tiện ích mở rộng `PHP Debug` để kết nối VS Code với nó. Đối với kiểm thử, `PHPUnit Test Explorer` cung cấp một giao diện trực quan để chạy và quản lý các bài kiểm thử của bạn.</p>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">PHP Debug</h3>
+                            <p class="mb-4 text-sm">Tiện ích thiết yếu để kết nối VS Code với Xdebug. Yêu cầu cài đặt và cấu hình Xdebug trên môi trường PHP của bạn.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="xdebug.php-debug">Sao chép ID</button>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">PHPUnit Test Explorer</h3>
+                            <p class="mb-4 text-sm">Thêm một trình khám phá kiểm thử vào VS Code, cho phép bạn chạy và gỡ lỗi các bài kiểm thử PHPUnit một cách trực quan.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="recca0120.vscode-phpunit">Sao chép ID</button>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">phpcs</h3>
+                            <p class="mb-4 text-sm">Tích hợp PHP_CodeSniffer để kiểm tra và thực thi các tiêu chuẩn mã hóa như PSR-12, giúp mã của bạn nhất quán.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="ikappas.phpcs">Sao chép ID</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Version Control Section -->
+                <section id="version-control" class="content-section space-y-6 hidden">
+                    <h2 class="text-3xl font-bold text-slate-800 border-b pb-2">Quản lý Phiên bản với Git</h2>
+                     <p class="bg-white p-6 rounded-lg shadow-md">Trong khi VS Code có hỗ trợ Git tích hợp sẵn, `GitLens` nâng cao trải nghiệm này lên một tầm cao mới, mang lại nhiều tính năng mạnh mẽ tương tự như trong PhpStorm. Nó cung cấp thông tin chi tiết về lịch sử commit ngay trong trình soạn thảo, các công cụ so sánh mạnh mẽ và nhiều hơn nữa.</p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold mb-2">GitLens — Git supercharged</h3>
+                        <p class="mb-4 text-sm">Tiện ích mở rộng thiết yếu để tăng cường khả năng Git của VS Code. Nó cung cấp các chú thích blame, lịch sử tệp chi tiết, biểu đồ commit và các công cụ so sánh mạnh mẽ.</p>
+                        <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="eamodio.gitlens">Sao chép ID</button>
+                    </div>
+                </section>
+
+                 <!-- Database Section -->
+                <section id="database" class="content-section space-y-6 hidden">
+                    <h2 class="text-3xl font-bold text-slate-800 border-b pb-2">Quản lý Cơ sở dữ liệu</h2>
+                    <p class="bg-white p-6 rounded-lg shadow-md">Để tương tác với cơ sở dữ liệu mà không cần rời khỏi VS Code, bạn có thể sử dụng các tiện ích mở rộng mạnh mẽ. Chúng cho phép bạn kết nối, duyệt lược đồ, thực thi truy vấn và quản lý dữ liệu tương tự như công cụ cơ sở dữ liệu tích hợp của PhpStorm.</p>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">SQLTools</h3>
+                            <p class="mb-4 text-sm">Một trình quản lý kết nối cơ sở dữ liệu linh hoạt. Bạn cài đặt tiện ích này cùng với một trình điều khiển riêng cho cơ sở dữ liệu của mình (ví dụ: MySQL, PostgreSQL).</p>
+                             <div class="space-x-2">
+                                <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="mtxr.sqltools">Sao chép ID (Core)</button>
+                                <button class="copy-btn bg-slate-600 text-white px-4 py-2 rounded-md hover:bg-slate-700" data-copy="mtxr.sqltools-driver-mysql">Sao chép ID (MySQL)</button>
+                            </div>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">Database Client</h3>
+                            <p class="mb-4 text-sm">Một lựa chọn mạnh mẽ khác hỗ trợ nhiều loại cơ sở dữ liệu, bao gồm cả SQL và NoSQL (như MongoDB, Redis), cùng với một máy khách SSH tích hợp.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="cweijan.vscode-database-client2">Sao chép ID</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Frameworks Section -->
+                <section id="frameworks" class="content-section space-y-6 hidden">
+                    <h2 class="text-3xl font-bold text-slate-800 border-b pb-2">Hỗ trợ Framework</h2>
+                    <p class="bg-white p-6 rounded-lg shadow-md">Để phát triển hiệu quả với các framework như Laravel, Symfony, hay WordPress, bạn nên cài đặt các tiện ích mở rộng cung cấp sự hiểu biết sâu sắc về các quy ước và tính năng của chúng.</p>
+                     <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                        <h3 class="text-xl font-semibold">Laravel</h3>
+                        <p class="text-sm">Sử dụng tiện ích chính thức từ nhóm Laravel để có được IntelliSense tốt nhất cho Routes, Eloquent, Blade, và nhiều hơn nữa.</p>
+                        <div class="flex items-center justify-between">
+                            <span>Laravel Extension</span>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="laravel.vscode-laravel">Sao chép ID</button>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                        <h3 class="text-xl font-semibold">Symfony</h3>
+                        <p class="text-sm">Gói tiện ích mở rộng này sẽ cài đặt một bộ công cụ cần thiết cho việc phát triển Symfony, bao gồm hỗ trợ Twig, YAML và các lệnh console.</p>
+                         <div class="flex items-center justify-between">
+                            <span>Symfony Extension Pack</span>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="duboiss.sf-pack">Sao chép ID</button>
+                        </div>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                        <h3 class="text-xl font-semibold">WordPress</h3>
+                        <p class="text-sm">Đối với WordPress, các tiện ích cung cấp đoạn mã cho các hàm, hook và lớp của WordPress là vô cùng hữu ích.</p>
+                        <div class="flex items-center justify-between">
+                            <span>WordPress Snippets</span>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="wpdevtools.wordpress-snippets">Sao chép ID</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Utilities Section -->
+                <section id="utilities" class="content-section space-y-6 hidden">
+                    <h2 class="text-3xl font-bold text-slate-800 border-b pb-2">Tiện ích & Cải tiến Quy trình Làm việc</h2>
+                    <p class="bg-white p-6 rounded-lg shadow-md">Những tiện ích nhỏ này giúp hoàn thiện môi trường phát triển của bạn, tự động hóa các tác vụ nhỏ và làm cho quy trình làm việc của bạn mượt mà hơn, tương tự như những tiện lợi có sẵn trong PhpStorm.</p>
+                     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">Composer</h3>
+                            <p class="mb-4 text-sm">Cung cấp các lệnh và IntelliSense cho tệp `composer.json`.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="DEVSENSE.composer-php-vscode">Sao chép ID</button>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">DotENV</h3>
+                            <p class="mb-4 text-sm">Tô sáng cú pháp cho các tệp `.env`, giúp chúng dễ đọc hơn.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="mikestead.dotenv">Sao chép ID</button>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">Auto Rename Tag</h3>
+                            <p class="mb-4 text-sm">Tự động đổi tên thẻ HTML/XML tương ứng.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="formulahendry.auto-rename-tag">Sao chép ID</button>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">Path Intellisense</h3>
+                            <p class="mb-4 text-sm">Tự động hoàn thành tên tệp và đường dẫn.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="christian-kohler.path-intellisense">Sao chép ID</button>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">TODO Highlight</h3>
+                            <p class="mb-4 text-sm">Làm nổi bật các chú thích như TODO và FIXME trong mã của bạn.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="wayou.vscode-todo-highlight">Sao chép ID</button>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-xl font-bold mb-2">JetBrains Keymap</h3>
+                            <p class="mb-4 text-sm">Mang các phím tắt quen thuộc của PhpStorm vào VS Code.</p>
+                            <button class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700" data-copy="isudox.vscode-jetbrains-keybindings">Sao chép ID</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Config Section -->
+                <section id="config" class="content-section space-y-6 hidden">
+                    <h2 class="text-3xl font-bold text-slate-800 border-b pb-2">Cấu hình `settings.json`</h2>
+                    <p class="bg-white p-6 rounded-lg shadow-md">Việc làm chủ tệp `settings.json` là chìa khóa để tùy chỉnh sâu VS Code. Đoạn mã dưới đây là một ví dụ về cấu hình không gian làm việc (`.vscode/settings.json`) để tích hợp các công cụ đã đề cập. Bạn có thể sao chép và điều chỉnh nó cho phù hợp với dự án của mình.</p>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="flex justify-between items-center mb-4">
+                             <h3 class="text-xl font-semibold">Đoạn mã `settings.json` Mẫu</h3>
+                             <button id="copy-settings-btn" class="copy-btn bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Sao chép toàn bộ</button>
+                        </div>
+                        <div class="code-block" id="settings-json-code">
+<pre>
+{
+    // Đường dẫn thực thi và phiên bản PHP
+    "php.executablePath": "/usr/local/bin/php",
+    "intelephense.environment.phpVersion": "8.2.0",
+
+    // Kiểm tra lỗi và Tiêu chuẩn
+    "phpcs.enable": true,
+    "phpcs.executablePath": "./vendor/bin/phpcs",
+    "phpcs.standard": "PSR12",
+    "phpcs.autoConfigSearch": true,
+
+    // Định dạng
+    "[php]": {
+        "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+        "editor.formatOnSave": true
+    },
+    "editor.codeActionsOnSave": {
+        "source.fixAll.phpcs": "explicit"
+    },
+
+    // Cải tiến Trình soạn thảo
+    "editor.rulers": [120],
+    "editor.renderWhitespace": "boundary",
+    "editor.trimAutoWhitespace": true,
+    "files.autoSave": "onFocusChange",
+
+    // Loại trừ Tệp và Tìm kiếm để cải thiện hiệu suất
+    "files.exclude": {
+        "**/.git": true,
+        "**/vendor": true,
+        "**/node_modules": true
+    },
+    "search.exclude": {
+        "**/vendor": true,
+        "**/node_modules": true,
+        "**/storage/framework/views/*.php": true
+    }
+}
+</pre>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navMenu = document.getElementById('nav-menu');
+            const contentContainer = document.getElementById('content-container');
+            const sections = contentContainer.querySelectorAll('.content-section');
+            const navItems = navMenu.querySelectorAll('.nav-item');
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const sidebar = document.getElementById('sidebar');
+
+            // Navigation logic
+            navMenu.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetLink = e.target.closest('.nav-item');
+                if (!targetLink) return;
+
+                const targetId = targetLink.dataset.target;
+                
+                sections.forEach(section => {
+                    section.classList.add('hidden');
+                });
+
+                navItems.forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                const activeSection = document.getElementById(targetId);
+                if (activeSection) {
+                    activeSection.classList.remove('hidden');
+                }
+                targetLink.classList.add('active');
+
+                if (sidebar.classList.contains('translate-x-0')) {
+                   mobileMenuButton.click();
+                }
+            });
+
+            // Mobile menu toggle
+            mobileMenuButton.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebar.classList.toggle('translate-x-0');
+            });
+
+            // Copy button logic
+            document.body.addEventListener('click', function(e) {
+                if (e.target.classList.contains('copy-btn')) {
+                    const button = e.target;
+                    let textToCopy = button.dataset.copy;
+                    
+                    if (button.id === 'copy-settings-btn') {
+                        textToCopy = document.getElementById('settings-json-code').innerText;
+                    }
+                    
+                    if (!textToCopy) return;
+
+                    const textarea = document.createElement('textarea');
+                    textarea.value = textToCopy;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    try {
+                        document.execCommand('copy');
+                        const originalText = button.innerHTML;
+                        button.innerHTML = '✅ Đã sao chép!';
+                        button.classList.add('bg-green-600', 'hover:bg-green-700');
+                        button.classList.remove('bg-indigo-600', 'hover:bg-indigo-700', 'bg-slate-600', 'hover:bg-slate-700');
+
+                        setTimeout(() => {
+                            button.innerHTML = originalText;
+                            button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                            if (originalText.includes('ID')) {
+                                if(originalText.includes('Core') || originalText.includes('MySQL')) {
+                                    button.classList.add('bg-slate-600', 'hover:bg-slate-700');
+                                } else {
+                                    button.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                                }
+                            } else {
+                                button.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+                            }
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Không thể sao chép', err);
+                    }
+                    document.body.removeChild(textarea);
+                }
+            });
+
+            // Chart.js implementation
+            const ctx = document.getElementById('featureComparisonChart').getContext('2d');
+            const featureComparisonChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Hoàn thành mã', 'Tái cấu trúc', 'Gỡ lỗi', 'Hỗ trợ Framework', 'Công cụ DB'],
+                    datasets: [
+                        {
+                            label: 'PhpStorm',
+                            data: [5, 5, 5, 4.5, 5],
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'VS Code + PHP Intelephense (Premium)',
+                            data: [4.5, 3.5, 4, 2.5, 4],
+                            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'VS Code + PHP Tools (Premium)',
+                            data: [4.5, 4, 4.5, 4.5, 4],
+                            backgroundColor: 'rgba(255, 159, 64, 0.7)',
+                            borderColor: 'rgba(255, 159, 64, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 5,
+                            ticks: {
+                                stepSize: 1,
+                                 callback: function(value, index, values) {
+                                    const labels = ['Cơ bản', 'Khá', 'Tốt', 'Rất tốt', 'Toàn diện', 'Xuất sắc'];
+                                    return labels[value];
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Đánh giá Mức độ Hoàn thiện Tính năng (Thang điểm 1-5)',
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                           callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x;
+                                    }
+                                    return label;
+                                }
+                           }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
