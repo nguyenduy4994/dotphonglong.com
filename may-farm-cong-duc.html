@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mô Phỏng Kinh Luân Xoay</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts for custom font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* General styling for the body */
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Noto Sans', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Container for the prayer wheel simulation */
+        .simulation-container {
+            text-align: center;
+            padding: 2rem;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        /* Wrapper for the prayer wheel graphic, used for the wobble effect */
+        .prayer-wheel-wrapper {
+            margin: 40px auto;
+            position: relative;
+            width: 150px;
+            height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* The spinning cylinder of the wheel */
+        #prayer-wheel {
+            width: 130px;
+            height: 130px;
+            background: linear-gradient(145deg, #26A69A, #00796B); /* Turquoise gradient */
+            border-radius: 10px;
+            border-top: 15px solid #D4AF37; /* Gold-like color */
+            border-bottom: 15px solid #D4AF37;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #FFD700;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5), 0 5px 15px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+            transform-origin: center center;
+            /* Removed CSS transition to allow for smoother JS animation */
+        }
+
+        /* Decorative top point */
+        .wheel-top {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 30px solid #D4AF37; /* Gold-like color */
+            position: absolute;
+            top: -45px; /* Position above the cylinder */
+            z-index: 3;
+        }
+        
+        /* The handle of the prayer wheel */
+        .handle {
+            width: 25px;
+            height: 120px;
+            background: linear-gradient(#8B4513, #A0522D); /* Brown gradient for wood effect */
+            border-radius: 5px;
+            margin-top: -5px; /* Slight overlap with the wheel */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* The chain and weight hanging from the wheel */
+        .chain {
+            position: absolute;
+            bottom: 25px; /* Position relative to the wrapper */
+            left: 50%;
+            width: 1px;
+            height: 40px;
+            background-color: #aaa;
+            transform-origin: top center;
+             /* Removed CSS transition for JS animation */
+        }
+
+        .weight {
+            width: 16px;
+            height: 16px;
+            background-color: #C0C0C0; /* Silver color */
+            border: 1px solid #888;
+            border-radius: 50%;
+            position: absolute;
+            bottom: -8px;
+            left: -7.5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+
+        /* Styling for the spin button */
+        .btn-spin {
+            font-family: 'Inter', sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 50px;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+        }
+
+        .btn-spin:hover, .btn-spin:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.5);
+        }
+        
+        h1 {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="simulation-container">
+        <h1>Máy farm công đức</h1>
+        <p class="text-muted">Nhấn nút liên tục để farm.</p>
+
+        <!-- Prayer wheel graphic -->
+        <div class="prayer-wheel-wrapper">
+            <div class="wheel-top"></div>
+            <div id="prayer-wheel">
+                <span>ॐ मणि पद्मे हूँ</span>
+            </div>
+            <div class="handle"></div>
+             <!-- The chain is attached to the main wheel div -->
+            <div id="chain" class="chain">
+                <div class="weight"></div>
+            </div>
+        </div>
+
+        <!-- Spin button -->
+        <button id="spin-button" class="btn btn-primary btn-spin mt-4">Quay</button>
+    </div>
+
+    <script>
+        // Get references to the HTML elements
+        const spinButton = document.getElementById('spin-button');
+        const prayerWheel = document.getElementById('prayer-wheel');
+        const chain = document.getElementById('chain');
+        const prayerWheelWrapper = document.querySelector('.prayer-wheel-wrapper');
+
+        // Initialize rotation variables
+        let currentRotation = 0;
+        let rotationSpeed = 0;
+        const decay = 0.98; // Rate at which the spinning slows down
+
+        // Function to handle the spinning animation
+        function animateSpin() {
+            // Only continue animation if there is speed
+            if (Math.abs(rotationSpeed) > 0.01) {
+                // Apply decay to slow down the spin
+                rotationSpeed *= decay;
+                // Update the total rotation (changed to minus for counter-clockwise)
+                currentRotation -= rotationSpeed;
+
+                // Apply the rotation transform to the wheel
+                prayerWheel.style.transform = `rotate(${currentRotation}deg)`;
+                
+                // The chain swings opposite to the rotation
+                const chainSwing = Math.sin(currentRotation * Math.PI / 180) * 25; // Swing angle
+                chain.style.transform = `translateX(-50%) rotate(${chainSwing}deg)`;
+
+                // Add a wobble effect to the entire wrapper
+                // The wobble is more pronounced at higher speeds, but capped
+                const wobbleAmount = Math.sin(currentRotation * 0.1) * (Math.min(Math.abs(rotationSpeed), 40) / 20);
+                prayerWheelWrapper.style.transform = `translateX(${wobbleAmount}px)`;
+                
+                // Request the next frame for smooth animation
+                requestAnimationFrame(animateSpin);
+            } else {
+                rotationSpeed = 0; // Stop completely if speed is negligible
+                prayerWheelWrapper.style.transform = 'none'; // Reset wobble when stopped
+            }
+        }
+
+        // Add a click event listener to the spin button
+        spinButton.addEventListener('click', () => {
+            // Increase rotation speed with each click
+            rotationSpeed += 15; 
+
+            // If the wheel was stopped, start the animation loop
+            // Use Math.abs() to check speed, as rotation can be negative
+            if (Math.abs(rotationSpeed) > 14) { 
+                 requestAnimationFrame(animateSpin);
+            }
+        });
+
+        // Add a mousedown event listener for a more responsive feel
+        spinButton.addEventListener('mousedown', () => {
+            spinButton.style.transform = 'translateY(1px)';
+        });
+
+        spinButton.addEventListener('mouseup', () => {
+            spinButton.style.transform = 'translateY(-2px)';
+        });
+
+    </script>
+</body>
+</html>
