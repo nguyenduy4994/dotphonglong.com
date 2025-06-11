@@ -142,13 +142,9 @@
             ĐỐT ONLINE <span class="ms-2">🔥</span>
         </button>
 
-        <!-- Hiệu ứng đốt -->
+        <!-- Lottie Animation -->
         <div id="fireEffect" class="fire-container">
-            <div class="flame flame1"></div>
-            <div class="flame flame2"></div>
-            <div class="flame flame3"></div>
-            <div class="flame flame4"></div> <!-- Fourth flame -->
-            <p class="position-absolute top-50 start-50 translate-middle text-center fs-3 fw-bold burning-text">Đang Đốt...</p>
+            <dotlottie-player id="lottiePlayer" src="https://lottie.host/8f8a9b96-1159-42bc-875d-47169ebd34d5/BlImfWrn2Y.lottie" background="transparent" speed="1" style="width: 100%; height: 100%;" loop></dotlottie-player>
         </div>
 
         <!-- Container cho hiệu ứng pháo bông -->
@@ -171,6 +167,9 @@
         </div>
     </div>
 
+    <!-- Lottie Player -->
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+    
     <!-- Tải Bootstrap 5 JS Bundle (bao gồm Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eJq0U1D+kQweT" crossorigin="anonymous"></script>
     <script>
@@ -286,10 +285,23 @@
             }, randomBurnDuration); // Use the random burning duration
         }
 
-        // Event listener for initial burn button
-        burnButton.addEventListener('click', startBurning);
+        // Get Lottie player instance
+        const lottiePlayer = document.querySelector('dotlottie-player');
 
-        // Event listener for "ĐỐT LẠI" button - directly triggers the burn process
+        // Play Lottie animation when fire effect is shown
+        function playLottieAnimation() {
+            if (lottiePlayer) {
+                lottiePlayer.play();
+            }
+        }
+
+        // Event listener for initial burn button
+        burnButton.addEventListener('click', () => {
+            startBurning();
+            playLottieAnimation();
+        });
+
+        // Event listener for "ĐỐT LẠI" button - directly triggers the burn process and plays animation
         burnAgainButton.addEventListener('click', () => {
             // No need to show burnButton again; startBurning handles hiding it.
             startBurning();
