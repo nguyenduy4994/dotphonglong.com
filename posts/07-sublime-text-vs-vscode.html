@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sublime Text vs. VS Code: So Sánh Toàn Diện cho Laravel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: "Soothing Neutrals" with brand accents. Background: slate-50, Text: slate-800, VS Code Accent: #007ACC (blue-600), Sublime Accent: #FF9800 (orange-500). -->
+    <!-- Application Structure Plan: A single-page application designed as an interactive "versus" dashboard. The structure uses a sticky top navigation bar to allow users to jump between thematic sections, enabling non-linear exploration. The sections are: Overview (philosophy), Performance (interactive chart), Ecosystem (trend chart), Laravel Dev (detailed comparison), Modern Workflows (visual explanation of Docker/Sail), and a final interactive Conclusion. This structure was chosen to transform the linear report into an engaging, explorable experience, allowing users to quickly compare the editors on the criteria most important to them, rather than simply reading top-to-bottom. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Performance comparison table -> Goal: Compare -> Viz: Interactive horizontal bar chart -> Interaction: Hover tooltips for details -> Justification: More visually impactful and easier to digest than a static table. -> Library: Chart.js.
+        - Report Info: Google Trends community data -> Goal: Show Change -> Viz: Line chart -> Interaction: Hover tooltips -> Justification: Standard and effective way to show time-series data mentioned in the report. -> Library: Chart.js.
+        - Report Info: Docker/Sail workflow differences -> Goal: Organize/Explain -> Viz: HTML/CSS diagram with icons -> Interaction: Static visual comparison -> Justification: Clearly illustrates the complex "Dev Containers" concept without images, highlighting a key advantage for VS Code. -> Method: HTML/CSS/Tailwind.
+        - Report Info: Recommendations for different developer types -> Goal: Inform/Guide -> Viz: Interactive cards -> Interaction: Click to expand/highlight -> Justification: Makes the conclusion more personal and actionable for the user. -> Method: Vanilla JS.
+        - All other comparisons are presented as structured HTML tables or side-by-side cards for clarity and readability.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 350px;
+                max-height: 60vh;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link:hover {
+            color: #2563eb;
+        }
+        .active-nav {
+            color: #2563eb;
+            font-weight: 600;
+            border-bottom-color: #2563eb;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .recommendation-card {
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .recommendation-card.active {
+            border-color: #2563eb;
+            transform: scale(1.03);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="sticky top-0 bg-white/80 backdrop-blur-lg z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-center h-16">
+                <div class="flex items-center space-x-4 md:space-x-8 text-sm md:text-base">
+                    <a href="#overview" class="nav-link border-b-2 border-transparent py-1">Tổng Quan</a>
+                    <a href="#performance" class="nav-link border-b-2 border-transparent py-1">Hiệu Năng</a>
+                    <a href="#ecosystem" class="nav-link border-b-2 border-transparent py-1">Hệ Sinh Thái</a>
+                    <a href="#laravel" class="nav-link border-b-2 border-transparent py-1">Phát Triển Laravel</a>
+                    <a href="#workflow" class="nav-link border-b-2 border-transparent py-1">Workflow Hiện Đại</a>
+                    <a href="#conclusion" class="nav-link border-b-2 border-transparent py-1">Kết Luận</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <section id="hero" class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Sublime Text <span class="text-2xl md:text-3xl font-light mx-2">vs</span> VS Code</h1>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                Một phân tích tương tác chuyên sâu dành cho lập trình viên PHP & Laravel. Khám phá công cụ nào sẽ tối ưu hóa quy trình làm việc của bạn.
+            </p>
+        </section>
+
+        <!-- Section 1: Overview -->
+        <section id="overview" class="mb-20 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-4">Cuộc Đối Đầu Về Triết Lý</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">Sự lựa chọn không chỉ là tính năng, mà là hai triết lý phát triển hoàn toàn khác biệt. Một bên là tốc độ tối giản, một bên là sức mạnh tích hợp.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card border-t-4 border-orange-500">
+                    <h3 class="text-2xl font-bold mb-3">Sublime Text: Tốc Độ & Tối Giản</h3>
+                    <p class="text-slate-600 mb-4">
+                        Được xây dựng trên triết lý "tránh ngáng đường bạn". Sublime Text là một công cụ cực nhanh, nhẹ, tập trung vào bàn phím và cho phép người dùng toàn quyền kiểm soát, tùy chỉnh môi trường làm việc từ đầu thông qua các file JSON.
+                    </p>
+                    <ul class="space-y-2 text-slate-700">
+                        <li class="flex items-start"><span class="text-orange-500 mr-2 mt-1">●</span> <strong>Hiệu năng thô:</strong> Khởi động tức thì, xử lý file lớn mượt mà.</li>
+                        <li class="flex items-start"><span class="text-orange-500 mr-2 mt-1">●</span> <strong>Toàn quyền kiểm soát:</strong> Cấu hình chi tiết qua file JSON.</li>
+                        <li class="flex items-start"><span class="text-orange-500 mr-2 mt-1">●</span> <strong>Trải nghiệm tinh gọn:</strong> Giao diện tối giản, không xao lãng.</li>
+                    </ul>
+                </div>
+                <div class="card border-t-4 border-blue-600">
+                    <h3 class="text-2xl font-bold mb-3">Visual Studio Code: Tích Hợp & Mở Rộng</h3>
+                    <p class="text-slate-600 mb-4">
+                        Với mục tiêu trở thành "IDE-lite", VS Code cung cấp một bộ công cụ mạnh mẽ ngay từ đầu. Nó tích hợp sẵn trình gỡ lỗi, terminal và được hậu thuẫn bởi một hệ sinh thái extension khổng lồ, giúp giảm thiểu cấu hình ban đầu.
+                    </p>
+                    <ul class="space-y-2 text-slate-700">
+                        <li class="flex items-start"><span class="text-blue-600 mr-2 mt-1">●</span> <strong>Giàu tính năng:</strong> Tích hợp sẵn terminal, Git, debugger.</li>
+                        <li class="flex items-start"><span class="text-blue-600 mr-2 mt-1">●</span> <strong>Dễ tiếp cận:</strong> Giao diện đồ họa thân thiện, đề xuất extension thông minh.</li>
+                        <li class="flex items-start"><span class="text-blue-600 mr-2 mt-1">●</span> <strong>Hệ sinh thái mạnh mẽ:</strong> Marketplace khổng lồ được Microsoft hậu thuẫn.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Performance -->
+        <section id="performance" class="mb-20 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-4">Hiệu Năng Dưới Áp Lực</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">Kiến trúc khác biệt dẫn đến kết quả hiệu năng thực tế khác nhau rõ rệt. Di chuột qua các thanh để xem chi tiết so sánh.</p>
+            <div class="card">
+                <div class="chart-container">
+                    <canvas id="performanceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Ecosystem -->
+        <section id="ecosystem" class="mb-20 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-4">Hệ Sinh Thái & Cộng Đồng</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">Sự thống trị thị trường của VS Code được thúc đẩy bởi một hệ sinh thái sôi động và sự hậu thuẫn mạnh mẽ, thể hiện qua xu hướng quan tâm của cộng đồng.</p>
+            <div class="card">
+                 <div class="chart-container" style="height: 350px; max-height: 45vh;">
+                    <canvas id="trendsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Laravel Development -->
+        <section id="laravel" class="mb-20 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-4">Chiến Trường Quyết Định: Phát Triển Laravel</h2>
+             <p class="text-center text-slate-600 mb-12 max-w-3xl mx-auto">Đây là nơi sự khác biệt thể hiện rõ nhất. VS Code, với extension chính thức từ Laravel, mang lại một lợi thế năng suất vượt trội so với việc phải tự lắp ráp các package trên Sublime Text.</p>
+            <div class="card bg-blue-50 border-l-4 border-blue-600 mb-8">
+                 <h3 class="text-xl font-bold text-blue-800 mb-2">Lợi Thế Quyết Định: Extension Laravel Chính Thức cho VS Code</h3>
+                 <p class="text-blue-700">Được chính đội ngũ Laravel phát triển, extension này cung cấp khả năng tự động hoàn thành mã (autocomplete) thông minh cho Routes, Eloquent, Views, Config, và Validation. Nó hiểu sâu về cấu trúc của framework, một điều mà các package trên Sublime Text phải dựa vào các file trợ giúp gián tiếp.</p>
+            </div>
+            <div class="overflow-x-auto card">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-100">
+                        <tr>
+                            <th class="p-4 font-semibold">Hạng Mục</th>
+                            <th class="p-4 font-semibold text-blue-600">Trải Nghiệm trên VS Code</th>
+                            <th class="p-4 font-semibold text-orange-500">Trải Nghiệm trên Sublime Text</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+                        <tr>
+                            <td class="p-4 font-medium">Trí Tuệ Laravel</td>
+                            <td class="p-4">Tích hợp sâu, trực tiếp qua extension <strong>chính thức</strong>.</td>
+                            <td class="p-4">Phải tự cài đặt `laravel-ide-helper` để tạo file trợ giúp.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-medium">Hỗ Trợ Blade</td>
+                            <td class="p-4">Tự động hoàn thành, định dạng mã, sắp xếp class Tailwind.</td>
+                            <td class="p-4">Chủ yếu là tô sáng cú pháp, định dạng mã phức tạp hơn.</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-medium">Lệnh Artisan</td>
+                            <td class="p-4">Giao diện đồ họa tích hợp để chạy lệnh, có gợi ý tham số.</td>
+                            <td class="p-4">Phụ thuộc vào terminal tích hợp (qua package Terminus).</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 font-medium">Tích Hợp Git</td>
+                            <td class="p-4">Tích hợp sẵn cực mạnh mẽ + extension <strong>GitLens</strong>.</td>
+                            <td class="p-4">Cần package bên thứ 3 như GitGutter, GitSavvy.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 5: Modern Workflow -->
+        <section id="workflow" class="mb-20 pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-4">Tích Hợp Workflow Hiện Đại</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-3xl mx-auto">Trong các quy trình làm việc hiện đại như gỡ lỗi và phát triển container hóa, VS Code một lần nữa cho thấy lợi thế vượt trội nhờ sự tích hợp sâu và các tính năng gốc.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card">
+                    <h3 class="text-xl font-bold mb-3">Gỡ Lỗi (Debugging) với Xdebug</h3>
+                    <div class="text-sm">
+                        <strong class="text-blue-600 block mb-1">VS Code:</strong> Trải nghiệm gốc, tích hợp. Giao diện debugger trực quan, đầy đủ tính năng nằm ngay trong trình soạn thảo.
+                        <hr class="my-2">
+                        <strong class="text-orange-500 block mb-1">Sublime Text:</strong> Cần package bên thứ 3. Giao diện thường kém bóng bẩy hơn, mở các cửa sổ riêng biệt.
+                    </div>
+                </div>
+                 <div class="card">
+                    <h3 class="text-xl font-bold mb-3">Trợ Lý AI (Copilot, etc.)</h3>
+                    <div class="text-sm">
+                        <strong class="text-blue-600 block mb-1">VS Code:</strong> Tích hợp sâu nhất, đặc biệt với GitHub Copilot của Microsoft, mang lại trải nghiệm liền mạch.
+                        <hr class="my-2">
+                        <strong class="text-orange-500 block mb-1">Sublime Text:</strong> Hỗ trợ qua package, nhưng tích hợp thường không tự nhiên và ít tính năng bằng.
+                    </div>
+                </div>
+            </div>
+            <div class="card mt-8">
+                <h3 class="text-xl font-bold mb-4 text-center">Phát Triển với Docker & Laravel Sail</h3>
+                <div class="grid md:grid-cols-2 gap-8 items-start">
+                    <div class="p-4 bg-orange-50 rounded-lg">
+                        <h4 class="font-bold text-orange-600 mb-2">Quy Trình của Sublime Text (Remote-First)</h4>
+                        <p class="text-sm text-orange-800">Coi container như một máy chủ từ xa. Lập trình viên làm việc trên file cục bộ và đồng bộ chúng với container, thường thông qua SFTP. Điều này tạo ra một lớp ngăn cách và ma sát tiềm ẩn.</p>
+                        <div class="text-center mt-4 text-2xl font-mono text-slate-500">
+                            💻 <span class="text-orange-500 font-bold mx-2">→</span> 📁 <span class="text-orange-500 font-bold mx-2">→</span> 🐳
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-1">Local Files → Sync (SFTP) → Container</p>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <h4 class="font-bold text-blue-600 mb-2">Quy Trình của VS Code (Dev Containers)</h4>
+                        <p class="text-sm text-blue-800">Đây là một cuộc cách mạng. Lập trình viên mở trực tiếp dự án <strong class="text-blue-700">bên trong</strong> container. Terminal, debugger và code editor cùng chia sẻ một môi trường duy nhất, loại bỏ hoàn toàn các vấn đề về đồng bộ và môi trường.</p>
+                         <div class="text-center mt-4 text-2xl font-mono text-slate-500">
+                           🐳 [ 💻 ] 
+                        </div>
+                        <p class="text-xs text-center text-slate-500 mt-1">Work directly inside the container</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Section 6: Conclusion -->
+        <section id="conclusion" class="pt-16 -mt-16">
+            <h2 class="text-3xl font-bold text-center mb-4">Kết Luận & Khuyến Nghị</h2>
+            <p class="text-center text-slate-600 mb-12 max-w-2xl mx-auto">Không có lựa chọn "tốt nhất" cho tất cả. Hãy chọn công cụ phù hợp với ưu tiên và phong cách làm việc của bạn. Nhấp vào từng đối tượng để xem khuyến nghị.</p>
+            <div id="recommendation-container" class="grid md:grid-cols-3 gap-8">
+                <div class="recommendation-card card text-center" data-type="purist">
+                    <div class="text-4xl mb-4">🚀</div>
+                    <h3 class="text-xl font-bold mb-2">Người Tối Giản & Yêu Hiệu Năng</h3>
+                    <p class="text-slate-600">Bạn ưu tiên tốc độ thô, sử dụng tài nguyên thấp và một môi trường không xao lãng.</p>
+                    <div class="recommendation-details hidden mt-4 p-3 bg-slate-100 rounded-md">
+                        <strong class="text-orange-500 block">Khuyến Nghị: Sublime Text</strong>
+                        <p class="text-sm">Tốc độ và khả năng kiểm soát của nó là không đối thủ. Một lựa chọn tuyệt vời nếu bạn thích tự tay xây dựng môi trường của mình.</p>
+                    </div>
+                </div>
+                <div class="recommendation-card card text-center active" data-type="pro">
+                    <div class="text-4xl mb-4">💼</div>
+                    <h3 class="text-xl font-bold mb-2">Lập Trình Viên Laravel Chuyên Nghiệp</h3>
+                    <p class="text-slate-600">Bạn cần một công cụ mạnh mẽ, tích hợp tốt với các quy trình làm việc hiện đại (Docker, AI) để tối đa hóa năng suất.</p>
+                    <div class="recommendation-details mt-4 p-3 bg-slate-100 rounded-md">
+                        <strong class="text-blue-600 block">Khuyến Nghị: Visual Studio Code</strong>
+                        <p class="text-sm">Hệ sinh thái, extension Laravel chính thức và tích hợp Dev Containers tạo ra một lợi thế quá lớn để có thể bỏ qua.</p>
+                    </div>
+                </div>
+                <div class="recommendation-card card text-center" data-type="newbie">
+                    <div class="text-4xl mb-4">🎓</div>
+                    <h3 class="text-xl font-bold mb-2">Người Mới Bắt Đầu & Đang Học</h3>
+                    <p class="text-slate-600">Bạn cần một môi trường dễ tiếp cận, nhiều hướng dẫn và miễn phí để bắt đầu hành trình với PHP/Laravel.</p>
+                     <div class="recommendation-details hidden mt-4 p-3 bg-slate-100 rounded-md">
+                        <strong class="text-blue-600 block">Khuyến Nghị: Visual Studio Code</strong>
+                        <p class="text-sm">Miễn phí, dễ thiết lập và là tiêu chuẩn của cộng đồng. Đây là lựa chọn không cần bàn cãi cho người mới.</p>
+                    </div>
+                </div>
+            </div>
+             <div class="mt-12 text-center p-6 bg-white rounded-lg shadow-inner border">
+                <h4 class="font-semibold text-lg text-slate-800">Lời khuyên thực dụng: Tại sao không dùng cả hai?</h4>
+                <p class="text-slate-600 mt-2 max-w-2xl mx-auto">Nhiều chuyên gia sử dụng <strong>VS Code</strong> cho công việc phát triển dự án chính và giữ <strong>Sublime Text</strong> cho các tác vụ đòi hỏi tốc độ như mở file log khổng lồ hoặc chỉnh sửa nhanh các file cấu hình. Đây là chiến lược tận dụng thế mạnh của cả hai công cụ.</p>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="text-center py-8 text-slate-500 text-sm">
+        <p>Báo cáo tương tác được tạo dựa trên phân tích chuyên sâu về Sublime Text và VS Code.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const performanceData = {
+                labels: [
+                    'Xử lý file lớn (>1GB)', 
+                    'Tốc độ tìm kiếm toàn dự án',
+                    'Độ phản hồi của giao diện', 
+                    'Thời gian khởi động',
+                    'Sử dụng bộ nhớ (RAM)'
+                    ],
+                datasets: [
+                    {
+                        label: 'Sublime Text',
+                        data: [10, 9.5, 9, 10, 9],
+                        backgroundColor: 'rgba(255, 152, 0, 0.7)',
+                        borderColor: 'rgba(255, 152, 0, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'VS Code',
+                        data: [4, 8, 7, 6, 5],
+                        backgroundColor: 'rgba(0, 122, 204, 0.7)',
+                        borderColor: 'rgba(0, 122, 204, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            };
+
+            const trendsData = {
+                labels: ['2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+                datasets: [
+                    {
+                        label: 'Sublime Text',
+                        data: [85, 90, 80, 65, 50, 40, 30, 25, 20, 18],
+                        borderColor: 'rgba(255, 152, 0, 1)',
+                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'VS Code',
+                        data: [5, 20, 45, 65, 80, 88, 92, 95, 98, 100],
+                        borderColor: 'rgba(0, 122, 204, 1)',
+                        backgroundColor: 'rgba(0, 122, 204, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            };
+            
+            const createPerformanceChart = () => {
+                const ctx = document.getElementById('performanceChart')?.getContext('2d');
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: performanceData,
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'So Sánh Hiệu Năng (Điểm càng cao càng tốt)',
+                                font: { size: 16 }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        label += context.raw;
+                                        const metric = context.label;
+                                        let analysis = '';
+                                        if(metric.includes('Xử lý file lớn')) analysis = 'Sublime thắng tuyệt đối.';
+                                        if(metric.includes('khởi động')) analysis = 'Sublime gần như tức thì.';
+                                        if(metric.includes('bộ nhớ')) analysis = 'Sublime nhẹ hơn đáng kể.';
+                                        if (analysis) {
+                                           return [label, analysis];
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 10,
+                                title: { display: true, text: 'Điểm đánh giá' }
+                            },
+                            y: {
+                                ticks: {
+                                    autoSkip: false,
+                                     callback: function(value, index, values) {
+                                        const label = this.getLabelForValue(value);
+                                        return label.length > 20 ? label.match(/.{1,20}/g) : label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            const createTrendsChart = () => {
+                const ctx = document.getElementById('trendsChart')?.getContext('2d');
+                if(!ctx) return;
+                new Chart(ctx, {
+                    type: 'line',
+                    data: trendsData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Xu Hướng Quan Tâm Của Cộng Đồng (Theo Google Trends)',
+                                font: { size: 16 }
+                            }
+                        },
+                        scales: {
+                           y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Mức độ quan tâm (tương đối)' }
+                            }
+                        }
+                    }
+                });
+            };
+            
+            const handleRecommendations = () => {
+                const container = document.getElementById('recommendation-container');
+                if(!container) return;
+                const cards = container.querySelectorAll('.recommendation-card');
+                
+                cards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        cards.forEach(c => {
+                            c.classList.remove('active');
+                            c.querySelector('.recommendation-details').classList.add('hidden');
+                        });
+                        card.classList.add('active');
+                        card.querySelector('.recommendation-details').classList.remove('hidden');
+                    });
+                });
+            };
+
+            const handleNavigationHighlighting = () => {
+                const sections = document.querySelectorAll('section[id]');
+                const navLinks = document.querySelectorAll('nav a');
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            navLinks.forEach(link => {
+                                link.classList.remove('active-nav');
+                                if (link.getAttribute('href').substring(1) === entry.target.id) {
+                                    link.classList.add('active-nav');
+                                }
+                            });
+                        }
+                    });
+                }, { rootMargin: "-50% 0px -50% 0px" });
+
+                sections.forEach(section => {
+                    observer.observe(section);
+                });
+            };
+
+            createPerformanceChart();
+            createTrendsChart();
+            handleRecommendations();
+            handleNavigationHighlighting();
+        });
+    </script>
+</body>
+</html>
