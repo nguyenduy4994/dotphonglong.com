@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So Sánh Tương Tác: Next.js 15 vs. TanStack Router</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Professional Accents -->
+    <!-- Application Structure Plan: The SPA is designed with a thematic, top-down information architecture. It starts with a high-level visual summary (Radar Chart) to give an immediate impression. Then, it dives into a detailed, side-by-side comparison organized by core concepts (Architecture, Routing, Data Flow, DX, Deployment) using a sticky sidebar for easy navigation. This structure avoids a long, linear scroll and allows users to jump to the topics they care about most. Visualizations like charts and diagrams are used to make complex comparisons (like Type Safety and Data Flow) more digestible than pure text. The final section provides a clear decision matrix, directly helping users apply the information to their own use case. This user-centric flow from overview -> detail -> conclusion is more effective for learning and decision-making than simply mirroring the source report's structure. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Overall strengths/weaknesses -> Goal: Inform (High-level) -> Viz: Radar Chart (Chart.js) -> Interaction: Hover tooltips -> Justification: Provides an immediate, "at-a-glance" visual summary of the two frameworks' philosophies.
+        - Report Info: Bảng 3: Ma Trận An Toàn Kiểu -> Goal: Compare (Detail) -> Viz: Grouped Bar Chart (Chart.js) -> Interaction: Hover tooltips -> Justification: Visually quantifies the significant gap in type safety, which is a key selling point of TanStack and a major point of comparison in the report. Far more impactful than a static table.
+        - Report Info: Data flow descriptions for RSCs vs. Loaders -> Goal: Compare (Structure) -> Viz: HTML/CSS Flow Diagrams -> Interaction: Toggle buttons to switch between Next.js and TanStack views -> Justification: Simplifies complex architectural concepts into clear, visual flows without using external images/SVG, adhering to constraints. Interactivity encourages user engagement.
+        - Report Info: Bảng 1: So Sánh Tính Năng Định Tuyến -> Goal: Compare (Features) -> Viz: Styled HTML Table -> Interaction: Hover highlights -> Justification: A table is the clearest way to present this direct feature-to-feature comparison. Styling makes it easy to scan and identify winners.
+        - Report Info: Final recommendations -> Goal: Inform (Decision) -> Viz: Side-by-side card layout -> Interaction: None -> Justification: Presents the final "when to choose" advice in a clear, scannable format that summarizes the key takeaways for the user.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #2c3e50;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .nav-link.active {
+            background-color: #3B82F6;
+            color: white;
+            font-weight: 600;
+        }
+        .nav-link:not(.active) {
+           color: #4B5563;
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Next.js 15 vs. TanStack Router</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Một phân tích kiến trúc tương tác giúp bạn lựa chọn công nghệ phù hợp</p>
+        </header>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <aside class="md:w-1/4 lg:w-1/5 md:sticky md:top-8 self-start">
+                 <nav id="sidebar-nav" class="glassmorphism rounded-xl p-4">
+                    <h3 class="font-bold text-lg mb-4 text-gray-700">Điều Hướng</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#overview" class="nav-link block w-full text-left px-4 py-2 rounded-lg transition-colors duration-200">Tổng Quan</a></li>
+                        <li><a href="#architecture" class="nav-link block w-full text-left px-4 py-2 rounded-lg transition-colors duration-200">Kiến Trúc & Triết Lý</a></li>
+                        <li><a href="#routing" class="nav-link block w-full text-left px-4 py-2 rounded-lg transition-colors duration-200">Định Tuyến</a></li>
+                        <li><a href="#data" class="nav-link block w-full text-left px-4 py-2 rounded-lg transition-colors duration-200">Luồng Dữ Liệu & Caching</a></li>
+                        <li><a href="#dx" class="nav-link block w-full text-left px-4 py-2 rounded-lg transition-colors duration-200">Trải Nghiệm Phát Triển</a></li>
+                        <li><a href="#deployment" class="nav-link block w-full text-left px-4 py-2 rounded-lg transition-colors duration-200">Triển Khai & Hệ Sinh Thái</a></li>
+                        <li><a href="#decision" class="nav-link block w-full text-left px-4 py-2 rounded-lg transition-colors duration-200">Ma Trận Quyết Định</a></li>
+                    </ul>
+                </nav>
+            </aside>
+            
+            <main class="md:w-3/4 lg:w-4/5">
+                <section id="overview" class="mb-16 scroll-mt-24">
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">Tổng Quan So Sánh</h2>
+                    <p class="text-gray-600 mb-8 max-w-4xl">
+                        Biểu đồ radar này cung cấp một cái nhìn tổng quan, so sánh các điểm mạnh tương đối của Next.js 15 và TanStack Router trên các khía cạnh chính. Next.js (màu xanh) nổi trội về các tính năng định tuyến nâng cao và hiệu suất được tối ưu hóa sẵn có, trong khi TanStack (màu đỏ) chiếm ưu thế tuyệt đối về an toàn kiểu, trải nghiệm nhà phát triển (DX), và sự linh hoạt trong triển khai.
+                    </p>
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-lg">
+                       <div class="chart-container">
+                            <canvas id="overviewRadarChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="architecture" class="mb-16 scroll-mt-24">
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">Kiến Trúc & Triết Lý</h2>
+                    <p class="text-gray-600 mb-8 max-w-4xl">
+                        Phần này khám phá sự khác biệt triết học nền tảng giữa Next.js và TanStack. Chúng ta sẽ so sánh mô hình "Server-First" tích hợp của Next.js với cách tiếp cận "Client-First" module hóa của TanStack, và phân tích những hệ quả của mỗi lựa chọn đối với kiến trúc ứng dụng của bạn.
+                    </p>
+                     <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-blue-500">
+                            <h3 class="text-2xl font-semibold mb-3 text-blue-800">Next.js: Framework "Server-First" Tích Hợp</h3>
+                            <p class="mb-4">Next.js là một framework toàn diện, có chính kiến rõ ràng, ưu tiên kết xuất trên server. Nó tích hợp chặt chẽ định tuyến, tìm nạp dữ liệu và rendering, với React Server Components (RSCs) là mặc định. Điều này rất lý tưởng cho SEO và hiệu suất tải ban đầu.</p>
+                            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>Giải pháp toàn diện:</strong> Xây dựng ứng dụng full-stack trong một codebase.</li>
+                                <li><strong>Mặc định là Server:</strong> Tối ưu hiệu suất và SEO ngay từ đầu.</li>
+                                <li><strong>Quy ước hơn cấu hình:</strong> Đơn giản hóa quá trình phát triển.</li>
+                            </ul>
+                        </div>
+                         <div class="bg-white p-6 rounded-2xl shadow-lg border-l-4 border-red-500">
+                            <h3 class="text-2xl font-semibold mb-3 text-red-800">TanStack: Thư Viện "Client-First" Module Hóa</h3>
+                            <p class="mb-4">TanStack Router là một thư viện định tuyến tập trung vào an toàn kiểu và tính module hóa. Nó độc lập với framework và không có chính kiến về tìm nạp dữ liệu, mang lại sự linh hoạt tối đa. Khi kết hợp với TanStack Start, nó trở thành một framework "client-first, server-capable".</p>
+                             <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li><strong>TypeScript-first:</strong> An toàn kiểu là cốt lõi, không phải tính năng thêm.</li>
+                                <li><strong>Module hóa và linh hoạt:</strong> Tích hợp với các công cụ bạn chọn.</li>
+                                <li><strong>Client-first:</strong> Lý tưởng cho các SPA tương tác cao, nặng về trạng thái.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="routing" class="mb-16 scroll-mt-24">
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">Cơ Chế Định Tuyến</h2>
+                    <p class="text-gray-600 mb-8 max-w-4xl">
+                        Định tuyến là một trong những điểm khác biệt lớn nhất. Next.js cung cấp các tính năng mạnh mẽ cho các giao diện phức tạp như Parallel và Intercepting Routes ngay từ đầu. TanStack Router, mặt khác, cung cấp sự linh hoạt vượt trội với định tuyến dựa trên mã và các quy ước rõ ràng hơn cho layout.
+                    </p>
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-lg overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-4 font-semibold text-gray-600">Tính Năng</th>
+                                    <th class="p-4 font-semibold text-gray-600">Next.js 15</th>
+                                    <th class="p-4 font-semibold text-gray-600">TanStack Router</th>
+                                    <th class="p-4 font-semibold text-gray-600">Người chiến thắng</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="p-4 font-medium">Nested Layouts</td>
+                                    <td class="p-4 text-gray-700">Hỗ trợ gốc qua `layout.tsx`</td>
+                                    <td class="p-4 text-gray-700">Tính năng cốt lõi, rất linh hoạt</td>
+                                    <td class="p-4 font-semibold text-yellow-600">Hòa</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="p-4 font-medium">Pathless Layouts</td>
+                                    <td class="p-4 text-gray-700">Qua Route Groups `(folder)`</td>
+                                    <td class="p-4 text-gray-700">Hỗ trợ gốc qua thư mục `_`</td>
+                                    <td class="p-4 font-semibold text-red-600">TanStack</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="p-4 font-medium">Parallel Routes (Slots)</td>
+                                    <td class="p-4 text-gray-700">Hỗ trợ hạng nhất qua `@folder`</td>
+                                    <td class="p-4 text-gray-700">Không hỗ trợ gốc</td>
+                                    <td class="p-4 font-semibold text-blue-600">Next.js</td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="p-4 font-medium">Intercepting Routes</td>
+                                    <td class="p-4 text-gray-700">Hỗ trợ hạng nhất qua `(.)`</td>
+                                    <td class="p-4 text-gray-700">Không hỗ trợ gốc</td>
+                                    <td class="p-4 font-semibold text-blue-600">Next.js</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <section id="data" class="mb-16 scroll-mt-24">
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">Luồng Dữ Liệu & Caching</h2>
+                    <p class="text-gray-600 mb-8 max-w-4xl">
+                        Mô hình dữ liệu là một sự phân chia triết học khác. Next.js đặt việc tìm nạp dữ liệu bên trong các Server Component `async`, tích hợp chặt chẽ với hệ thống caching đa tầng phức tạp của nó. TanStack tách biệt việc tìm nạp dữ liệu vào các hàm `loader` của route, mang lại sự rõ ràng và tích hợp liền mạch với TanStack Query.
+                    </p>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <div class="mb-6">
+                            <div class="flex justify-center space-x-2 mb-4">
+                                <button id="view-nextjs-data" class="px-4 py-2 rounded-lg font-semibold transition-colors data-toggle active:bg-blue-600 bg-blue-500 text-white">Luồng Dữ Liệu Next.js</button>
+                                <button id="view-tanstack-data" class="px-4 py-2 rounded-lg font-semibold transition-colors data-toggle bg-gray-200 text-gray-700">Luồng Dữ Liệu TanStack</button>
+                            </div>
+                        </div>
+
+                        <div id="data-flow-content">
+                        </div>
+                    </div>
+                </section>
+
+                <section id="dx" class="mb-16 scroll-mt-24">
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">Trải Nghiệm Phát Triển (DX)</h2>
+                    <p class="text-gray-600 mb-8 max-w-4xl">
+                        Đây là lĩnh vực mà TanStack Router tỏa sáng rực rỡ. An toàn kiểu từ đầu đến cuối không phải là một tùy chọn—nó là cốt lõi. Điều này, kết hợp với các công cụ phát triển (Devtools) mạnh mẽ và quản lý tham số tìm kiếm ưu việt, tạo ra một trải nghiệm nhà phát triển có thể giảm đáng kể lỗi và tăng tốc độ bảo trì.
+                    </p>
+                    <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-lg">
+                        <h3 class="text-2xl font-semibold mb-4 text-center">So Sánh Mức Độ An Toàn Kiểu (Type Safety)</h3>
+                       <div class="chart-container" style="height: 450px; max-height: 500px;">
+                            <canvas id="typeSafetyChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="deployment" class="mb-16 scroll-mt-24">
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">Triển Khai & Hệ Sinh Thái</h2>
+                    <p class="text-gray-600 mb-8 max-w-4xl">
+                       Sự lựa chọn của bạn có thể bị ảnh hưởng đáng kể bởi hệ sinh thái và chiến lược triển khai. Next.js được tối ưu hóa sâu sắc cho Vercel, mang lại sự tiện lợi nhưng cũng có nguy cơ bị "khóa chân" (vendor lock-in). TanStack Start được thiết kế để độc lập với nền tảng, mang lại sự tự do tối đa.
+                    </p>
+                     <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                            <h3 class="text-2xl font-semibold mb-3 text-gray-800">Next.js: Tối ưu cho Vercel</h3>
+                            <p class="mb-4">"Con đường hạnh phúc" của Next.js là triển khai trên Vercel. Các tính năng như ISR, Edge Middleware và Image Optimization hoạt động tốt nhất ở đó. Việc tự host (self-hosting) là có thể nhưng phức tạp và đòi hỏi nỗ lực DevOps đáng kể để sao chép cơ sở hạ tầng của Vercel.</p>
+                             <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li class="font-semibold text-red-600">Thách thức: Nguy cơ vendor lock-in.</li>
+                                <li class="font-semibold text-red-600">Tự host phức tạp (cần OpenNext).</li>
+                                <li class="font-semibold text-green-600">Lợi ích: Triển khai cực kỳ đơn giản trên Vercel.</li>
+                            </ul>
+                        </div>
+                         <div class="bg-white p-6 rounded-2xl shadow-lg">
+                            <h3 class="text-2xl font-semibold mb-3 text-gray-800">TanStack Start: Độc lập Nền tảng</h3>
+                            <p class="mb-4">Được xây dựng trên Vite và Nitro, TanStack Start được thiết kế để có thể triển khai ở bất cứ đâu. Nó có các cài đặt sẵn cho nhiều nhà cung cấp (Vercel, Netlify, Cloudflare, Node...) mang lại sự tự do và kiểm soát hoàn toàn cho đội ngũ phát triển.</p>
+                             <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                <li class="font-semibold text-green-600">Lợi ích: Tránh vendor lock-in.</li>
+                                <li class="font-semibold text-green-600">Linh hoạt triển khai tối đa.</li>
+                                <li class="font-semibold text-red-600">Thách thức: Cần đưa ra nhiều quyết định về cơ sở hạ tầng hơn.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="decision" class="scroll-mt-24">
+                    <h2 class="text-3xl font-bold mb-4 text-gray-800">Ma Trận Quyết Định: Khi Nào Nên Chọn Gì?</h2>
+                    <p class="text-gray-600 mb-8 max-w-4xl">
+                        Cuối cùng, không có công cụ nào "tốt hơn" một cách tuyệt đối, chỉ có công cụ "phù hợp nhất" cho nhu cầu cụ thể của bạn. Hãy sử dụng ma trận này để điều chỉnh lựa chọn kiến trúc với mục tiêu dự án và chuyên môn của đội ngũ.
+                    </p>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-blue-50 p-6 rounded-2xl shadow-lg">
+                            <h3 class="text-2xl font-semibold mb-3 text-blue-800">Chọn Next.js 15 Khi...</h3>
+                            <ul class="list-none space-y-3">
+                                <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Dự án của bạn nặng về nội dung, SEO là ưu tiên hàng đầu (blog, e-commerce, trang marketing).</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Bạn muốn một giải pháp "bao gồm mọi thứ cần thiết" và tốc độ phát triển ban đầu nhanh.</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Đội ngũ của bạn thoải mái với hệ sinh thái Vercel và sẵn sàng học các khái niệm trừu tượng của Next.js.</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">✓</span><span>Bạn cần các mẫu giao diện phức tạp như dashboard với modal có thể chia sẻ URL.</span></li>
+                            </ul>
+                        </div>
+                        <div class="bg-red-50 p-6 rounded-2xl shadow-lg">
+                            <h3 class="text-2xl font-semibold mb-3 text-red-800">Chọn TanStack Router Khi...</h3>
+                            <ul class="list-none space-y-3">
+                                <li class="flex items-start"><span class="text-red-500 mr-3 mt-1">✓</span><span>Dự án của bạn là một ứng dụng tương tác cao, nặng về dữ liệu (dashboard SaaS, công cụ nội bộ).</span></li>
+                                <li class="flex items-start"><span class="text-red-500 mr-3 mt-1">✓</span><span>An toàn kiểu từ đầu đến cuối và khả năng bảo trì lâu dài là ưu tiên tuyệt đối.</span></li>
+                                <li class="flex items-start"><span class="text-red-500 mr-3 mt-1">✓</span><span>Bạn muốn tránh bị khóa chân vào nhà cung cấp và có toàn quyền kiểm soát môi trường triển khai.</span></li>
+                                 <li class="flex items-start"><span class="text-red-500 mr-3 mt-1">✓</span><span>Bạn cần quản lý trạng thái phức tạp trong URL (bộ lọc, tab) và muốn có trải nghiệm DX vượt trội.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const nextjsColor = 'rgba(59, 130, 246, 0.8)';
+    const nextjsBorderColor = 'rgba(59, 130, 246, 1)';
+    const tanstackColor = 'rgba(239, 68, 68, 0.8)';
+    const tanstackBorderColor = 'rgba(239, 68, 68, 1)';
+
+    const overviewRadarCtx = document.getElementById('overviewRadarChart').getContext('2d');
+    new Chart(overviewRadarCtx, {
+        type: 'radar',
+        data: {
+            labels: ['An Toàn Kiểu', 'Trải Nghiệm Dev (DX)', 'Định Tuyến Nâng Cao', 'Hiệu Suất & Caching', 'Linh Hoạt & Triển Khai'],
+            datasets: [{
+                label: 'Next.js 15',
+                data: [2, 3, 5, 5, 2],
+                backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                borderColor: nextjsBorderColor,
+                pointBackgroundColor: nextjsBorderColor,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: nextjsBorderColor
+            }, {
+                label: 'TanStack Router',
+                data: [5, 5, 2, 3, 5],
+                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                borderColor: tanstackBorderColor,
+                pointBackgroundColor: tanstackBorderColor,
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: tanstackBorderColor
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                r: {
+                    angleLines: { display: true },
+                    suggestedMin: 0,
+                    suggestedMax: 5,
+                    pointLabels: {
+                        font: {
+                           size: 13
+                        }
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.r !== null) {
+                                label += context.parsed.r;
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const typeSafetyCtx = document.getElementById('typeSafetyChart').getContext('2d');
+    new Chart(typeSafetyCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Đường dẫn Route', 'Tham số đường dẫn', 'Tham số tìm kiếm', 'Dữ liệu Loader', 'Payload Mutation'],
+            datasets: [
+                {
+                    label: 'Next.js 15',
+                    data: [2, 1, 1, 4, 2],
+                    backgroundColor: nextjsColor,
+                    borderColor: nextjsBorderColor,
+                    borderWidth: 1
+                },
+                {
+                    label: 'TanStack Router',
+                    data: [5, 5, 5, 4.5, 4],
+                    backgroundColor: tanstackColor,
+                    borderColor: tanstackBorderColor,
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: 5,
+                    title: {
+                        display: true,
+                        text: 'Mức độ an toàn (1=Thấp, 5=Cao)'
+                    }
+                }
+            },
+             plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+    
+    const dataFlowContent = document.getElementById('data-flow-content');
+    const dataToggles = document.querySelectorAll('.data-toggle');
+    const dataFlows = {
+        nextjs: `
+            <h3 class="text-xl font-semibold mb-3 text-blue-800">Next.js: Server Components & Actions</h3>
+            <p class="mb-4">Dữ liệu được tìm nạp trực tiếp trong các Server Component ` + '`async`' + `. Mutations được xử lý qua Server Actions. Hệ thống caching đa tầng (Request Memoization, Data Cache, Full Route Cache, Router Cache) hoạt động tự động phía sau.</p>
+            <div class="space-y-4 font-mono text-sm">
+                <div class="flex items-center space-x-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Client</span><span>-- Gọi Server Action --></span><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">Server</span></div>
+                <div class="flex items-center space-x-2 pl-4"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">Server</span><span>-- ` + '`await db.query()`' + ` --></span><span class="bg-green-100 text-green-800 px-2 py-1 rounded">Database</span></div>
+                <div class="flex items-center space-x-2 pl-4"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">Server</span><span>-- Tự động Cache --></span><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Data Cache</span></div>
+                <div class="flex items-center space-x-2"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">Server</span><span>-- Trả về RSC Payload --></span><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Client</span></div>
+            </div>
+        `,
+        tanstack: `
+            <h3 class="text-xl font-semibold mb-3 text-red-800">TanStack: Route Loaders & Query</h3>
+            <p class="mb-4">Dữ liệu được tìm nạp trong hàm ` + '`loader`' + ` của route, trước khi component được render. ` + '`loader`' + ` chạy trên server (lần đầu) và client (điều hướng). TanStack Query thường được dùng để quản lý trạng thái, caching, và mutations phía client.</p>
+            <div class="space-y-4 font-mono text-sm">
+                 <div class="flex items-center space-x-2"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Client</span><span>-- Điều hướng --></span><span class="bg-red-100 text-red-800 px-2 py-1 rounded">Router</span></div>
+                <div class="flex items-center space-x-2 pl-4"><span class="bg-red-100 text-red-800 px-2 py-1 rounded">Router</span><span>-- Chạy Loader --></span><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">Server/Client</span></div>
+                <div class="flex items-center space-x-2 pl-8"><span class="bg-purple-100 text-purple-800 px-2 py-1 rounded">Loader</span><span>-- ` + '`queryClient.ensureQueryData()`' + ` --></span><span class="bg-green-100 text-green-800 px-2 py-1 rounded">API/DB</span></div>
+                <div class="flex items-center space-x-2 pl-4"><span class="bg-red-100 text-red-800 px-2 py-1 rounded">Router</span><span>-- Cung cấp dữ liệu --></span><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Component</span></div>
+            </div>
+        `
+    };
+
+    function updateDataFlowView(view) {
+        dataFlowContent.innerHTML = dataFlows[view];
+        dataToggles.forEach(toggle => {
+            toggle.classList.remove('active:bg-blue-600', 'bg-blue-500', 'text-white', 'active:bg-red-600', 'bg-red-500');
+            toggle.classList.add('bg-gray-200', 'text-gray-700');
+        });
+        const activeToggle = document.getElementById(`view-${view}-data`);
+        activeToggle.classList.remove('bg-gray-200', 'text-gray-700');
+        if (view === 'nextjs') {
+            activeToggle.classList.add('active:bg-blue-600', 'bg-blue-500', 'text-white');
+        } else {
+             activeToggle.classList.add('active:bg-red-600', 'bg-red-500', 'text-white');
+        }
+    }
+    
+    dataToggles.forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            const view = toggle.id.includes('nextjs') ? 'nextjs' : 'tanstack';
+            updateDataFlowView(view);
+        });
+    });
+
+    updateDataFlowView('nextjs');
+    
+    const sections = document.querySelectorAll('section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.3
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === entry.target.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => {
+        observer.observe(section);
+    });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href');
+            document.querySelector(targetId).scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+
+});
+</script>
+</body>
+</html>
