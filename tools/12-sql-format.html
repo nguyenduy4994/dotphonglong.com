@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Formatter with Editor</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Google Fonts: Poppins for general text, Fira Code for code editor -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/material-darker.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/eclipse.min.css">
+
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .main-title {
+            font-weight: 600;
+            color: var(--bs-primary);
+        }
+
+        .app-container {
+            border: 1px solid var(--bs-border-color);
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.07);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .footer-text {
+            font-size: 0.85rem;
+            color: var(--bs-secondary-color);
+        }
+
+        /* Style for the dark mode toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 1030; /* Ensure it's above CodeMirror */
+        }
+
+        /* CodeMirror Customization */
+        .CodeMirror {
+            border: 1px solid var(--bs-border-color);
+            border-radius: 0.375rem; /* Bootstrap's default border-radius */
+            height: 350px; /* Tăng chiều cao mặc định */
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        .editor-container {
+            position: relative;
+            height: 350px;
+        }
+    </style>
+</head>
+<body class="py-5">
+
+    <!-- Dark Mode Toggle Button -->
+    <button id="theme-toggle-btn" class="btn btn-outline-secondary rounded-circle p-2 theme-toggle" title="Toggle Dark Mode">
+        <i id="theme-icon" class="bi bi-moon-stars-fill"></i>
+    </button>
+
+    <div class="container">
+        <!-- Main Title -->
+        <header class="text-center mb-4">
+            <h1 class="display-5 main-title">SQL Formatter</h1>
+        </header>
+
+        <!-- Main Application Frame -->
+        <main class="p-4 p-md-5 rounded-4 app-container bg-body-tertiary">
+            <div class="row g-4">
+                <!-- Input SQL Editor -->
+                <div class="col-lg-6 d-flex flex-column">
+                    <label for="sql-input-editor" class="form-label fw-bold">Mã SQL của bạn:</label>
+                    <div id="sql-input-editor" class="editor-container"></div>
+                </div>
+
+                <!-- Output SQL Editor -->
+                <div class="col-lg-6 d-flex flex-column">
+                    <label for="sql-output-editor" class="form-label fw-bold">Kết quả đã định dạng:</label>
+                    <div id="sql-output-editor" class="editor-container"></div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-4">
+                <button id="format-btn" class="btn btn-primary fw-bold px-4">
+                    <i class="bi bi-stars me-2"></i>Format SQL
+                </button>
+                <button id="copy-btn" class="btn btn-success px-4">
+                    <i class="bi bi-clipboard-check-fill me-2"></i>Copy
+                </button>
+                <button id="clear-btn" class="btn btn-danger px-4">
+                    <i class="bi bi-trash3-fill me-2"></i>Clear
+                </button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center mt-5">
+            <p class="footer-text">DOTPHONGLONG Mini App</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <!-- SQL Formatter Library -->
+    <script src="https://unpkg.com/sql-formatter@15.3.1/dist/sql-formatter.min.js"></script>
+
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+
+    <!-- Core Application Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DOM Element Selection ---
+            const formatBtn = document.getElementById('format-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const themeIcon = document.getElementById('theme-icon');
+            const htmlEl = document.documentElement;
+            
+            const placeholderText = `-- Dán mã SQL của bạn vào đây...\nSELECT user_id, user_name, date_add(NOW(), interval 1 day) FROM users u JOIN orders o ON u.id = o.user_id WHERE u.signup_date > '2023-01-01' GROUP BY user_id, user_name ORDER BY COUNT(*) DESC;`;
+
+            // --- CodeMirror Editor Initialization ---
+            const inputEditor = CodeMirror(document.getElementById('sql-input-editor'), {
+                value: placeholderText,
+                mode: 'text/x-sql',
+                theme: 'eclipse', // Light theme by default
+                lineNumbers: true,
+                lineWrapping: true,
+                autofocus: true,
+                matchBrackets: true
+            });
+
+            const outputEditor = CodeMirror(document.getElementById('sql-output-editor'), {
+                value: '-- Kết quả sẽ được hiển thị ở đây...',
+                mode: 'text/x-sql',
+                theme: 'eclipse', // Light theme by default
+                lineNumbers: true,
+                lineWrapping: true,
+                readOnly: true,
+                matchBrackets: true
+            });
+            
+            // --- Event Listeners ---
+
+            // 1. Format SQL Button
+            formatBtn.addEventListener('click', () => {
+                const unformattedSql = inputEditor.getValue().trim();
+                if (unformattedSql === '' || unformattedSql === placeholderText.trim()) {
+                    outputEditor.setValue('-- Chưa có mã SQL để định dạng.');
+                    return;
+                }
+                try {
+                    // Use the sql-formatter library
+                    const formattedSql = sqlFormatter.format(unformattedSql, {
+                        language: 'mysql', // FIX: Use 'mysql' dialect to correctly handle functions like NOW() without adding extra spaces.
+                        tabWidth: 2,
+                        keywordCase: 'upper',
+                    });
+                    outputEditor.setValue(formattedSql);
+                } catch (error) {
+                    console.error("SQL Formatting Error:", error);
+                    outputEditor.setValue(`-- Lỗi định dạng SQL. Vui lòng kiểm tra lại cú pháp.\n-- Error: ${error.message}`);
+                }
+            });
+
+            // 2. Copy to Clipboard Button
+            copyBtn.addEventListener('click', () => {
+                const textToCopy = outputEditor.getValue();
+                if (!textToCopy || textToCopy.startsWith('--')) {
+                    return;
+                }
+                
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                try {
+                    document.execCommand('copy');
+                    const originalText = copyBtn.innerHTML;
+                    copyBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i>Đã chép!';
+                    copyBtn.classList.add('btn-info');
+                    copyBtn.classList.remove('btn-success');
+                    setTimeout(() => {
+                        copyBtn.innerHTML = originalText;
+                        copyBtn.classList.remove('btn-info');
+                        copyBtn.classList.add('btn-success');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                }
+                document.body.removeChild(tempTextArea);
+            });
+
+            // 3. Clear Button
+            clearBtn.addEventListener('click', () => {
+                inputEditor.setValue('');
+                outputEditor.setValue('');
+                inputEditor.focus();
+            });
+
+            // 4. Dark Mode Toggle Button
+            themeToggleBtn.addEventListener('click', () => {
+                const currentTheme = htmlEl.getAttribute('data-bs-theme');
+                if (currentTheme === 'dark') {
+                    htmlEl.setAttribute('data-bs-theme', 'light');
+                    themeIcon.classList.replace('bi-sun-fill', 'bi-moon-stars-fill');
+                    // Change CodeMirror theme
+                    inputEditor.setOption('theme', 'eclipse');
+                    outputEditor.setOption('theme', 'eclipse');
+                } else {
+                    htmlEl.setAttribute('data-bs-theme', 'dark');
+                    themeIcon.classList.replace('bi-moon-stars-fill', 'bi-sun-fill');
+                    // Change CodeMirror theme
+                    inputEditor.setOption('theme', 'material-darker');
+                    outputEditor.setOption('theme', 'material-darker');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
