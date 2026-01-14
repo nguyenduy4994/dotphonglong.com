@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lộ Trình Chứng Chỉ Cho Tech Lead</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a single-page, vertical-scrolling experience with a fixed top navigation bar. This structure allows users to quickly grasp the key competency areas of a Tech Lead and navigate directly to the sections that interest them most. The core interaction is a filter/scroll mechanism driven by the navigation buttons. This is more intuitive than a multi-page site for a focused topic like this. The flow starts with a high-level overview (introduction and skills chart), then allows users to drill down into specific certification categories. This top-down approach aids comprehension and prevents user overload. A final section visualizes a potential career path, contextualizing the certifications within a professional journey. This structure was chosen to transform a static list of information into an exploratory and educational tool. -->
+    <!-- Visualization & Content Choices: 
+        1. Tech Lead Skills Mix -> Goal: Compare/Inform -> Viz: Radar Chart -> Interaction: Hover for tooltips -> Justification: A radar chart visually communicates the multi-faceted nature of the Tech Lead role, showing the balance needed between technical, management, and strategic skills far better than a list or bar chart. -> Library: Chart.js (Canvas).
+        2. Certification Categories -> Goal: Organize/Inform -> Presentation: Thematic Sections with Cards -> Interaction: Navigation buttons scroll to the relevant section. -> Justification: Grouping certifications by competency (Cloud, Management, etc.) provides a clear mental model for the user. Cards allow for a consistent and scannable presentation of each certificate's details. -> Method: HTML/Tailwind + JS for scrolling.
+        3. Career Path -> Goal: Organize/Show Change -> Presentation: Horizontal Flowchart Diagram -> Interaction: Visual progression, no clicks needed. -> Justification: A visual timeline helps users understand where these certifications fit into their long-term career goals, providing context and motivation. -> Method: HTML/Tailwind Flexbox.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #0d9488;
+            color: #ffffff;
+            font-weight: 600;
+        }
+        .nav-button:not(.active):hover {
+            background-color: #f1f5f9;
+            color: #0d9488;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+        section {
+            scroll-margin-top: 80px;
+        }
+    </style>
+</head>
+<body class="smooth-scroll">
+
+    <div id="app" class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-teal-700 mb-2">Lộ Trình Chứng Chỉ Cho Tech Lead</h1>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto">Một hướng dẫn tương tác về các chứng chỉ và kỹ năng cần thiết để thành công trong vai trò Trưởng nhóm Kỹ thuật.</p>
+        </header>
+
+        <nav id="navigation" class="sticky top-4 z-10 bg-white/80 backdrop-blur-md rounded-xl shadow-md mb-12 p-2">
+            <div class="flex flex-wrap justify-center gap-2">
+                <button data-target="overview" class="nav-button active text-slate-700 font-medium py-2 px-4 rounded-lg">Tổng Quan</button>
+                <button data-target="leadership" class="nav-button text-slate-700 font-medium py-2 px-4 rounded-lg">Lãnh Đạo & Quản Lý</button>
+                <button data-target="cloud" class="nav-button text-slate-700 font-medium py-2 px-4 rounded-lg">Cloud & DevOps</button>
+                <button data-target="project-management" class="nav-button text-slate-700 font-medium py-2 px-4 rounded-lg">Quản Lý Dự Án</button>
+                <button data-target="architecture" class="nav-button text-slate-700 font-medium py-2 px-4 rounded-lg">Kiến Trúc Hệ Thống</button>
+            </div>
+        </nav>
+
+        <main>
+            <section id="overview" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6 text-center">Vai Trò Của Một Tech Lead</h2>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="text-slate-700 leading-relaxed">
+                        <p class="mb-4">
+                            Vai trò Tech Lead là sự kết hợp độc đáo giữa chuyên môn kỹ thuật sâu sắc và khả năng lãnh đạo con người. Bạn không chỉ là người đưa ra các quyết định về mặt kiến trúc và công nghệ mà còn là người cố vấn, hướng dẫn và truyền cảm hứng cho đội nhóm của mình.
+                        </p>
+                        <p class="mb-4">
+                            Để thành công, một Tech Lead cần cân bằng giữa việc viết code, thiết kế hệ thống, quản lý dự án và phát triển con người. Các chứng chỉ có thể giúp bạn hệ thống hóa kiến thức, xác thực kỹ năng và mở ra những góc nhìn mới trong từng lĩnh vực quan trọng này. Phần biểu đồ bên cạnh minh họa sự phân bổ các nhóm kỹ năng cốt lõi mà một Tech Lead cần có.
+                        </p>
+                    </div>
+                    <div>
+                        <div class="chart-container">
+                            <canvas id="skillsChart"></canvas>
+                        </div>
+                        <p class="text-center text-sm text-slate-500 mt-2">Phân bổ các nhóm kỹ năng cốt lõi</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="leadership" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-800 mb-3 text-center">Kỹ Năng Lãnh Đạo & Quản Lý</h2>
+                 <p class="text-center text-slate-600 max-w-3xl mx-auto mb-8">Đây là nhóm kỹ năng mềm nhưng cực kỳ quan trọng, quyết định khả năng gắn kết và phát triển đội ngũ. Không có nhiều chứng chỉ chính thức cho lĩnh vực này, thay vào đó, việc tham gia các khóa học và áp dụng vào thực tế là chìa khóa.</p>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-teal-500">
+                        <h3 class="font-bold text-xl mb-2 text-teal-800">Huấn Luyện & Cố Vấn (Coaching & Mentoring)</h3>
+                        <p class="text-slate-600">Phát triển kỹ năng đặt câu hỏi, lắng nghe và hướng dẫn các thành viên trong nhóm tự tìm ra giải pháp, giúp họ phát triển sự nghiệp.</p>
+                        <p class="text-slate-600 mt-4"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Coursera, LinkedIn Learning, các khóa học nội bộ của công ty.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-teal-500">
+                        <h3 class="font-bold text-xl mb-2 text-teal-800">Giải Quyết Xung Đột</h3>
+                        <p class="text-slate-600">Học cách xác định, hòa giải và giải quyết các mâu thuẫn trong nhóm một cách xây dựng để duy trì môi trường làm việc tích cực.</p>
+                        <p class="text-slate-600 mt-4"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Các workshop chuyên sâu, sách về tâm lý tổ chức.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-teal-500">
+                        <h3 class="font-bold text-xl mb-2 text-teal-800">Giao Tiếp Hiệu Quả</h3>
+                        <p class="text-slate-600">Truyền đạt tầm nhìn kỹ thuật, cung cấp phản hồi và giao tiếp rõ ràng với cả các bên liên quan kỹ thuật và phi kỹ thuật.</p>
+                        <p class="text-slate-600 mt-4"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Toastmasters International, các khóa học về thuyết trình và giao tiếp.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="cloud" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-800 mb-3 text-center">Cloud & DevOps</h2>
+                <p class="text-center text-slate-600 max-w-3xl mx-auto mb-8">Kiến thức vững chắc về nền tảng đám mây và quy trình DevOps là yêu cầu bắt buộc đối với Tech Lead trong thế giới hiện đại để xây dựng các hệ thống có khả năng mở rộng, linh hoạt và đáng tin cậy.</p>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500 flex flex-col">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-xl mb-2 text-blue-800">AWS Certified Solutions Architect</h3>
+                            <p class="text-slate-600 mb-2"><strong>Tổ chức:</strong> Amazon Web Services</p>
+                            <p class="text-slate-600">Chứng minh khả năng thiết kế và triển khai các hệ thống có khả năng chịu lỗi, tiết kiệm chi phí và có thể mở rộng trên AWS.</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-200">
+                             <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Chi phí ước tính:</strong> $150 (Associate) - $300 (Professional) cho mỗi lần thi.</p>
+                             <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Udemy (Stephane Maarek), A Cloud Guru, Adrian Cantrill.</p>
+                             <p class="text-slate-600"><strong class="font-semibold text-slate-700">Hình thức thi:</strong> Online (Pearson VUE) hoặc tại các trung tâm khảo thí.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500 flex flex-col">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-xl mb-2 text-blue-800">Azure Solutions Architect Expert</h3>
+                            <p class="text-slate-600 mb-2"><strong>Tổ chức:</strong> Microsoft</p>
+                            <p class="text-slate-600">Xác thực chuyên môn về thiết kế và triển khai các giải pháp chạy trên Microsoft Azure, bao gồm tính toán, mạng, lưu trữ và bảo mật.</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-200">
+                             <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Chi phí ước tính:</strong> ~$165 cho bài thi AZ-305 (yêu cầu có chứng chỉ Azure Administrator Associate).</p>
+                             <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Microsoft Learn, Udemy (Scott Duffy), A Cloud Guru.</p>
+                             <p class="text-slate-600"><strong class="font-semibold text-slate-700">Hình thức thi:</strong> Online (Pearson VUE) hoặc tại các trung tâm khảo thí.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-blue-500 flex flex-col">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-xl mb-2 text-blue-800">Google Professional Cloud Architect</h3>
+                            <p class="text-slate-600 mb-2"><strong>Tổ chức:</strong> Google Cloud</p>
+                            <p class="text-slate-600">Thể hiện khả năng thiết kế, phát triển và quản lý kiến trúc hạ tầng đám mây mạnh mẽ, an toàn và động trên Google Cloud Platform.</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-200">
+                            <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Chi phí ước tính:</strong> ~$200 cho mỗi lần thi.</p>
+                            <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Coursera (Google Cloud official), A Cloud Guru, tài liệu chính thức của Google Cloud.</p>
+                            <p class="text-slate-600"><strong class="font-semibold text-slate-700">Hình thức thi:</strong> Online hoặc tại các trung tâm khảo thí Kryterion.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="project-management" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-800 mb-3 text-center">Quản Lý Dự Án & Quy Trình</h2>
+                <p class="text-center text-slate-600 max-w-3xl mx-auto mb-8">Tech Lead phải đảm bảo tiến độ của dự án và chất lượng kỹ thuật. Hiểu biết về các phương pháp quản lý như Agile và Scrum là vô cùng cần thiết để dẫn dắt đội nhóm đi đúng hướng.</p>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                     <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500 flex flex-col">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-xl mb-2 text-purple-800">Professional Scrum Master™ I (PSM I)</h3>
+                            <p class="text-slate-600 mb-2"><strong>Tổ chức:</strong> Scrum.org</p>
+                            <p class="text-slate-600">Chứng minh sự hiểu biết sâu sắc về framework Scrum và cách áp dụng nó để quản lý quá trình phát triển sản phẩm phức tạp.</p>
+                        </div>
+                         <div class="mt-4 pt-4 border-t border-slate-200">
+                            <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Chi phí ước tính:</strong> ~$200 cho mỗi lần thi. Khóa học chính thức là tùy chọn.</p>
+                            <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Scrum.org, The Scrum Guide, các khóa luyện thi trên Udemy.</p>
+                            <p class="text-slate-600"><strong class="font-semibold text-slate-700">Hình thức thi:</strong> Online.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500 flex flex-col">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-xl mb-2 text-purple-800">Certified ScrumMaster® (CSM)</h3>
+                            <p class="text-slate-600 mb-2"><strong>Tổ chức:</strong> Scrum Alliance</p>
+                            <p class="text-slate-600">Cung cấp kiến thức nền tảng về các giá trị, thực hành và ứng dụng của Scrum, giúp Tech Lead dẫn dắt đội nhóm hiệu quả.</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-200">
+                            <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Chi phí ước tính:</strong> ~$1000 - $2000 (đã bao gồm khóa học 2 ngày bắt buộc).</p>
+                            <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Bắt buộc tham gia khóa học từ một Certified Scrum Trainer của Scrum Alliance.</p>
+                            <p class="text-slate-600"><strong class="font-semibold text-slate-700">Hình thức thi:</strong> Online, được cấp sau khi hoàn thành khóa học.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-purple-500 flex flex-col">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-xl mb-2 text-purple-800">Project Management Professional (PMP)®</h3>
+                            <p class="text-slate-600 mb-2"><strong>Tổ chức:</strong> PMI</p>
+                            <p class="text-slate-600">Phù hợp cho các Tech Lead làm việc trong môi trường lớn, phức tạp, cần quản lý dự án theo quy trình truyền thống hơn bên cạnh Agile.</p>
+                        </div>
+                         <div class="mt-4 pt-4 border-t border-slate-200">
+                            <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Chi phí ước tính:</strong> ~$555 (phí thi, chưa bao gồm chi phí khóa học bắt buộc).</p>
+                            <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Các trung tâm ủy quyền của PMI, Udemy (Joseph Phillips, Andrew Ramdayal).</p>
+                            <p class="text-slate-600"><strong class="font-semibold text-slate-700">Hình thức thi:</strong> Tại các trung tâm khảo thí Pearson VUE.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="architecture" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-800 mb-3 text-center">Kiến Trúc & Thiết Kế Hệ Thống</h2>
+                <p class="text-center text-slate-600 max-w-3xl mx-auto mb-8">Đây là năng lực kỹ thuật cốt lõi, đảm bảo các giải pháp được xây dựng một cách bền vững, dễ bảo trì và đáp ứng được các yêu cầu kinh doanh. Tech Lead là người chịu trách nhiệm chính về các quyết định kiến trúc.</p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-amber-500 flex flex-col">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-xl mb-2 text-amber-800">Thiết Kế Hệ Thống (System Design)</h3>
+                            <p class="text-slate-600">Không có chứng chỉ cụ thể, nhưng đây là kỹ năng quan trọng nhất, được xây dựng qua kinh nghiệm và học hỏi liên tục về các design patterns, microservices, database, caching, message queues...</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-200">
+                             <p class="text-slate-600"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Sách "Designing Data-Intensive Applications", "Grokking the System Design Interview", blog của các công ty công nghệ lớn.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg border-l-4 border-amber-500 flex flex-col">
+                        <div class="flex-grow">
+                            <h3 class="font-bold text-xl mb-2 text-amber-800">TOGAF® 9 Certification</h3>
+                            <p class="text-slate-600 mb-2"><strong>Tổ chức:</strong> The Open Group</p>
+                            <p class="text-slate-600">Cung cấp một framework toàn diện về kiến trúc doanh nghiệp, hữu ích cho các Tech Lead muốn phát triển lên vai trò Architect trong các tổ chức lớn.</p>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-200">
+                             <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Chi phí ước tính:</strong> ~$550 cho cả 2 phần thi. Chi phí đào tạo là riêng.</p>
+                             <p class="text-slate-600 mb-2"><strong class="font-semibold text-slate-700">Nơi học phổ biến:</strong> Các trung tâm đào tạo được The Open Group công nhận, các khóa học trên Udemy.</p>
+                             <p class="text-slate-600"><strong class="font-semibold text-slate-700">Hình thức thi:</strong> Tại các trung tâm khảo thí Pearson VUE.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('skillsChart').getContext('2d');
+            const skillsChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Lãnh đạo Kỹ thuật',
+                        'Quản lý Con người',
+                        'Kiến trúc Hệ thống',
+                        'Quản lý Dự án',
+                        'Chuyên môn Kỹ thuật',
+                        'Giao tiếp'
+                    ],
+                    datasets: [{
+                        label: 'Mức độ quan trọng',
+                        data: [9, 8, 9, 7, 7, 10],
+                        backgroundColor: 'rgba(13, 148, 136, 0.2)',
+                        borderColor: 'rgba(13, 148, 136, 1)',
+                        pointBackgroundColor: 'rgba(13, 148, 136, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(13, 148, 136, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: '#cbd5e1'
+                            },
+                            grid: {
+                                color: '#e2e8f0'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12,
+                                    family: "'Be Vietnam Pro', sans-serif"
+                                },
+                                color: '#334155'
+                            },
+                            ticks: {
+                                backdropColor: '#f8fafc',
+                                color: '#64748b'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            const navButtons = document.querySelectorAll('.nav-button');
+            const sections = document.querySelectorAll('main section');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-target');
+                    const targetSection = document.getElementById(targetId);
+
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        
+                        navButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                    }
+                });
+            });
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        const activeButton = document.querySelector(`.nav-button[data-target="${id}"]`);
+                        
+                        navButtons.forEach(btn => btn.classList.remove('active'));
+                        if(activeButton) {
+                           activeButton.classList.add('active');
+                        }
+                    }
+                });
+            }, { rootMargin: "-50% 0px -50% 0px" });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
+

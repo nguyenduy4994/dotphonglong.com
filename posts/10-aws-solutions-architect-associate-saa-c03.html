@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng điều khiển học tập AWS SAA-C03</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A single-page dashboard structure was chosen for its user-friendliness, allowing aspiring architects to quickly grasp the exam's scope and dive into specific domains without navigating multiple pages. The flow is designed to be intuitive: 1. High-level overview with a domain weighting chart and key stats for immediate context. 2. A tabbed interface for deep-diving into each of the four domains, preventing information overload. 3. Interactive checklists within each tab to enable active learning and progress tracking. This structure prioritizes focused study and easy access to information, which is more effective for exam preparation than a linear document. -->
+    <!-- Visualization & Content Choices: 
+        - Exam Domain Weightings -> Goal: Inform/Compare -> Viz: Donut Chart -> Interaction: Hover tooltips -> Justification: Provides an immediate visual breakdown of exam priorities. Library: Chart.js.
+        - Key Exam Info -> Goal: Inform -> Viz: Stat Cards -> Interaction: None -> Justification: Presents crucial facts in a scannable, easy-to-digest format. Method: HTML/Tailwind.
+        - Domain Details -> Goal: Organize/Inform -> Viz: Tabbed Content -> Interaction: Click to switch views -> Justification: Segments large amounts of information into manageable sections for focused study. Method: Vanilla JS.
+        - Key Services -> Goal: Organize -> Viz: Styled Cards -> Interaction: Hover effects -> Justification: More engaging and organized than a simple list, grouping related services. Method: HTML/Tailwind.
+        - Study Progress -> Goal: Track/Engage -> Viz: Interactive Checklists -> Interaction: Click to mark complete -> Justification: Turns passive reading into an active, goal-oriented task, enhancing retention. Method: HTML. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #F8F7F4;
+            color: #4A4A4A;
+        }
+        .tab-btn.active {
+            background-color: #005276;
+            color: #FFFFFF;
+            border-color: #005276;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+            margin: auto;
+            aspect-ratio: 1/1;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        .checklist-item:hover {
+            background-color: #E9E6E0;
+        }
+        .checklist-item input:checked + label {
+            text-decoration: line-through;
+            color: #9A9A9A;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <header class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-bold text-[#232F3E] mb-2">Bảng điều khiển học tập AWS Solutions Architect - Associate (SAA-C03)</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Công cụ tương tác giúp bạn hệ thống hóa kiến thức và theo dõi tiến trình ôn tập cho kỳ thi SAA-C03.</p>
+        </header>
+
+        <main>
+            <section id="overview" class="mb-12 bg-white p-6 rounded-2xl shadow-sm">
+                <h2 class="text-2xl font-bold text-[#005276] mb-4 text-center">Tổng quan kỳ thi</h2>
+                <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Phần này cung cấp cái nhìn tổng quan về cấu trúc của kỳ thi SAA-C03. Biểu đồ tròn thể hiện tỷ trọng điểm số của từng lĩnh vực, giúp bạn ưu tiên thời gian học tập một cách hiệu quả. Các thẻ thông tin bên cạnh tóm tắt những thông số quan trọng của bài thi.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container">
+                        <canvas id="domainChart"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-blue-50 p-4 rounded-xl">
+                            <h3 class="text-3xl font-bold text-[#005276]">130 phút</h3>
+                            <p class="text-gray-500">Thời gian làm bài</p>
+                        </div>
+                        <div class="bg-green-50 p-4 rounded-xl">
+                            <h3 class="text-3xl font-bold text-green-800">65 câu</h3>
+                            <p class="text-gray-500">Số lượng câu hỏi</p>
+                        </div>
+                        <div class="bg-yellow-50 p-4 rounded-xl">
+                            <h3 class="text-3xl font-bold text-yellow-800">720/1000</h3>
+                            <p class="text-gray-500">Điểm tối thiểu</p>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-xl">
+                             <h3 class="text-3xl font-bold text-red-800">Nhiều lựa chọn</h3>
+                             <p class="text-gray-500">Định dạng câu hỏi</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="domains" class="bg-white p-6 rounded-2xl shadow-sm">
+                 <h2 class="text-2xl font-bold text-[#005276] mb-4 text-center">Các Lĩnh vực Kiến thức (Domains)</h2>
+                 <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">
+                    Đây là khu vực học tập chính, được chia thành bốn lĩnh vực tương ứng với cấu trúc bài thi. Hãy chọn từng tab để khám phá các dịch vụ AWS quan trọng và theo dõi các chủ đề bạn đã nắm vững thông qua danh sách kiểm tra tương tác.
+                </p>
+
+                <div class="flex flex-wrap justify-center border-b border-gray-200 mb-6">
+                    <button class="tab-btn active py-2 px-4 font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#005276] focus:outline-none" data-tab="domain1">Lĩnh vực 1: An toàn</button>
+                    <button class="tab-btn py-2 px-4 font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#005276] focus:outline-none" data-tab="domain2">Lĩnh vực 2: Bền bỉ</button>
+                    <button class="tab-btn py-2 px-4 font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#005276] focus:outline-none" data-tab="domain3">Lĩnh vực 3: Hiệu năng cao</button>
+                    <button class="tab-btn py-2 px-4 font-semibold border-b-2 border-transparent text-gray-600 hover:text-[#005276] focus:outline-none" data-tab="domain4">Lĩnh vực 4: Tối ưu chi phí</button>
+                </div>
+
+                <div id="tab-content-container">
+                    <div id="domain1" class="tab-content active">
+                        <h3 class="text-xl font-bold text-gray-800 mb-1">Lĩnh vực 1: Thiết kế Kiến trúc An toàn (30%)</h3>
+                        <p class="mb-6 text-gray-600">Tập trung vào việc thiết kế và triển khai một môi trường AWS an toàn, bao gồm quản lý danh tính, truy cập, và bảo vệ dữ liệu.</p>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-semibold mb-3 text-lg">Danh sách kiểm tra</h4>
+                                <div class="space-y-2">
+                                    <div class="checklist-item"><input id="d1c1" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d1c1" class="ml-3 text-gray-700">Hiểu về IAM (Users, Groups, Roles, Policies).</label></div>
+                                    <div class="checklist-item"><input id="d1c2" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d1c2" class="ml-3 text-gray-700">Thiết kế VPC an toàn (Subnets, Security Groups, NACLs).</label></div>
+                                    <div class="checklist-item"><input id="d1c3" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d1c3" class="ml-3 text-gray-700">Mã hóa dữ liệu (at-rest & in-transit) với KMS và S3 SSE.</label></div>
+                                    <div class="checklist-item"><input id="d1c4" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d1c4" class="ml-3 text-gray-700">Sử dụng AWS WAF, Shield và GuardDuty để bảo vệ.</label></div>
+                                    <div class="checklist-item"><input id="d1c5" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d1c5" class="ml-3 text-gray-700">Quản lý secrets với Secrets Manager.</label></div>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-3 text-lg">Dịch vụ chính</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">IAM</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">VPC</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">KMS</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">AWS WAF & Shield</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Secrets Manager</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="domain2" class="tab-content">
+                        <h3 class="text-xl font-bold text-gray-800 mb-1">Lĩnh vực 2: Thiết kế Kiến trúc Bền bỉ (26%)</h3>
+                        <p class="mb-6 text-gray-600">Tập trung vào khả năng chịu lỗi và tính sẵn sàng cao (High Availability), đảm bảo hệ thống có thể phục hồi sau sự cố.</p>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-semibold mb-3 text-lg">Danh sách kiểm tra</h4>
+                                <div class="space-y-2">
+                                    <div class="checklist-item"><input id="d2c1" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d2c1" class="ml-3 text-gray-700">Thiết kế Multi-AZ cho EC2, RDS.</label></div>
+                                    <div class="checklist-item"><input id="d2c2" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d2c2" class="ml-3 text-gray-700">Hiểu về Auto Scaling và Elastic Load Balancing (ALB, NLB).</label></div>
+                                    <div class="checklist-item"><input id="d2c3" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d2c3" class="ml-3 text-gray-700">Chiến lược sao lưu và phục hồi (Backup & Recovery) cho S3, EBS, RDS.</label></div>
+                                    <div class="checklist-item"><input id="d2c4" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d2c4" class="ml-3 text-gray-700">Sử dụng Route 53 cho DNS failover.</label></div>
+                                    <div class="checklist-item"><input id="d2c5" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d2c5" class="ml-3 text-gray-700">Kiến trúc Decoupled với SQS và SNS.</label></div>
+                                </div>
+                            </div>
+                             <div>
+                                <h4 class="font-semibold mb-3 text-lg">Dịch vụ chính</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Route 53</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">ELB</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Auto Scaling</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">S3</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">RDS (Multi-AZ)</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">SQS</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="domain3" class="tab-content">
+                        <h3 class="text-xl font-bold text-gray-800 mb-1">Lĩnh vực 3: Thiết kế Kiến trúc Hiệu năng cao (24%)</h3>
+                        <p class="mb-6 text-gray-600">Tập trung vào việc lựa chọn các dịch vụ và cấu hình phù hợp để đạt được hiệu suất tốt nhất cho ứng dụng.</p>
+                         <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-semibold mb-3 text-lg">Danh sách kiểm tra</h4>
+                                <div class="space-y-2">
+                                    <div class="checklist-item"><input id="d3c1" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d3c1" class="ml-3 text-gray-700">Lựa chọn loại EC2 instance phù hợp.</label></div>
+                                    <div class="checklist-item"><input id="d3c2" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d3c2" class="ml-3 text-gray-700">Sử dụng EBS (gp2, gp3, io1, io2) và EFS cho lưu trữ.</label></div>
+                                    <div class="checklist-item"><input id="d3c3" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d3c3" class="ml-3 text-gray-700">Tăng tốc độ với CloudFront và ElastiCache (Redis, Memcached).</label></div>
+                                    <div class="checklist-item"><input id="d3c4" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d3c4" class="ml-3 text-gray-700">Hiểu về hiệu năng của S3 (multi-part upload) và RDS (Read Replicas).</label></div>
+                                    <div class="checklist-item"><input id="d3c5" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d3c5" class="ml-3 text-gray-700">Kết nối mạng hiệu năng cao: Direct Connect, Global Accelerator.</label></div>
+                                </div>
+                            </div>
+                             <div>
+                                <h4 class="font-semibold mb-3 text-lg">Dịch vụ chính</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">EC2</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">EBS / EFS</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">CloudFront</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">ElastiCache</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">DynamoDB</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="domain4" class="tab-content">
+                        <h3 class="text-xl font-bold text-gray-800 mb-1">Lĩnh vực 4: Thiết kế Kiến trúc Tối ưu Chi phí (20%)</h3>
+                        <p class="mb-6 text-gray-600">Tập trung vào việc xây dựng hệ thống với chi phí hiệu quả nhất mà vẫn đảm bảo các yêu cầu về kỹ thuật.</p>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-semibold mb-3 text-lg">Danh sách kiểm tra</h4>
+                                <div class="space-y-2">
+                                    <div class="checklist-item"><input id="d4c1" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d4c1" class="ml-3 text-gray-700">Hiểu các mô hình thanh toán của EC2 (On-Demand, Reserved, Spot).</label></div>
+                                    <div class="checklist-item"><input id="d4c2" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d4c2" class="ml-3 text-gray-700">Lựa chọn các lớp lưu trữ S3 (Standard, Intelligent-Tiering, Glacier).</label></div>
+                                    <div class="checklist-item"><input id="d4c3" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d4c3" class="ml-3 text-gray-700">Sử dụng AWS Budgets và Cost Explorer để theo dõi chi phí.</label></div>
+                                    <div class="checklist-item"><input id="d4c4" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d4c4" class="ml-3 text-gray-700">Kiến trúc Serverless với Lambda và API Gateway để tiết kiệm chi phí.</label></div>
+                                    <div class="checklist-item"><input id="d4c5" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-[#005276] focus:ring-[#005276]"><label for="d4c5" class="ml-3 text-gray-700">Tự động hóa việc tắt/mở tài nguyên không sử dụng.</label></div>
+                                </div>
+                            </div>
+                             <div>
+                                <h4 class="font-semibold mb-3 text-lg">Dịch vụ chính</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">AWS Cost Explorer</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">AWS Budgets</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">S3 Lifecycle Policies</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">EC2 Pricing Models</span>
+                                    <span class="bg-gray-200 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">Lambda</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center mt-12 text-gray-500 text-sm">
+            <p>Chúc bạn ôn tập hiệu quả và thành công trong kỳ thi!</p>
+            <p>Đây là công cụ học tập tham khảo, không phải là tài liệu chính thức từ Amazon Web Services.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const domainData = {
+                labels: [
+                    'Lĩnh vực 1: An toàn (30%)',
+                    'Lĩnh vực 2: Bền bỉ (26%)',
+                    'Lĩnh vực 3: Hiệu năng cao (24%)',
+                    'Lĩnh vực 4: Tối ưu chi phí (20%)'
+                ],
+                datasets: [{
+                    label: 'Tỷ trọng điểm số',
+                    data: [30, 26, 24, 20],
+                    backgroundColor: [
+                        '#02549E',
+                        '#007A9E',
+                        '#50B5BF',
+                        '#94D1BE'
+                    ],
+                    borderColor: '#F8F7F4',
+                    borderWidth: 4,
+                    hoverOffset: 8
+                }]
+            };
+
+            const config = {
+                type: 'doughnut',
+                data: domainData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    family: "'Be Vietnam Pro', sans-serif",
+                                }
+                            }
+                        },
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                },
+            };
+
+            const ctx = document.getElementById('domainChart').getContext('2d');
+            new Chart(ctx, config);
+
+            const tabs = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === target) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>

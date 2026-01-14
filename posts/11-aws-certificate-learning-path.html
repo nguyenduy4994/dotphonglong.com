@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lộ trình học và các Chứng chỉ AWS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The SPA is designed as a guided, top-to-bottom journey, mirroring a user's learning path. It starts with a broad introduction (Why AWS?), moves to a structured, interactive learning path (Foundational -> Specialty), allows deep exploration of certifications via filtering, provides data-driven motivation with a salary chart, and concludes with actionable resources. This linear but interactive flow is more intuitive for a "how-to-start" topic than a complex dashboard, guiding the user from initial interest to a concrete action plan. Clicking on a path level directly filters the certification list, creating a seamless connection between concepts and details. -->
+    <!-- Visualization & Content Choices: 1. **AWS Learning Path**: Goal: Organize/Guide. Method: Interactive HTML/CSS stepped diagram. Interaction: Clicking a level filters the cert list below and scrolls to it. Justification: Visually represents a journey and connects high-level stages to specific options. 2. **Certification Catalog**: Goal: Inform/Compare. Method: Filterable HTML/CSS card grid. Interaction: Users click category buttons (Foundational, Associate, etc.) to show/hide relevant cards. Justification: Standard, effective UI for exploring a collection of items. 3. **Average Salaries**: Goal: Inform/Persuade. Method: Horizontal Bar Chart. Interaction: Tooltips on hover show precise data. Justification: Best visualization for comparing numerical values across categories, providing a strong incentive. Library: Chart.js (Canvas). -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .step-item::after {
+            content: '→';
+            position: absolute;
+            right: -2.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #D1D5DB;
+        }
+        .step-item:last-child::after {
+            content: '';
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 500px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="header" class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-orange-600">AWS Journey</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#intro" class="text-gray-600 hover:bg-orange-100 hover:text-orange-700 px-3 py-2 rounded-md text-sm font-medium">Giới thiệu</a>
+                        <a href="#learning-path" class="text-gray-600 hover:bg-orange-100 hover:text-orange-700 px-3 py-2 rounded-md text-sm font-medium">Lộ trình học</a>
+                        <a href="#certifications" class="text-gray-600 hover:bg-orange-100 hover:text-orange-700 px-3 py-2 rounded-md text-sm font-medium">Các chứng chỉ</a>
+                        <a href="#value" class="text-gray-600 hover:bg-orange-100 hover:text-orange-700 px-3 py-2 rounded-md text-sm font-medium">Giá trị</a>
+                        <a href="#resources" class="text-gray-600 hover:bg-orange-100 hover:text-orange-700 px-3 py-2 rounded-md text-sm font-medium">Tài nguyên</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="intro" class="py-20 md:py-32">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-gray-800">Khởi đầu hành trình <span class="text-orange-500">Cloud</span> của bạn</h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg md:text-xl text-gray-600">Chứng chỉ AWS xác thực chuyên môn về đám mây, giúp các chuyên gia thể hiện các kỹ năng đang có nhu cầu và giúp các tổ chức xây dựng các nhóm hiệu quả cho các sáng kiến đám mây.</p>
+                <div class="mt-10">
+                    <a href="#learning-path" class="bg-orange-500 text-white font-semibold px-8 py-4 rounded-lg shadow-md hover:bg-orange-600 transition-all duration-300">Bắt đầu Lộ trình học</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="learning-path" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800">Lộ trình học tập được đề xuất</h2>
+                    <p class="mt-4 text-lg text-gray-600">Bắt đầu từ những kiến thức cơ bản và tiến dần đến các vai trò chuyên sâu. Nhấp vào một cấp độ để khám phá các chứng chỉ liên quan.</p>
+                </div>
+
+                <div class="mt-16 flex flex-col md:flex-row justify-center items-center space-y-8 md:space-y-0 md:space-x-20">
+                    <div class="step-item relative text-center path-step cursor-pointer" data-filter="foundational">
+                        <div class="w-32 h-32 bg-orange-100 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                           <span class="text-5xl">1</span>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold text-gray-700">Nền tảng</h3>
+                        <p class="text-sm text-gray-500">6 tháng kinh nghiệm</p>
+                    </div>
+                     <div class="step-item relative text-center path-step cursor-pointer" data-filter="associate">
+                        <div class="w-32 h-32 bg-green-100 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                            <span class="text-5xl">2</span>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold text-gray-700">Hội viên</h3>
+                        <p class="text-sm text-gray-500">1 năm kinh nghiệm</p>
+                    </div>
+                    <div class="step-item relative text-center path-step cursor-pointer" data-filter="professional">
+                        <div class="w-32 h-32 bg-blue-100 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                            <span class="text-5xl">3</span>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold text-gray-700">Chuyên gia</h3>
+                        <p class="text-sm text-gray-500">2 năm kinh nghiệm</p>
+                    </div>
+                    <div class="step-item relative text-center path-step cursor-pointer" data-filter="specialty">
+                        <div class="w-32 h-32 bg-purple-100 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+                           <span class="text-5xl">4</span>
+                        </div>
+                        <h3 class="mt-4 text-xl font-semibold text-gray-700">Chuyên ngành</h3>
+                        <p class="text-sm text-gray-500">Kinh nghiệm chuyên sâu</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="certifications" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800">Khám phá các Chứng chỉ</h2>
+                    <p class="mt-4 text-lg text-gray-600">Lọc các chứng chỉ theo cấp độ để tìm chứng chỉ phù hợp với bạn.</p>
+                </div>
+
+                <div id="filter-buttons" class="mt-10 flex flex-wrap justify-center gap-2 md:gap-4">
+                    <button class="filter-btn active bg-orange-500 text-white font-semibold px-5 py-2 rounded-full" data-filter="all">Tất cả</button>
+                    <button class="filter-btn bg-white text-gray-700 font-semibold px-5 py-2 rounded-full border border-gray-300 hover:bg-gray-100" data-filter="foundational">Nền tảng</button>
+                    <button class="filter-btn bg-white text-gray-700 font-semibold px-5 py-2 rounded-full border border-gray-300 hover:bg-gray-100" data-filter="associate">Hội viên</button>
+                    <button class="filter-btn bg-white text-gray-700 font-semibold px-5 py-2 rounded-full border border-gray-300 hover:bg-gray-100" data-filter="professional">Chuyên gia</button>
+                    <button class="filter-btn bg-white text-gray-700 font-semibold px-5 py-2 rounded-full border border-gray-300 hover:bg-gray-100" data-filter="specialty">Chuyên ngành</button>
+                </div>
+
+                <div id="cert-grid" class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <div class="cert-card" data-category="foundational">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-orange-400">
+                            <h3 class="text-xl font-bold text-gray-800">Cloud Practitioner</h3>
+                            <span class="text-sm font-medium text-orange-600 mt-1">Foundational</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Cung cấp sự hiểu biết cơ bản, cấp cao về các dịch vụ AWS, các trường hợp sử dụng phổ biến, nguyên tắc định giá và kiến trúc.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cert-card" data-category="associate">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-green-400">
+                            <h3 class="text-xl font-bold text-gray-800">Solutions Architect - Associate</h3>
+                            <span class="text-sm font-medium text-green-600 mt-1">Associate</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Tập trung vào việc thiết kế các hệ thống có tính sẵn sàng cao, tiết kiệm chi phí, chịu lỗi và có khả năng mở rộng trên AWS.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cert-card" data-category="associate">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-green-400">
+                            <h3 class="text-xl font-bold text-gray-800">Developer - Associate</h3>
+                            <span class="text-sm font-medium text-green-600 mt-1">Associate</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Dành cho việc phát triển và duy trì các ứng dụng trên AWS, với sự hiểu biết sâu sắc về các dịch vụ cốt lõi, cách sử dụng và các phương pháp hay nhất.</p>
+                        </div>
+                    </div>
+
+                    <div class="cert-card" data-category="associate">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-green-400">
+                            <h3 class="text-xl font-bold text-gray-800">SysOps Administrator - Associate</h3>
+                            <span class="text-sm font-medium text-green-600 mt-1">Associate</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Tập trung vào việc triển khai, quản lý và vận hành các hệ thống có khả năng mở rộng, tính sẵn sàng cao và chịu lỗi trên AWS.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cert-card" data-category="professional">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-blue-400">
+                            <h3 class="text-xl font-bold text-gray-800">Solutions Architect - Professional</h3>
+                             <span class="text-sm font-medium text-blue-600 mt-1">Professional</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Dành cho các chuyên gia có kinh nghiệm thiết kế các ứng dụng và hệ thống phân tán phức tạp trên AWS.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cert-card" data-category="professional">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-blue-400">
+                            <h3 class="text-xl font-bold text-gray-800">DevOps Engineer - Professional</h3>
+                            <span class="text-sm font-medium text-blue-600 mt-1">Professional</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Bao gồm việc cung cấp, vận hành và quản lý các hệ thống ứng dụng phân tán trên nền tảng AWS.</p>
+                        </div>
+                    </div>
+
+                    <div class="cert-card" data-category="specialty">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-purple-400">
+                            <h3 class="text-xl font-bold text-gray-800">Advanced Networking - Specialty</h3>
+                            <span class="text-sm font-medium text-purple-600 mt-1">Specialty</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Xác thực các kỹ năng nâng cao trong việc thiết kế và triển khai các dịch vụ AWS và kiến trúc hybrid IT ở quy mô lớn.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cert-card" data-category="specialty">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-purple-400">
+                            <h3 class="text-xl font-bold text-gray-800">Security - Specialty</h3>
+                             <span class="text-sm font-medium text-purple-600 mt-1">Specialty</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Xác thực kiến thức chuyên môn về việc bảo mật nền tảng AWS và khối lượng công việc, bao gồm các chủ đề như bảo vệ dữ liệu và mã hóa.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cert-card" data-category="specialty">
+                        <div class="bg-white rounded-lg shadow-lg p-6 h-full flex flex-col border-l-4 border-purple-400">
+                            <h3 class="text-xl font-bold text-gray-800">Machine Learning - Specialty</h3>
+                             <span class="text-sm font-medium text-purple-600 mt-1">Specialty</span>
+                            <p class="mt-4 text-gray-600 flex-grow">Xác thực khả năng xây dựng, đào tạo, điều chỉnh và triển khai các mô hình học máy (ML) trên AWS.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="value" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800">Giá trị của Chứng chỉ AWS</h2>
+                    <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">Các chứng chỉ AWS được công nhận rộng rãi và có thể dẫn đến cơ hội nghề nghiệp tốt hơn và mức lương cao hơn. Biểu đồ dưới đây thể hiện mức lương trung bình hàng năm tại thị trường Mỹ cho một số chứng chỉ phổ biến.</p>
+                </div>
+                <div class="mt-12">
+                    <div class="chart-container">
+                        <canvas id="awsSalaryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="resources" class="py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-gray-800">Tài nguyên học tập</h2>
+                    <p class="mt-4 text-lg text-gray-600">Bắt đầu hành trình học tập của bạn với những tài nguyên hữu ích này.</p>
+                </div>
+
+                <div class="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold text-gray-800">AWS Training and Certification</h3>
+                        <p class="mt-2 text-gray-600">Khám phá các khóa học kỹ thuật số và dựa trên lớp học chính thức từ AWS.</p>
+                        <a href="#" class="mt-4 inline-block text-orange-500 font-semibold hover:text-orange-600">Tìm hiểu thêm &rarr;</a>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold text-gray-800">AWS Whitepapers & Guides</h3>
+                        <p class="mt-2 text-gray-600">Đọc các tài liệu kỹ thuật chuyên sâu được viết bởi các kiến trúc sư AWS và các chuyên gia khác.</p>
+                        <a href="#" class="mt-4 inline-block text-orange-500 font-semibold hover:text-orange-600">Tìm hiểu thêm &rarr;</a>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Các kỳ thi thực hành</h3>
+                        <p class="mt-2 text-gray-600">Chuẩn bị cho kỳ thi của bạn với các bài kiểm tra thực hành mô phỏng môi trường thi thực tế.</p>
+                        <a href="#" class="mt-4 inline-block text-orange-500 font-semibold hover:text-orange-600">Tìm hiểu thêm &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-gray-800">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-base text-gray-400">&copy; 2025 AWS Journey. All rights reserved. A conceptual learning tool.</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const certCards = document.querySelectorAll('.cert-card');
+            const filterButtonsContainer = document.getElementById('filter-buttons');
+            
+            const pathSteps = document.querySelectorAll('.path-step');
+            
+            const smoothScrollTo = (selector) => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            };
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    smoothScrollTo(this.getAttribute('href'));
+                });
+            });
+
+            const filterCerts = (filter) => {
+                certCards.forEach(card => {
+                    if (filter === 'all' || card.dataset.category === filter) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            };
+            
+            const setActiveButton = (filter) => {
+                 filterButtons.forEach(button => {
+                    if (button.dataset.filter === filter) {
+                        button.classList.add('active', 'bg-orange-500', 'text-white');
+                        button.classList.remove('bg-white', 'text-gray-700');
+                    } else {
+                        button.classList.remove('active', 'bg-orange-500', 'text-white');
+                        button.classList.add('bg-white', 'text-gray-700');
+                    }
+                });
+            };
+
+            filterButtonsContainer.addEventListener('click', (e) => {
+                if(e.target.classList.contains('filter-btn')) {
+                    const filter = e.target.dataset.filter;
+                    filterCerts(filter);
+                    setActiveButton(filter);
+                }
+            });
+
+            pathSteps.forEach(step => {
+                step.addEventListener('click', () => {
+                    const filter = step.dataset.filter;
+                    filterCerts(filter);
+                    setActiveButton(filter);
+                    smoothScrollTo('#certifications');
+                });
+            });
+
+            const ctx = document.getElementById('awsSalaryChart').getContext('2d');
+            const awsSalaryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'Cloud Practitioner',
+                        'Developer - Associate',
+                        'Solutions Architect - Associate',
+                        'SysOps Admin - Associate',
+                        'DevOps Engineer - Professional',
+                        'Solutions Architect - Professional',
+                        'Security - Specialty',
+                        'Machine Learning - Specialty'
+                    ],
+                    datasets: [{
+                        label: 'Mức lương trung bình hàng năm ($USD)',
+                        data: [113000, 130000, 149000, 131000, 138000, 152000, 141000, 145000],
+                        backgroundColor: [
+                            'rgba(251, 146, 60, 0.6)',
+                            'rgba(52, 211, 153, 0.6)',
+                            'rgba(52, 211, 153, 0.6)',
+                            'rgba(52, 211, 153, 0.6)',
+                            'rgba(96, 165, 250, 0.6)',
+                            'rgba(96, 165, 250, 0.6)',
+                            'rgba(192, 132, 252, 0.6)',
+                            'rgba(192, 132, 252, 0.6)',
+                        ],
+                        borderColor: [
+                            'rgba(251, 146, 60, 1)',
+                            'rgba(52, 211, 153, 1)',
+                            'rgba(52, 211, 153, 1)',
+                            'rgba(52, 211, 153, 1)',
+                            'rgba(96, 165, 250, 1)',
+                            'rgba(96, 165, 250, 1)',
+                            'rgba(192, 132, 252, 1)',
+                            'rgba(192, 132, 252, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(context.parsed.x);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                             beginAtZero: true,
+                             ticks: {
+                                callback: function(value, index, values) {
+                                    return '$' + (value / 1000) + 'k';
+                                }
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                autoSkip: false,
+                                callback: function(value, index, values) {
+                                    const label = this.getLabelForValue(value);
+                                    if (label.length > 25) {
+                                        return label.substring(0, 25) + '...';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
