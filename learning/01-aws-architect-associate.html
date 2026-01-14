@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AWS Solutions Architect Associate - 4 Week Study Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .week-card { transition: all 0.3s ease; }
+        .week-card:hover { transform: translateY(-4px); }
+        .completed { opacity: 0.6; }
+        .task-item { transition: all 0.2s ease; }
+        .task-item:hover { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 mb-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">AWS SAA-C03 Study Plan</h1>
+                    <p class="text-gray-600">4-Week Timeline to Certification Success</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm text-gray-500 mb-1">Progress</div>
+                    <div class="text-3xl font-bold text-blue-600"><span id="progress">0</span>%</div>
+                </div>
+            </div>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                <p class="text-sm text-gray-700"><strong>Exam Info:</strong> SAA-C03 | 65 questions | 130 minutes | Passing score: 720/1000</p>
+                <p class="text-sm text-gray-700 mt-1"><strong>Focus Areas:</strong> Secure Architectures (30%) • Resilient Architectures (26%) • High-Performing Architectures (24%) • Cost-Optimized Architectures (20%)</p>
+            </div>
+
+            <div id="timeline" class="space-y-6"></div>
+        </div>
+    </div>
+
+    <script>
+        const studyPlan = {
+            week1: {
+                title: "Week 1: Foundations & Core Services",
+                focus: "Build your AWS fundamentals",
+                days: [
+                    {
+                        day: "Day 1",
+                        tasks: [
+                            "Review AWS Well-Architected Framework (all 6 pillars)",
+                            "Study IAM: Users, Groups, Roles, Policies, MFA, STS",
+                            "Practice: Create IAM policies and test permissions",
+                            "Evening: 20 practice questions on security"
+                        ]
+                    },
+                    {
+                        day: "Day 2",
+                        tasks: [
+                            "Deep dive EC2: Instance types, pricing, placement groups",
+                            "Storage: EBS volumes, snapshots, instance store",
+                            "Networking: Security Groups, NACLs, ENI",
+                            "Practice: Launch EC2 with different configurations"
+                        ]
+                    },
+                    {
+                        day: "Day 3",
+                        tasks: [
+                            "S3 in depth: Storage classes, lifecycle, versioning, encryption",
+                            "S3 Advanced: Cross-region replication, Transfer Acceleration",
+                            "CloudFront basics and edge locations",
+                            "Practice: 30 questions on storage services"
+                        ]
+                    },
+                    {
+                        day: "Day 4",
+                        tasks: [
+                            "VPC deep dive: Subnets, Route Tables, IGW, NAT Gateway",
+                            "VPC Peering, Transit Gateway, VPN, Direct Connect",
+                            "Hands-on: Build a multi-tier VPC from scratch",
+                            "Review: Network architecture patterns"
+                        ]
+                    },
+                    {
+                        day: "Day 5",
+                        tasks: [
+                            "Load Balancers: ALB, NLB, CLB (features & use cases)",
+                            "Auto Scaling Groups: Policies, target tracking",
+                            "Route 53: Routing policies, health checks, failover",
+                            "Practice: 25 questions on networking"
+                        ]
+                    },
+                    {
+                        day: "Day 6",
+                        tasks: [
+                            "RDS: Multi-AZ, Read Replicas, backup strategies",
+                            "Aurora: Serverless, Global Database, backtrack",
+                            "DynamoDB: Tables, indexes, DAX, streams",
+                            "Practice: Database scenario questions"
+                        ]
+                    },
+                    {
+                        day: "Day 7",
+                        tasks: [
+                            "Week 1 Review: Consolidate all concepts",
+                            "Take a 65-question practice exam (timed)",
+                            "Identify weak areas and review them",
+                            "Create flashcards for difficult concepts"
+                        ]
+                    }
+                ]
+            },
+            week2: {
+                title: "Week 2: Advanced Services & Integration",
+                focus: "Master serverless, containers, and integration patterns",
+                days: [
+                    {
+                        day: "Day 8",
+                        tasks: [
+                            "Lambda: Functions, triggers, layers, concurrency",
+                            "API Gateway: REST vs HTTP, authorization, throttling",
+                            "Step Functions: State machines and workflows",
+                            "Practice: Build a serverless application"
+                        ]
+                    },
+                    {
+                        day: "Day 9",
+                        tasks: [
+                            "ECS vs EKS vs Fargate: When to use each",
+                            "Container orchestration patterns",
+                            "ECR: Image management and security",
+                            "Practice: 30 questions on compute services"
+                        ]
+                    },
+                    {
+                        day: "Day 10",
+                        tasks: [
+                            "SQS: Standard vs FIFO, visibility timeout, DLQ",
+                            "SNS: Topics, subscriptions, fan-out patterns",
+                            "EventBridge: Event-driven architectures",
+                            "Hands-on: Build decoupled architecture"
+                        ]
+                    },
+                    {
+                        day: "Day 11",
+                        tasks: [
+                            "ElastiCache: Redis vs Memcached, caching strategies",
+                            "CloudWatch: Metrics, Alarms, Logs, Insights",
+                            "CloudTrail: Governance and compliance",
+                            "Practice: Monitoring scenario questions"
+                        ]
+                    },
+                    {
+                        day: "Day 12",
+                        tasks: [
+                            "EFS vs FSx: File storage solutions",
+                            "Storage Gateway: Hybrid cloud storage",
+                            "Snow Family: Data migration at scale",
+                            "Backup strategies and disaster recovery"
+                        ]
+                    },
+                    {
+                        day: "Day 13",
+                        tasks: [
+                            "KMS: Encryption keys, envelope encryption, rotation",
+                            "AWS Secrets Manager & Systems Manager Parameter Store",
+                            "AWS Certificate Manager and SSL/TLS",
+                            "Practice: 35 security questions"
+                        ]
+                    },
+                    {
+                        day: "Day 14",
+                        tasks: [
+                            "Week 2 Review: All services covered so far",
+                            "Take another 65-question practice exam",
+                            "Review incorrect answers thoroughly",
+                            "Update your weak areas list"
+                        ]
+                    }
+                ]
+            },
+            week3: {
+                title: "Week 3: Architecture Patterns & Best Practices",
+                focus: "Design resilient, high-performing, cost-optimized solutions",
+                days: [
+                    {
+                        day: "Day 15",
+                        tasks: [
+                            "High Availability patterns: Multi-AZ, multi-region",
+                            "Disaster Recovery strategies: Backup, Pilot Light, Warm Standby, Multi-Site",
+                            "RTO vs RPO calculations",
+                            "Practice: DR scenario questions"
+                        ]
+                    },
+                    {
+                        day: "Day 16",
+                        tasks: [
+                            "Cost optimization: Reserved Instances, Savings Plans, Spot",
+                            "Cost Explorer, Budgets, and Trusted Advisor",
+                            "Right-sizing and resource optimization",
+                            "Practice: 30 cost optimization questions"
+                        ]
+                    },
+                    {
+                        day: "Day 17",
+                        tasks: [
+                            "Performance optimization: Caching strategies, CDN",
+                            "Database performance: Read replicas, caching, indexing",
+                            "Compute optimization: Instance types, placement groups",
+                            "Hands-on: Optimize a sample architecture"
+                        ]
+                    },
+                    {
+                        day: "Day 18",
+                        tasks: [
+                            "Security best practices: Least privilege, encryption at rest/transit",
+                            "AWS Organizations, SCPs, Control Tower",
+                            "GuardDuty, Inspector, Security Hub, Macie",
+                            "Practice: Advanced security scenarios"
+                        ]
+                    },
+                    {
+                        day: "Day 19",
+                        tasks: [
+                            "Migration strategies: 6 R's (Rehost, Replatform, etc.)",
+                            "Database Migration Service (DMS)",
+                            "Application Discovery Service & Migration Hub",
+                            "Practice: Migration scenario questions"
+                        ]
+                    },
+                    {
+                        day: "Day 20",
+                        tasks: [
+                            "Review all architecture patterns and when to use them",
+                            "Study AWS service limits and quotas",
+                            "Review all whitepapers summaries",
+                            "Practice: 40 mixed domain questions"
+                        ]
+                    },
+                    {
+                        day: "Day 21",
+                        tasks: [
+                            "Take full-length practice exam #3 (65 questions, timed)",
+                            "Detailed review of all incorrect answers",
+                            "Create cheat sheet for exam day",
+                            "Target: Score 80%+ on practice exam"
+                        ]
+                    }
+                ]
+            },
+            week4: {
+                title: "Week 4: Intensive Practice & Exam Prep",
+                focus: "Master exam strategy and fill knowledge gaps",
+                days: [
+                    {
+                        day: "Day 22",
+                        tasks: [
+                            "Focus study on your weakest domain (from practice exams)",
+                            "Deep dive all services you're still unclear on",
+                            "Practice: 50 questions from weak areas",
+                            "Create mental models for service selection"
+                        ]
+                    },
+                    {
+                        day: "Day 23",
+                        tasks: [
+                            "Review all scenario-based question patterns",
+                            "Study exam tips: Time management, elimination strategies",
+                            "Practice: 50 mixed questions (untimed for learning)",
+                            "Review service comparisons (EC2 vs Lambda, etc.)"
+                        ]
+                    },
+                    {
+                        day: "Day 24",
+                        tasks: [
+                            "Take practice exam #4 (full 65 questions, strictly timed)",
+                            "Review all questions, even correct ones",
+                            "Make final updates to your cheat sheet",
+                            "Target: Score 85%+ consistently"
+                        ]
+                    },
+                    {
+                        day: "Day 25",
+                        tasks: [
+                            "Light review: Flashcards and cheat sheet only",
+                            "Focus on service use cases and decision trees",
+                            "Practice: 30 quick-fire questions",
+                            "Take evening walk, get good sleep"
+                        ]
+                    },
+                    {
+                        day: "Day 26",
+                        tasks: [
+                            "Final practice exam #5 (morning, simulate exam conditions)",
+                            "Quick review of commonly missed topics",
+                            "No intense studying - avoid burnout",
+                            "Prepare for exam day: ID, arrive early plan"
+                        ]
+                    },
+                    {
+                        day: "Day 27",
+                        tasks: [
+                            "Light review only: Read cheat sheet 2-3 times",
+                            "Quick mental review of all major services",
+                            "Visualize exam success",
+                            "Early night, no cramming, stay confident!"
+                        ]
+                    },
+                    {
+                        day: "Day 28",
+                        tasks: [
+                            "🎯 EXAM DAY! You've got this!",
+                            "Arrive 15 min early, bring valid ID",
+                            "Read questions carefully, use elimination",
+                            "Celebrate after - you're AWS certified! 🎉"
+                        ]
+                    }
+                ]
+            }
+        };
+
+        function renderTimeline() {
+            const timeline = document.getElementById('timeline');
+            let totalTasks = 0;
+            let completedTasks = 0;
+
+            Object.entries(studyPlan).forEach(([weekKey, week]) => {
+                const weekCard = document.createElement('div');
+                weekCard.className = 'week-card bg-white border-2 border-gray-200 rounded-xl p-5 shadow-lg';
+                
+                weekCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-4 cursor-pointer" onclick="toggleWeek('${weekKey}')">
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-800">${week.title}</h2>
+                            <p class="text-gray-600 text-sm">${week.focus}</p>
+                        </div>
+                        <div>
+                            <span id="${weekKey}-progress" class="text-sm text-blue-600 font-semibold">0/${week.days.length} days</span>
+                            <svg id="${weekKey}-icon" class="w-6 h-6 ml-2 inline transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div id="${weekKey}-content" class="space-y-3 hidden">
+                        ${week.days.map((day, dayIndex) => {
+                            totalTasks += day.tasks.length;
+                            return `
+                                <div class="border-l-4 border-blue-400 pl-4 py-2">
+                                    <h3 class="font-bold text-gray-700 mb-2">${day.day}</h3>
+                                    ${day.tasks.map((task, taskIndex) => `
+                                        <div class="task-item flex items-start space-x-2 py-2 px-2 rounded">
+                                            <input 
+                                                type="checkbox" 
+                                                id="${weekKey}-${dayIndex}-${taskIndex}"
+                                                class="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                                                onchange="updateProgress()"
+                                            >
+                                            <label for="${weekKey}-${dayIndex}-${taskIndex}" class="text-gray-700 cursor-pointer flex-1">${task}</label>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+                
+                timeline.appendChild(weekCard);
+            });
+
+            // Load saved progress
+            loadProgress();
+        }
+
+        function toggleWeek(weekKey) {
+            const content = document.getElementById(`${weekKey}-content`);
+            const icon = document.getElementById(`${weekKey}-icon`);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function updateProgress() {
+            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            const checkedBoxes = document.querySelectorAll('input[type="checkbox"]:checked');
+            
+            const percentage = Math.round((checkedBoxes.length / allCheckboxes.length) * 100);
+            document.getElementById('progress').textContent = percentage;
+
+            // Update week progress
+            Object.keys(studyPlan).forEach(weekKey => {
+                const weekCheckboxes = document.querySelectorAll(`input[id^="${weekKey}-"]`);
+                const weekChecked = Array.from(weekCheckboxes).filter(cb => cb.checked).length;
+                const daysCompleted = Math.floor(weekChecked / 4); // Approximate days based on tasks
+                document.getElementById(`${weekKey}-progress`).textContent = 
+                    `${daysCompleted}/${studyPlan[weekKey].days.length} days`;
+            });
+
+            // Save progress
+            saveProgress();
+        }
+
+        function saveProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const progress = {};
+            checkboxes.forEach(cb => {
+                progress[cb.id] = cb.checked;
+            });
+            localStorage.setItem('awsStudyProgress', JSON.stringify(progress));
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('awsStudyProgress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                Object.entries(progress).forEach(([id, checked]) => {
+                    const checkbox = document.getElementById(id);
+                    if (checkbox) {
+                        checkbox.checked = checked;
+                    }
+                });
+                updateProgress();
+            }
+        }
+
+        // Initialize
+        renderTimeline();
+    </script>
+</body>
+</html>
