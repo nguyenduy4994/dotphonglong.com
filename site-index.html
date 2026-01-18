@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Index - All Pages</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c;
+        }
+        .container {
+            max-width: 1200px;
+            padding: 2rem;
+        }
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 3rem 2rem;
+            border-radius: 1rem;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+        .category-section {
+            background-color: #2d3748;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .category-title {
+            color: #fbbf24;
+            border-bottom: 2px solid #fbbf24;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+        .page-link-item {
+            background-color: #374151;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            border-left: 3px solid #667eea;
+        }
+        .page-link-item:hover {
+            background-color: #4b5563;
+            transform: translateX(5px);
+            border-left-color: #fbbf24;
+        }
+        .page-link-item a {
+            color: #e5e7eb;
+            text-decoration: none;
+            display: block;
+            font-weight: 500;
+        }
+        .page-link-item a:hover {
+            color: #fbbf24;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .search-box {
+            margin-bottom: 2rem;
+        }
+        .search-box input {
+            background-color: #374151;
+            border: 2px solid #4b5563;
+            color: #e5e7eb;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            width: 100%;
+        }
+        .search-box input:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+        }
+        .badge-count {
+            background-color: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="display-4 fw-bold text-white mb-3">📚 Site Index</h1>
+            <p class="lead text-white mb-0">Complete directory of all pages and tools</p>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <div class="stats-number">134</div>
+                    <div>Total Pages</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <div class="stats-number">12</div>
+                    <div>Categories</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card">
+                    <div class="stats-number">5</div>
+                    <div>Root Pages</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Search pages..." onkeyup="filterPages()">
+        </div>
+
+        <!-- Root Level Pages -->
+        <div class="category-section" data-category="root">
+            <h2 class="category-title">🏠 Root Level Pages <span class="badge-count">5</span></h2>
+            <div class="page-link-item"><a href="index.html">Đốt Phong Long Online</a></div>
+            <div class="page-link-item"><a href="3d-games.html">3D Games</a></div>
+            <div class="page-link-item"><a href="gross-net.html">Gross Net Calculator</a></div>
+            <div class="page-link-item"><a href="may-farm-cong-duc.html">May Farm Cong Duc</a></div>
+            <div class="page-link-item"><a href="rain.html">Rain Effect</a></div>
+        </div>
+
+        <!-- Calculator Tools -->
+        <div class="category-section" data-category="calculator">
+            <h2 class="category-title">🔢 Calculator Tools <span class="badge-count">10</span></h2>
+            <div class="page-link-item"><a href="calculator/basic-calculator.html">Basic Calculator</a></div>
+            <div class="page-link-item"><a href="calculator/bill-calculator.html">Bill Calculator</a></div>
+            <div class="page-link-item"><a href="calculator/birthdate-calculator.html">Birthdate Calculator</a></div>
+            <div class="page-link-item"><a href="calculator/bmi-calculator.html">BMI Calculator</a></div>
+            <div class="page-link-item"><a href="calculator/currency-converter.html">Currency Converter</a></div>
+            <div class="page-link-item"><a href="calculator/date-difference-calculator.html">Date Difference Calculator</a></div>
+            <div class="page-link-item"><a href="calculator/lucky-number-calculator.html">Lucky Number Calculator</a></div>
+            <div class="page-link-item"><a href="calculator/pregnancy-calculator.html">Pregnancy Calculator</a></div>
+            <div class="page-link-item"><a href="calculator/tip-calculator.html">Tip Calculator</a></div>
+            <div class="page-link-item"><a href="calculator/unit-converter.html">Unit Converter</a></div>
+        </div>
+
+        <!-- Design Tools -->
+        <div class="category-section" data-category="design">
+            <h2 class="category-title">🎨 Design Tools <span class="badge-count">10</span></h2>
+            <div class="page-link-item"><a href="design/ascii-image-converter.html">ASCII Image Converter</a></div>
+            <div class="page-link-item"><a href="design/color-picker.html">Color Picker</a></div>
+            <div class="page-link-item"><a href="design/css-loader-generator.html">CSS Loader Generator</a></div>
+            <div class="page-link-item"><a href="design/doodle-drawing-app.html">Doodle Drawing App</a></div>
+            <div class="page-link-item"><a href="design/favicon-generator.html">Favicon Generator</a></div>
+            <div class="page-link-item"><a href="design/gradient-generator.html">Gradient Generator</a></div>
+            <div class="page-link-item"><a href="design/palette.html">Palette</a></div>
+            <div class="page-link-item"><a href="design/pixel-art-editor.html">Pixel Art Editor</a></div>
+            <div class="page-link-item"><a href="design/random-color-generator.html">Random Color Generator</a></div>
+            <div class="page-link-item"><a href="design/simple-image-editor.html">Simple Image Editor</a></div>
+        </div>
+
+        <!-- Entertainment -->
+        <div class="category-section" data-category="entertainment">
+            <h2 class="category-title">🎵 Entertainment <span class="badge-count">10</span></h2>
+            <div class="page-link-item"><a href="entertainments/alarm-clock.html">Alarm Clock</a></div>
+            <div class="page-link-item"><a href="entertainments/drum-pad.html">Drum Pad</a></div>
+            <div class="page-link-item"><a href="entertainments/music-player.html">Music Player</a></div>
+            <div class="page-link-item"><a href="entertainments/piano.html">Piano</a></div>
+            <div class="page-link-item"><a href="entertainments/rain-sound-generator.html">Rain Sound Generator</a></div>
+            <div class="page-link-item"><a href="entertainments/record-and-play.html">Record and Play</a></div>
+            <div class="page-link-item"><a href="entertainments/soundboard.html">Soundboard</a></div>
+            <div class="page-link-item"><a href="entertainments/speech-to-text.html">Speech to Text</a></div>
+            <div class="page-link-item"><a href="entertainments/text-to-speech.html">Text to Speech</a></div>
+            <div class="page-link-item"><a href="entertainments/white-noise-generator.html">White Noise Generator</a></div>
+        </div>
+
+        <!-- Games -->
+        <div class="category-section" data-category="games">
+            <h2 class="category-title">🎮 Games <span class="badge-count">10</span></h2>
+            <div class="page-link-item"><a href="games/click-counter.html">Click Counter</a></div>
+            <div class="page-link-item"><a href="games/five-in-a-row.html">Five in a Row</a></div>
+            <div class="page-link-item"><a href="games/maze-generator.html">Maze Generator</a></div>
+            <div class="page-link-item"><a href="games/memory-game.html">Memory Game</a></div>
+            <div class="page-link-item"><a href="games/number-guessing-game.html">Number Guessing Game</a></div>
+            <div class="page-link-item"><a href="games/quiz-generator.html">Quiz Generator</a></div>
+            <div class="page-link-item"><a href="games/reaction-time-test.html">Reaction Time Test</a></div>
+            <div class="page-link-item"><a href="games/rock-paper-scissors.html">Rock Paper Scissors</a></div>
+            <div class="page-link-item"><a href="games/sudoku.html">Sudoku</a></div>
+            <div class="page-link-item"><a href="games/tic-tac-toe.html">Tic Tac Toe</a></div>
+        </div>
+
+        <!-- Graph & Data Visualization -->
+        <div class="category-section" data-category="graph">
+            <h2 class="category-title">📊 Graph & Data Visualization <span class="badge-count">10</span></h2>
+            <div class="page-link-item"><a href="graph-data/bar-chart-generator.html">Bar Chart Generator</a></div>
+            <div class="page-link-item"><a href="graph-data/color-generator.html">Color Generator</a></div>
+            <div class="page-link-item"><a href="graph-data/fast-data-entry-chart.html">Fast Data Entry Chart</a></div>
+            <div class="page-link-item"><a href="graph-data/gauge-generator.html">Gauge Generator</a></div>
+            <div class="page-link-item"><a href="graph-data/heatmap-generator.html">Heatmap Generator</a></div>
+            <div class="page-link-item"><a href="graph-data/json-to-html-table.html">JSON to HTML Table</a></div>
+            <div class="page-link-item"><a href="graph-data/performance-test.html">Performance Test</a></div>
+            <div class="page-link-item"><a href="graph-data/real-time-data-generator.html">Real-time Data Generator</a></div>
+            <div class="page-link-item"><a href="graph-data/sensor-simulator.html">Sensor Simulator</a></div>
+            <div class="page-link-item"><a href="graph-data/stock-ticker-generator.html">Stock Ticker Generator</a></div>
+        </div>
+
+        <!-- Languages & Text Tools -->
+        <div class="category-section" data-category="languages">
+            <h2 class="category-title">🌐 Languages & Text Tools <span class="badge-count">10</span></h2>
+            <div class="page-link-item"><a href="languages/child-name-generator.html">Child Name Generator</a></div>
+            <div class="page-link-item"><a href="languages/long-vui-translator.html">Long Vui Translator</a></div>
+            <div class="page-link-item"><a href="languages/morse-code-converter.html">Morse Code Converter</a></div>
+            <div class="page-link-item"><a href="languages/name-generator.html">Name Generator</a></div>
+            <div class="page-link-item"><a href="languages/number-to-text.html">Number to Text</a></div>
+            <div class="page-link-item"><a href="languages/password-generator.html">Password Generator</a></div>
+            <div class="page-link-item"><a href="languages/roman-numeral-converter.html">Roman Numeral Converter</a></div>
+            <div class="page-link-item"><a href="languages/slogan-generator.html">Slogan Generator</a></div>
+            <div class="page-link-item"><a href="languages/text-reverser.html">Text Reverser</a></div>
+            <div class="page-link-item"><a href="languages/vietnamese-translator.html">Vietnamese Translator</a></div>
+        </div>
+
+        <!-- Learning Resources -->
+        <div class="category-section" data-category="learning">
+            <h2 class="category-title">📖 Learning Resources <span class="badge-count">1</span></h2>
+            <div class="page-link-item"><a href="learning/aws-architect-associate.html">AWS Solutions Architect Associate</a></div>
+        </div>
+
+        <!-- Blog Posts -->
+        <div class="category-section" data-category="posts">
+            <h2 class="category-title">📝 Blog Posts <span class="badge-count">11</span></h2>
+            <div class="page-link-item"><a href="posts/aws-certificate-learning-path.html">AWS Certificate Learning Path</a></div>
+            <div class="page-link-item"><a href="posts/aws-solutions-architect-associate.html">AWS Solutions Architect Associate</a></div>
+            <div class="page-link-item"><a href="posts/certificates-for-tech-lead.html">Certificates for Tech Lead</a></div>
+            <div class="page-link-item"><a href="posts/laravel-admin-construction.html">Laravel Admin Construction</a></div>
+            <div class="page-link-item"><a href="posts/laravel-vs-nextjs.html">Laravel vs Next.js</a></div>
+            <div class="page-link-item"><a href="posts/nextjs-vs-tanstack-router.html">Next.js vs TanStack Router</a></div>
+            <div class="page-link-item"><a href="posts/php-tool-vs-php-intelephense.html">PHP Tool vs PHP IntelliPhense</a></div>
+            <div class="page-link-item"><a href="posts/sublime-text-vs-vscode.html">Sublime Text vs VSCode</a></div>
+            <div class="page-link-item"><a href="posts/vscode-php.html">VSCode PHP</a></div>
+            <div class="page-link-item"><a href="posts/windsurf-vscode.html">Windsurf VSCode</a></div>
+            <div class="page-link-item"><a href="posts/wordpress-website-packages.html">WordPress Website Packages</a></div>
+        </div>
+
+        <!-- Time Tools -->
+        <div class="category-section" data-category="time">
+            <h2 class="category-title">⏰ Time Tools <span class="badge-count">10</span></h2>
+            <div class="page-link-item"><a href="time/age-calculator.html">Age Calculator</a></div>
+            <div class="page-link-item"><a href="time/analog-clock.html">Analog Clock</a></div>
+            <div class="page-link-item"><a href="time/calendar.html">Calendar</a></div>
+            <div class="page-link-item"><a href="time/countdown.html">Countdown</a></div>
+            <div class="page-link-item"><a href="time/digital-clock.html">Digital Clock</a></div>
+            <div class="page-link-item"><a href="time/luna-calendar.html">Lunar Calendar</a></div>
+            <div class="page-link-item"><a href="time/pomodoro.html">Pomodoro Timer</a></div>
+            <div class="page-link-item"><a href="time/stopwatch.html">Stopwatch</a></div>
+            <div class="page-link-item"><a href="time/time-qr-code-generator.html">Time QR Code Generator</a></div>
+            <div class="page-link-item"><a href="time/world-clock.html">World Clock</a></div>
+        </div>
+
+        <!-- Developer Tools -->
+        <div class="category-section" data-category="tools">
+            <h2 class="category-title">🛠️ Developer Tools <span class="badge-count">12</span></h2>
+            <div class="page-link-item"><a href="tools/base64-encoder.html">Base64 Encoder</a></div>
+            <div class="page-link-item"><a href="tools/email-url-extractor.html">Email/URL Extractor</a></div>
+            <div class="page-link-item"><a href="tools/fps-counter.html">FPS Counter</a></div>
+            <div class="page-link-item"><a href="tools/minifier.html">Minifier</a></div>
+            <div class="page-link-item"><a href="tools/qr-code-generator.html">QR Code Generator</a></div>
+            <div class="page-link-item"><a href="tools/qr-code-scanner.html">QR Code Scanner</a></div>
+            <div class="page-link-item"><a href="tools/random.html">Random Generator</a></div>
+            <div class="page-link-item"><a href="tools/sql-format.html">SQL Format</a></div>
+            <div class="page-link-item"><a href="tools/text-comparator.html">Text Comparator</a></div>
+            <div class="page-link-item"><a href="tools/text-filter.html">Text Filter</a></div>
+            <div class="page-link-item"><a href="tools/text-transform.html">Text Transform</a></div>
+            <div class="page-link-item"><a href="tools/typing-speed-test.html">Typing Speed Test</a></div>
+        </div>
+
+        <!-- UI/UX Generators -->
+        <div class="category-section" data-category="uiux">
+            <h2 class="category-title">🎯 UI/UX Generators <span class="badge-count">10</span></h2>
+            <div class="page-link-item"><a href="ui-ux/css-icon-generator.html">CSS Icon Generator</a></div>
+            <div class="page-link-item"><a href="ui-ux/drag-and-drop-file.html">Drag and Drop File</a></div>
+            <div class="page-link-item"><a href="ui-ux/font-testing-tool.html">Font Testing Tool</a></div>
+            <div class="page-link-item"><a href="ui-ux/html-table-generator.html">HTML Table Generator</a></div>
+            <div class="page-link-item"><a href="ui-ux/modal-generator.html">Modal Generator</a></div>
+            <div class="page-link-item"><a href="ui-ux/os-simulator.html">OS Simulator</a></div>
+            <div class="page-link-item"><a href="ui-ux/progress-bar-generator.html">Progress Bar Generator</a></div>
+            <div class="page-link-item"><a href="ui-ux/responsive-simulator.html">Responsive Simulator</a></div>
+            <div class="page-link-item"><a href="ui-ux/toast-generator.html">Toast Generator</a></div>
+            <div class="page-link-item"><a href="ui-ux/ui-kit-generator.html">UI Kit Generator</a></div>
+        </div>
+
+        <!-- Writing Tools -->
+        <div class="category-section" data-category="writing">
+            <h2 class="category-title">✍️ Writing Tools <span class="badge-count">11</span></h2>
+            <div class="page-link-item"><a href="writing/blog-generator.html">Blog Generator</a></div>
+            <div class="page-link-item"><a href="writing/hashtag-generator.html">Hashtag Generator</a></div>
+            <div class="page-link-item"><a href="writing/journal.html">Journal</a></div>
+            <div class="page-link-item"><a href="writing/lorem-ipsum-generator.html">Lorem Ipsum Generator</a></div>
+            <div class="page-link-item"><a href="writing/markdown-preview.html">Markdown Preview</a></div>
+            <div class="page-link-item"><a href="writing/note-taker.html">Note Taker</a></div>
+            <div class="page-link-item"><a href="writing/quote-generator.html">Quote Generator</a></div>
+            <div class="page-link-item"><a href="writing/rich-text-to-markdown.html">Rich Text to Markdown</a></div>
+            <div class="page-link-item"><a href="writing/spell-checker.html">Spell Checker</a></div>
+            <div class="page-link-item"><a href="writing/to-do-list.html">To-Do List</a></div>
+            <div class="page-link-item"><a href="writing/word-counter.html">Word Counter</a></div>
+        </div>
+
+        <div class="text-center mt-5 text-muted">
+            <p>Total: 134 pages across 12 categories</p>
+            <p class="small">Generated on 2026-01-18</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+    <script>
+        function filterPages() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const sections = document.querySelectorAll('.category-section');
+
+            sections.forEach(section => {
+                const links = section.querySelectorAll('.page-link-item');
+                let visibleCount = 0;
+
+                links.forEach(link => {
+                    const text = link.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        link.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        link.style.display = 'none';
+                    }
+                });
+
+                // Hide section if no visible links
+                if (visibleCount === 0) {
+                    section.style.display = 'none';
+                } else {
+                    section.style.display = 'block';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
